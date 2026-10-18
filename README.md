@@ -56,6 +56,52 @@ make build      # Produces build/nucleo-f401re/pet.elf, .bin, and .hex
 make flash      # Writes, verifies, and resets the STM32 through ST-LINK
 ```
 
+## Windows 烧录与运行
+
+推荐使用 **MSYS2 UCRT64** 终端，而不是直接在 PowerShell 或 `cmd` 中运行本项目的
+`Makefile`：项目会使用 `make`、`mkdir -p` 和 `rm` 等 Unix 风格命令。
+
+1. 安装 [MSYS2](https://www.msys2.org/)，按其安装器提示完成首次更新后，打开
+   **MSYS2 UCRT64** 终端。
+2. 在该终端中安装所需工具：
+
+   ```sh
+   pacman -Syu
+   pacman -S --needed make mingw-w64-ucrt-x86_64-cmake \
+     mingw-w64-ucrt-x86_64-arm-none-eabi-toolchain \
+     mingw-w64-ucrt-x86_64-openocd
+   ```
+
+   这些包提供 CMake、Arm 交叉编译器和 OpenOCD。MSYS2 目前提供
+   `mingw-w64-ucrt-x86_64-arm-none-eabi-toolchain` 与
+   `mingw-w64-ucrt-x86_64-openocd`；也可改用官方
+   [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain)
+   和 Windows 版 OpenOCD，但必须让它们的 `bin` 目录位于 `PATH` 中。
+3. 克隆本仓库并进入目录：
+
+   ```sh
+   git clone https://github.com/ZZ9622/nucleo-pet-fw.git
+   cd nucleo-pet-fw
+   ```
+
+4. 用 USB-A 转 Mini-B **数据线**连接电脑和开发板的 **CN1 / ST-LINK USB**，然后依次运行：
+
+   ```sh
+   make probe      # 只检测 ST-LINK 与 STM32，不写入 Flash
+   make build      # 生成 build/nucleo-f401re/pet.hex
+   make flash      # 写入、校验并复位开发板
+   ```
+
+   `make probe` 不能识别板子时，不要执行 `make flash`；先检查线缆是否为数据线、是否连接
+   CN1、Windows 的设备管理器是否显示 ST-LINK，以及重插 USB 后再试。
+
+### Windows 图形界面烧录（不使用 OpenOCD）
+
+若已通过 `make build` 得到 `build/nucleo-f401re/pet.hex`，也可以安装 ST 官方的
+[STM32CubeProgrammer](https://www.st.com/content/st_com/en/stm32cubeprogrammer.html)。连接
+CN1 后，在程序中选择 **ST-LINK**、点击 **Connect**、打开 `pet.hex`，再执行 **Download**。
+下载完成后复位开发板；绿色 LD2 先快速闪两次，再进入双脉冲心跳，即表示电子宠物正在运行。
+
 ## 首次烧录与运行（NUCLEO-F401RE）
 
 1. 用 **USB-A 转 Mini-B 数据线**把电脑连接到开发板的 **CN1 / ST-LINK USB** 接口。
