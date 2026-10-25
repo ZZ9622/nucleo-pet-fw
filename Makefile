@@ -26,6 +26,9 @@ test:
 	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
 		-Iinclude tests/pet_test.c src/pet.c -o build/host-tests/pet_test
 	build/host-tests/pet_test
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
+		-Iinclude tests/pet_view_test.c src/pet_view.c -o build/host-tests/pet_view_test
+	build/host-tests/pet_view_test
 
 clean:
 	rm -rf build

@@ -14,9 +14,10 @@ set(FIRMWARE_SOURCES
     src/startup.c
     src/board.c
     src/button.c
-    src/display_null.c
+    src/display_ssd1306.c
     src/led.c
     src/main.c
+    src/pet_view.c
     src/pet.c
 )
 

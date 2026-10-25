@@ -3,7 +3,7 @@
 
 #include "pet.h"
 
-/* Replace display_null.c with an OLED or TFT backend when hardware is selected. */
+/* SBC-OLED01: SSD1306 128x64, I2C1 on PB8/PB9. */
 void display_init(void);
 void display_render(const PetSnapshot *snapshot);
 

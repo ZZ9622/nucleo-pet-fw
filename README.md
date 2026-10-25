@@ -111,7 +111,7 @@ CN1 后，在程序中选择 **ST-LINK**、点击 **Connect**、打开 `pet.hex`
    `build/nucleo-f401re/pet.hex`。
 4. 执行 `make flash`。该命令会写入、校验固件并自动复位开发板。
 5. 复位后，板载绿色 **LD2** 会快速闪两次，随后开始双脉冲心跳，表示电子宠物正在运行。
-   当前第一版没有屏幕，LED 就是状态界面：短按 B1 是喂养/照顾，长按约 1.2 秒后松开可睡眠或唤醒。
+   本版加入了 SBC-OLED01 屏幕，LED 仍保留状态提示：短按 B1 是喂养/照顾，长按约 1.2 秒后松开可睡眠或唤醒。
 
 如果 `make probe` 显示无法打开 ST-LINK，请依次检查：线缆是否为数据线、是否接在 CN1、开发板是否通电，以及重新插拔 USB 后再试。
 
@@ -140,9 +140,9 @@ Future games submit a score through `PET_CMD_SUBMIT_GAME_RESULT`; the pet core
 decides XP, coins, joy, and energy changes. This prevents each game from
 silently changing the pet balance or storage format.
 
-`src/display_null.c` is an intentionally empty screen backend. A future
-`ssd1306_i2c.c` or `st7789_spi.c` can implement the same `display.h` interface
-without changing `pet.c`.
+`src/display_ssd1306.c` implements the `display.h` interface for SBC-OLED01.
+`src/display_null.c` remains available as the original no-screen backend; it is
+not compiled alongside the OLED backend. The pet core remains unchanged.
 
 ### Pin planning for a future screen
 
@@ -154,3 +154,75 @@ for diagnostics.
 For persistent saves, do not write a raw C struct to Flash every second. Add a
 versioned, checksummed save record and only save on meaningful events, or use
 external EEPROM/FRAM later.
+
+
+## SBC-OLED01 屏幕初始化与测试
+
+本版适用于 Joy-IT **SBC-OLED01，SSD1306，128×64，四针 I2C**，
+不是 SBC-OLED01.3 的 SH1106。厂家资料：
+https://www.joy-it.net/en/products/SBC-OLED01
+
+断开供电后，按模块针脚上的文字接线，不要仅按左右顺序判断：
+
+| OLED | NUCLEO-F401RE |
+| --- | --- |
+| VCC / VDD | 3V3 |
+| GND | GND |
+| SCL / SCK | PB8，Arduino D15 / SCL |
+| SDA | PB9，Arduino D14 / SDA |
+
+驱动固定使用上述引脚；如果目前接在别处，请改接。保持 PA5（LED）、PC13（B1）、
+PA13/PA14（SWD）原接法。I2C 信号必须有上拉至 **3.3V** 的电阻；先检查模块是否
+已有上拉，如果没有，可给 SCL、SDA 各接一只约 4.7kΩ 电阻到 3V3。不要上拉到 5V。
+
+驱动保持原有 16MHz HSI 时钟，在 PB8/PB9 上配置 AF4、开漏、I2C1 100kHz。
+如以后修改 APB1 时钟，必须同步修改驱动中的 CR2、CCR、TRISE。
+自动依次尝试七位地址 0x3C 和 0x3D；发送时才左移一位。
+
+```sh
+cd ~/Desktop/learning/nucleo-pet-fw
+make test
+make build
+make probe
+make flash
+```
+
+`make flash` 会写入并校验 Flash，再自动复位。若已有旧的构建目录因搬迁路径导致
+CMake 报错，可使用独立目录重新配置及烧录：
+
+```sh
+cmake -S . -B build/oled -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake
+cmake --build build/oled
+openocd -f openocd/nucleo-f401re.cfg -c "init; targets; shutdown"
+cmake --build build/oled --target flash
+```
+
+烧录文件：默认是 `build/nucleo-f401re/pet.hex`；独立目录是 `build/oled/pet.hex`。
+
+预期效果：上电约 100ms 后初始化屏幕，先显示棋盘测试图案，约 2.5 秒后
+切换成小猫状态界面。左侧小猫会眨眼、轻轻起伏和摆尾，睡眠时闭眼并飘出 Z，
+状态严重时闪烁感叹号。顶部显示 CONTENT / HAPPY / NEEDY / HELP / SLEEP 和等级 LV。
+右侧 FOOD=饱食度、ENERGY=体力、JOY=心情、CLEAN=清洁、HEALTH=健康，
+数值范围 000–100；短状态条与数值同时更新。屏幕采用内置英文小字体。
+
+无需增加按键。短按 B1 喂食；按住 1.2–5 秒后松开睡眠/唤醒；
+按住至少 5 秒后松开重置。底部的 2S / 5S 是操作提示，动作均在松开时触发。
+本次不改变按键、LED 或宠物规则；其他养成动作尚未添加到按键菜单。
+
+显示使用 1024 字节帧缓冲，每帧固定同一份状态和动画时间，避免上下部分动作不同步。
+每 5ms 调度一次，每次传输 32 字节，100kHz 下正常约 3–4ms，一帧约 0.16 秒。
+依然按页顺序写屏，无硬件双缓冲，可能存在轻微扫描感。
+每个 I2C 事务最多等待 20ms，错误后约一秒重试初始化，不无限等待。
+显示传输采用短轮询，并非完全异步；缺屏或接线错误不会阻止宠物循环运行。
+调试器可查看 `oled_status`：0=等待上电，1=无应答/总线故障，2=测试图案，3=宠物画面。
+若屏幕仍黑，先检查共地、3V3、电源针脚和 PB8/PB9；然后检查上拉和焊接。
+总线物理卡死时可能需要断电检查接线后重新上电；本版不发送 GPIO 总线恢复脉冲。
+
+本次可在电脑验证编译和宠物核心测试；屏幕亮度、应答地址及接线必须在实物上确认。
+
+
+### 动画版本验证
+
+`make test` 同时运行宠物规则测试和界面绘制测试（眨眼/睡眠画面变化、
+绘制缓冲区边界与数值极限）。已通过交叉编译和电脑端测试，并检查了三种状态的
+128×64 像素预览。动画版本仍需在实物上确认刷新效果与按键响应。

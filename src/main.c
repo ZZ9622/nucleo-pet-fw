@@ -8,7 +8,7 @@
 
 enum {
     PET_TICK_MS = 1000U,
-    DISPLAY_REFRESH_MS = 100U
+    DISPLAY_REFRESH_MS = 5U
 };
 
 static uint32_t elapsed_ms(uint32_t now_ms, uint32_t since_ms)
