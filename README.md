@@ -1,228 +1,161 @@
-# NUCLEO-F401RE electronic pet — firmware bring-up
+# Nucleo Pet — STM32 电子宠物
 
-This is a small, bare-metal C firmware starter for an ST **NUCLEO-F401RE**. Its
-first job is to prove the complete build → ST-LINK → Flash → run path without a
-screen. The second job is to establish a pet core that will not need rewriting
-when a display, storage, sound, sensors, or minigames arrive.
+基于 **NUCLEO-F401RE** 和 **SSD1306 OLED** 的电子宠物固件，使用裸机 C 编写。
+当前阶段为 **Demo 0.1**：已完成实物连接、固件烧录，并确认在开发板上正常运行。
 
-## First milestone
+本 README 记录当前硬件范围、已实现功能和 **macOS** 开发流程。
 
-The firmware uses only the board hardware already present:
+## 适用范围与接线
 
-- **LD2 / PA5** is the green status LED; high means on.
-- **B1 / PC13** is the user button; it is active-low.
-- The board's **ST-LINK/V2-1** is the programmer/debugger.
+| 项目 | 当前配置 |
+| --- | --- |
+| 开发板 | ST NUCLEO-F401RE（STM32F401RE） |
+| 屏幕 | Joy-IT SBC-OLED01，SSD1306，128×64，四针 I²C |
+| 操作输入 | 板载蓝色 B1 USER 按键（PC13） |
+| 状态指示 | 板载绿色 LD2（PA5） |
+| 烧录与调试 | 板载 ST-LINK/V2-1，通过 CN1 USB 接口连接 Mac |
+| 开发环境 | macOS、CMake、Arm GNU 编译器、OpenOCD |
 
-The initial pet behavior is deliberately visible in under a minute:
+当前屏幕驱动按 SSD1306 编写，不适用于 SH1106（如 SBC-OLED01.3）。
+其他开发板、屏幕控制器或引脚配置需要调整代码后使用。
 
-| What you do | What the pet does | LED evidence |
-| --- | --- | --- |
-| Power / reset | Starts its firmware | Two quick boot flashes |
-| Wait normally | Needs slowly decay in demo time | Two-pulse heartbeat |
-| Short press B1 | Feed / care | Four quick happy flashes |
-| Hold B1 for 1.2–5 s, then release | Sleep or wake | Slow sleep heartbeat / normal status |
-| Wait about 6 s without care | Becomes needy | 250 ms on, 750 ms off |
-| Wait longer | Becomes critical | Fast flashing |
-| Hold B1 for 5 s or more, then release | Reset the pet | Boot flashes, default attributes restored |
+### OLED 接线
 
-All LED patterns and button handling are non-blocking. There is no `delay()` in
-the pet logic, so future display animations and minigames can run alongside it.
-
-## Cable and board connection
-
-Your **USB-A to Mini-B data cable** is the correct cable. Connect it from the
-Mac (or a USB-C-to-A data adapter) to the Nucleo connector labelled **CN1 /
-ST-LINK USB**. It carries power, SWD programming, and debugging through the
-onboard ST-LINK; do not use a USB-to-TTL converter for this normal path.
-
-Leave the factory CN2 jumpers fitted and leave `PA13`/`PA14` free: they are the
-SWD debug pins. The board has to be a real NUCLEO-F401RE board for the PA5/PC13
-mapping in this project to apply.
-
-## Build and test on macOS
-
-This project needs the ARM compiler and OpenOCD once:
-
-```sh
-brew install arm-none-eabi-gcc open-ocd
-```
-
-Then, from this directory:
-
-```sh
-make test       # Runs the pure pet-logic tests on the Mac
-make probe      # Read-only: looks for the board through ST-LINK
-make build      # Produces build/nucleo-f401re/pet.elf, .bin, and .hex
-make flash      # Writes, verifies, and resets the STM32 through ST-LINK
-```
-
-## Windows 烧录与运行
-
-推荐使用 **MSYS2 UCRT64** 终端，而不是直接在 PowerShell 或 `cmd` 中运行本项目的
-`Makefile`：项目会使用 `make`、`mkdir -p` 和 `rm` 等 Unix 风格命令。
-
-1. 安装 [MSYS2](https://www.msys2.org/)，按其安装器提示完成首次更新后，打开
-   **MSYS2 UCRT64** 终端。
-2. 在该终端中安装所需工具：
-
-   ```sh
-   pacman -Syu
-   pacman -S --needed make mingw-w64-ucrt-x86_64-cmake \
-     mingw-w64-ucrt-x86_64-arm-none-eabi-toolchain \
-     mingw-w64-ucrt-x86_64-openocd
-   ```
-
-   这些包提供 CMake、Arm 交叉编译器和 OpenOCD。MSYS2 目前提供
-   `mingw-w64-ucrt-x86_64-arm-none-eabi-toolchain` 与
-   `mingw-w64-ucrt-x86_64-openocd`；也可改用官方
-   [Arm GNU Toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain)
-   和 Windows 版 OpenOCD，但必须让它们的 `bin` 目录位于 `PATH` 中。
-3. 克隆本仓库并进入目录：
-
-   ```sh
-   git clone https://github.com/ZZ9622/nucleo-pet-fw.git
-   cd nucleo-pet-fw
-   ```
-
-4. 用 USB-A 转 Mini-B **数据线**连接电脑和开发板的 **CN1 / ST-LINK USB**，然后依次运行：
-
-   ```sh
-   make probe      # 只检测 ST-LINK 与 STM32，不写入 Flash
-   make build      # 生成 build/nucleo-f401re/pet.hex
-   make flash      # 写入、校验并复位开发板
-   ```
-
-   `make probe` 不能识别板子时，不要执行 `make flash`；先检查线缆是否为数据线、是否连接
-   CN1、Windows 的设备管理器是否显示 ST-LINK，以及重插 USB 后再试。
-
-### Windows 图形界面烧录（不使用 OpenOCD）
-
-若已通过 `make build` 得到 `build/nucleo-f401re/pet.hex`，也可以安装 ST 官方的
-[STM32CubeProgrammer](https://www.st.com/content/st_com/en/stm32cubeprogrammer.html)。连接
-CN1 后，在程序中选择 **ST-LINK**、点击 **Connect**、打开 `pet.hex`，再执行 **Download**。
-下载完成后复位开发板；绿色 LD2 先快速闪两次，再进入双脉冲心跳，即表示电子宠物正在运行。
-
-## 首次烧录与运行（NUCLEO-F401RE）
-
-1. 用 **USB-A 转 Mini-B 数据线**把电脑连接到开发板的 **CN1 / ST-LINK USB** 接口。
-   不要接 USB 转串口模块；本项目通过板载 ST-LINK 烧录。
-2. 在本项目目录执行 `make probe`。只有它能识别到 ST-LINK 后，才继续下一步。
-3. 执行 `make build` 编译固件；生成的烧录文件位于
-   `build/nucleo-f401re/pet.hex`。
-4. 执行 `make flash`。该命令会写入、校验固件并自动复位开发板。
-5. 复位后，板载绿色 **LD2** 会快速闪两次，随后开始双脉冲心跳，表示电子宠物正在运行。
-   本版加入了 SBC-OLED01 屏幕，LED 仍保留状态提示：短按 B1 是喂养/照顾，长按约 1.2 秒后松开可睡眠或唤醒。
-
-如果 `make probe` 显示无法打开 ST-LINK，请依次检查：线缆是否为数据线、是否接在 CN1、开发板是否通电，以及重新插拔 USB 后再试。
-
-`make flash` deliberately performs a write, so run `make probe` first and make
-sure the cable is attached to the correct board. A successful flash resets the
-board automatically; LD2 should show the boot flashes.
-
-The project is intentionally register-level and does not require HAL, CubeIDE,
-newlib, `printf`, or dynamic allocation. That keeps the first flashing program
-small and reproducible. It is still ordinary C and can later be imported into a
-CubeIDE or VS Code workflow if wanted.
-
-## Growth-friendly design
-
-```text
-button / future touch UI → semantic PetCommand → pet core → PetSnapshot
-minigame result ──────────────────────────────────────────┘       ├─ LED today
-                                                                    └─ screen later
-```
-
-`src/pet.c` owns the persistent game rules: satiety, energy, joy, hygiene,
-health, level, XP, coins, life stage, and sleep. It knows nothing about LEDs,
-GPIO, display pixels, or a particular minigame.
-
-Future games submit a score through `PET_CMD_SUBMIT_GAME_RESULT`; the pet core
-decides XP, coins, joy, and energy changes. This prevents each game from
-silently changing the pet balance or storage format.
-
-`src/display_ssd1306.c` implements the `display.h` interface for SBC-OLED01.
-`src/display_null.c` remains available as the original no-screen backend; it is
-not compiled alongside the OLED backend. The pet core remains unchanged.
-
-### Pin planning for a future screen
-
-PA5 is also Arduino D13 / `SPI1_SCK`. A common SPI display on SPI1 will make
-LD2 flicker, so it is not a good permanent combination. An I2C OLED on PB8/PB9
-or an SPI display using SPI2 are better options if the board LED remains useful
-for diagnostics.
-
-For persistent saves, do not write a raw C struct to Flash every second. Add a
-versioned, checksummed save record and only save on meaningful events, or use
-external EEPROM/FRAM later.
-
-
-## SBC-OLED01 屏幕初始化与测试
-
-本版适用于 Joy-IT **SBC-OLED01，SSD1306，128×64，四针 I2C**，
-不是 SBC-OLED01.3 的 SH1106。厂家资料：
-https://www.joy-it.net/en/products/SBC-OLED01
-
-断开供电后，按模块针脚上的文字接线，不要仅按左右顺序判断：
+断电后按模块上的引脚文字连接：
 
 | OLED | NUCLEO-F401RE |
 | --- | --- |
-| VCC / VDD | 3V3 |
 | GND | GND |
+| VCC / VDD | 3V3 |
 | SCL / SCK | PB8，Arduino D15 / SCL |
 | SDA | PB9，Arduino D14 / SDA |
 
-驱动固定使用上述引脚；如果目前接在别处，请改接。保持 PA5（LED）、PC13（B1）、
-PA13/PA14（SWD）原接法。I2C 信号必须有上拉至 **3.3V** 的电阻；先检查模块是否
-已有上拉，如果没有，可给 SCL、SDA 各接一只约 4.7kΩ 电阻到 3V3。不要上拉到 5V。
+驱动固定使用 PB8/PB9，I²C1 速率为 100 kHz，自动依次尝试七位地址 `0x3C`、`0x3D`。
+SCL、SDA 需要上拉到 **3.3V**；若模块没有自带上拉，可各接一只约 4.7 kΩ 电阻到 3V3。
 
-驱动保持原有 16MHz HSI 时钟，在 PB8/PB9 上配置 AF4、开漏、I2C1 100kHz。
-如以后修改 APB1 时钟，必须同步修改驱动中的 CR2、CCR、TRISE。
-自动依次尝试七位地址 0x3C 和 0x3D；发送时才左移一位。
+使用 **USB-A 转 Mini-B 数据线**连接 Mac 与开发板的 **CN1 / ST-LINK USB**；
+Mac 只有 USB-C 接口时，可使用支持数据传输的转接器。
+保留 CN2 原厂跳帽，PA13/PA14 留给 SWD 调试，无需另接 USB 转串口模块。
+
+## 当前功能
+
+### 屏幕与动画
+
+- 启动时显示约 2.5 秒棋盘测试图案，随后进入小猫状态界面。
+- 小猫支持眨眼、轻微起伏、摆尾；睡眠时闭眼并显示 Z，严重缺乏照顾时闪烁感叹号。
+- 顶部显示状态 `CONTENT / HAPPY / NEEDY / HELP / SLEEP` 和等级 `LV`。
+- 右侧显示饱食度 `FOOD`、体力 `ENERGY`、心情 `JOY`、清洁度 `CLEAN`、
+  健康值 `HEALTH`，数值范围为 0–100，并配有状态条。
+- 界面使用内置英文小字体。
+
+### 按键操作
+
+所有操作都在 **松开 B1 后**触发：
+
+| 操作 | 功能 |
+| --- | --- |
+| 短按，不足 1.2 秒 | 喂食（清醒时有效） |
+| 按住至少 1.2 秒、不足 5 秒后松开 | 睡眠 / 唤醒 |
+| 按住至少 5 秒后松开 | 重置宠物属性 |
+
+按键已做消抖，极短的触碰会被忽略。屏幕底部的 `2S SLEEP` 是操作提示，
+实际睡眠切换阈值为 1.2 秒。
+
+### 宠物状态与 LED
+
+宠物状态每秒推进一次。当前使用加速演示规则 `PET_RULES_DEMO`，
+便于短时间观察属性变化；这不是按真实生活节奏设计的长期养成参数。
+喂食可改善饱食度、获得经验，达到经验阈值后升级；睡眠可恢复体力，缺乏照顾会使状态变差。
+
+绿色 LD2 同步提供反馈：启动或重置时闪两次，喂食后快闪四次，
+日常状态为双脉冲心跳，需要照顾时周期闪烁，严重状态快闪，睡眠时为慢速心跳。
+
+### 当前边界
+
+- 实物按键目前只接入喂食、睡眠 / 唤醒和重置。
+- 宠物核心已有玩耍、清洁、用药、小游戏结果奖励等命令逻辑，以及经验、金币和成长阶段数据；
+  当前没有对应操作菜单或可玩的小游戏，界面也未展示全部数据。
+- 尚未实现存档，断电或开发板复位后会重新初始化宠物。
+- 尚未接入声音、传感器或联网功能。
+
+## macOS 开发与烧录
+
+### 1. 安装工具
+
+需要 Xcode Command Line Tools（提供本机 C 编译器、Git 和 Make）。
+若尚未安装：
 
 ```sh
-cd ~/Desktop/learning/nucleo-pet-fw
-make test
-make build
-make probe
-make flash
+xcode-select --install
 ```
 
-`make flash` 会写入并校验 Flash，再自动复位。若已有旧的构建目录因搬迁路径导致
-CMake 报错，可使用独立目录重新配置及烧录：
+安装 [Homebrew](https://brew.sh/) 后，安装项目工具：
 
 ```sh
-cmake -S . -B build/oled -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake
-cmake --build build/oled
-openocd -f openocd/nucleo-f401re.cfg -c "init; targets; shutdown"
-cmake --build build/oled --target flash
+brew install cmake arm-none-eabi-gcc open-ocd
 ```
 
-烧录文件：默认是 `build/nucleo-f401re/pet.hex`；独立目录是 `build/oled/pet.hex`。
+项目要求 CMake 3.20 或更高版本，不依赖 STM32CubeIDE 或 HAL。
+工具包说明：[CMake](https://formulae.brew.sh/formula/cmake)、
+[Arm 编译器](https://formulae.brew.sh/formula/arm-none-eabi-gcc)、
+[OpenOCD](https://formulae.brew.sh/formula/open-ocd)。
 
-预期效果：上电约 100ms 后初始化屏幕，先显示棋盘测试图案，约 2.5 秒后
-切换成小猫状态界面。左侧小猫会眨眼、轻轻起伏和摆尾，睡眠时闭眼并飘出 Z，
-状态严重时闪烁感叹号。顶部显示 CONTENT / HAPPY / NEEDY / HELP / SLEEP 和等级 LV。
-右侧 FOOD=饱食度、ENERGY=体力、JOY=心情、CLEAN=清洁、HEALTH=健康，
-数值范围 000–100；短状态条与数值同时更新。屏幕采用内置英文小字体。
+### 2. 获取项目
 
-无需增加按键。短按 B1 喂食；按住 1.2–5 秒后松开睡眠/唤醒；
-按住至少 5 秒后松开重置。底部的 2S / 5S 是操作提示，动作均在松开时触发。
-本次不改变按键、LED 或宠物规则；其他养成动作尚未添加到按键菜单。
+```sh
+git clone https://github.com/ZZ9622/nucleo-pet-fw.git
+cd nucleo-pet-fw
+```
 
-显示使用 1024 字节帧缓冲，每帧固定同一份状态和动画时间，避免上下部分动作不同步。
-每 5ms 调度一次，每次传输 32 字节，100kHz 下正常约 3–4ms，一帧约 0.16 秒。
-依然按页顺序写屏，无硬件双缓冲，可能存在轻微扫描感。
-每个 I2C 事务最多等待 20ms，错误后约一秒重试初始化，不无限等待。
-显示传输采用短轮询，并非完全异步；缺屏或接线错误不会阻止宠物循环运行。
-调试器可查看 `oled_status`：0=等待上电，1=无应答/总线故障，2=测试图案，3=宠物画面。
-若屏幕仍黑，先检查共地、3V3、电源针脚和 PB8/PB9；然后检查上拉和焊接。
-总线物理卡死时可能需要断电检查接线后重新上电；本版不发送 GPIO 总线恢复脉冲。
+已有仓库时，直接进入项目目录即可。
 
-本次可在电脑验证编译和宠物核心测试；屏幕亮度、应答地址及接线必须在实物上确认。
+### 3. 测试、编译与烧录
 
+连接 CN1 后，在项目根目录依次运行：
 
-### 动画版本验证
+```sh
+make test       # 在 Mac 上运行宠物规则和界面绘制测试
+make build      # 编译 STM32 固件
+make probe      # 检查 ST-LINK 和 STM32 连接，不写入 Flash
+make flash      # 写入、校验固件并自动复位
+```
 
-`make test` 同时运行宠物规则测试和界面绘制测试（眨眼/睡眠画面变化、
-绘制缓冲区边界与数值极限）。已通过交叉编译和电脑端测试，并检查了三种状态的
-128×64 像素预览。动画版本仍需在实物上确认刷新效果与按键响应。
+确认 `make probe` 成功识别开发板后再执行 `make flash`。
+编译产物位于 `build/nucleo-f401re/`，包括 `pet.elf`、`pet.bin` 和 `pet.hex`。
+`make test` 和 `make build` 无需连接开发板；本机测试覆盖宠物规则和部分界面绘制行为，
+不替代实物验证。
+
+烧录完成后，LD2 应先闪两次，OLED 显示棋盘图案后进入小猫界面；
+可通过短按 B1 验证喂食，通过长按后松开验证睡眠 / 唤醒。
+
+## 常见问题
+
+| 现象 | 检查方式 |
+| --- | --- |
+| 无法识别 ST-LINK | 检查是否使用数据线、是否接在 CN1、转接器是否支持数据传输，以及开发板是否通电 |
+| LED 正常但屏幕不亮 | 检查 3V3、共地、SCL/SDA 接线、上拉及焊接；确认屏幕控制器为 SSD1306 |
+| 移动项目后 CMake 报路径错误 | 执行 `make clean` 清除生成的 `build/` 目录，再执行 `make build` |
+| 安装 OpenOCD 后仍提示未找到 | 确认终端能运行 `openocd --version`，然后执行 `make clean`、`make build` 重新配置 |
+
+屏幕通信出错后，驱动约每秒重试初始化；单次 I²C 事务有超时限制。
+若总线卡住，可断电检查接线后重新上电。
+调试时可查看 `oled_status`：`0` 等待上电、`1` 无应答或总线故障、
+`2` 棋盘测试、`3` 宠物画面。
+
+## 代码结构
+
+| 路径 | 职责 |
+| --- | --- |
+| `src/main.c` | 主循环、按键命令与各模块调度 |
+| `src/pet.c`、`include/pet.h` | 宠物属性、状态变化与命令规则 |
+| `src/pet_view.c` | 小猫动画、文字和状态条绘制 |
+| `src/display_ssd1306.c` | OLED 初始化、I²C 通信与帧缓冲传输 |
+| `src/board.c`、`src/button.c`、`src/led.c` | 板级初始化、按键消抖、LED 状态反馈 |
+| `tests/` | 在 Mac 上运行的宠物规则与界面绘制测试 |
+| `cmake/`、`linker/`、`openocd/` | 交叉编译、内存布局与烧录配置 |
+
+## 开发记录
+
+- **2026-10-25 · Demo 0.1**：完成 STM32 NUCLEO-F401RE 与 OLED 的初步物理连接，
+  完成首代电子宠物 Demo 烧录并确认实物正常运行；实现小猫动画、属性显示、
+  喂食、睡眠 / 唤醒、重置及 LED 状态反馈。
