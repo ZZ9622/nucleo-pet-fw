@@ -13,6 +13,7 @@ typedef enum {
 
 typedef struct {
     bool stable_pressed;
+    bool press_armed;
     bool candidate_pressed;
     uint32_t candidate_since_ms;
     uint32_t press_started_ms;

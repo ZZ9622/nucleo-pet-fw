@@ -1,8 +1,8 @@
 # NUCLEO-F401RE electronic pet — firmware bring-up
 
 This is a small, bare-metal C firmware starter for an ST **NUCLEO-F401RE**. Its
-first job is to prove the complete build → ST-LINK → Flash → run path without a
-screen. The second job is to establish a pet core that will not need rewriting
+first job is to prove the complete build → ST-LINK → Flash → run path with an
+SSD1306 screen. The second job is to establish a pet core that will not need rewriting
 when a display, storage, sound, sensors, or minigames arrive.
 
 ## First milestone
@@ -21,8 +21,8 @@ The initial pet behavior is deliberately visible in under a minute:
 | Wait normally | Needs slowly decay in demo time | Two-pulse heartbeat |
 | Short press B1 | Feed / care | Four quick happy flashes |
 | Hold B1 for 1.2–5 s, then release | Sleep or wake | Slow sleep heartbeat / normal status |
-| Wait about 6 s without care | Becomes needy | 250 ms on, 750 ms off |
-| Wait longer | Becomes critical | Fast flashing |
+| No feeding for 24 hours | Collapses and needs feeding | Fast flashing |
+| Feed after collapse | Recovers and starts a fresh 24-hour window | Happy flashes |
 | Hold B1 for 5 s or more, then release | Reset the pet | Boot flashes, default attributes restored |
 
 All LED patterns and button handling are non-blocking. There is no `delay()` in
@@ -132,17 +132,16 @@ minigame result ─────────────────────�
                                                                     └─ screen later
 ```
 
-`src/pet.c` owns the persistent game rules: satiety, energy, joy, hygiene,
-health, level, XP, coins, life stage, and sleep. It knows nothing about LEDs,
+`src/pet.c` owns the persistent game rules: happiness, energy, level, XP, coins, life stage, and sleep. It knows nothing about LEDs,
 GPIO, display pixels, or a particular minigame.
 
 Future games submit a score through `PET_CMD_SUBMIT_GAME_RESULT`; the pet core
-decides XP, coins, joy, and energy changes. This prevents each game from
+decides XP, coins, happiness, and energy changes. This prevents each game from
 silently changing the pet balance or storage format.
 
 `src/display_ssd1306.c` implements the `display.h` interface for SBC-OLED01.
 `src/display_null.c` remains available as the original no-screen backend; it is
-not compiled alongside the OLED backend. The pet core remains unchanged.
+not compiled alongside the OLED backend. The core now uses only Happiness and Energy for needs.
 
 ### Pin planning for a future screen
 
@@ -200,14 +199,13 @@ cmake --build build/oled --target flash
 烧录文件：默认是 `build/nucleo-f401re/pet.hex`；独立目录是 `build/oled/pet.hex`。
 
 预期效果：上电约 100ms 后初始化屏幕，先显示棋盘测试图案，约 2.5 秒后
-切换成小猫状态界面。左侧小猫会眨眼、轻轻起伏和摆尾，睡眠时闭眼并飘出 Z，
-状态严重时闪烁感叹号。顶部显示 CONTENT / HAPPY / NEEDY / HELP / SLEEP 和等级 LV。
-右侧 FOOD=饱食度、ENERGY=体力、JOY=心情、CLEAN=清洁、HEALTH=健康，
-数值范围 000–100；短状态条与数值同时更新。屏幕采用内置英文小字体。
+切换成小猫状态界面。顶部两行显示 HAPPINESS / ENERGY（000–100）与状态条；
+中央小猫眨眼、起伏、摆尾，睡眠闭眼显示 Z；侧边显示短反馈。
+Feed / Pet / Play / Wake 后显示 YUMMY / LOVE YOU / THAT WAS FUN / GOOD MORNING，
+约 2.5 秒后恢复状态文本；睡眠期间显示 SLEEP。
 
-无需增加按键。短按 B1 喂食；按住 1.2–5 秒后松开睡眠/唤醒；
-按住至少 5 秒后松开重置。底部的 2S / 5S 是操作提示，动作均在松开时触发。
-本次不改变按键、LED 或宠物规则；其他养成动作尚未添加到按键菜单。
+外接四键操作与接线见 [四按键接线指南](WIRING_zh.md)。不接新按键也可运行，
+B1 原有短按喂食、1.2–5 秒松开睡眠/唤醒、至少 5 秒松开重置仍有效。
 
 显示使用 1024 字节帧缓冲，每帧固定同一份状态和动画时间，避免上下部分动作不同步。
 每 5ms 调度一次，每次传输 32 字节，100kHz 下正常约 3–4ms，一帧约 0.16 秒。
@@ -226,3 +224,69 @@ cmake --build build/oled --target flash
 `make test` 同时运行宠物规则测试和界面绘制测试（眨眼/睡眠画面变化、
 绘制缓冲区边界与数值极限）。已通过交叉编译和电脑端测试，并检查了三种状态的
 128×64 像素预览。动画版本仍需在实物上确认刷新效果与按键响应。
+
+## 双属性与每日喂食
+
+Happiness 初始 75、Energy 初始 80，范围 0–100；`is_sleeping` 独立。
+清醒累计每小时两值各减 1；睡眠累计每分钟 Energy 加 1，Happiness 不减。
+两种时间累计独立保留，反复切换睡眠不会跳过衰减。
+Feed 增加 Energy 30，Pet 增加 Happiness 10，Play 增加 Happiness 20、消耗 Energy 12。
+常规睡眠中忽略 Feed/Pet/Play，须先唤醒。
+
+从开机或最近一次有效喂食起连续 24 小时未喂食，进入瘫软状态，Energy 归零，
+猫猫趴在地上轻微呼吸，侧边 FEED ME；瘫软后暂停属性增减直至救助。此判定独立于心情与精力，睡眠也不能替代喂食。
+瘫软期间仅喂食或重置有效；喂食可直接救助（即使此前正在睡眠），清除瘫软并唤醒，
+Energy 恢复到 30，重开滚动 24 小时窗口。不加入死亡或不可逆惩罚。
+屏幕熄灭时继续计时；首次按键仍只唤醒屏幕，再次按 Feed 才喂食。
+等级、经验、金币、小游戏结果接口保留，但游戏奖励不重置喂食计时。
+
+当前按持续通电运行时间计算，未实现 RTC/断电存档；断电、复位或 B1 重置会重新开始。
+真正跨断电的每日照顾需要后续增加存档与可信实时时钟。
+规则配置在 `PET_RULES_DEFAULT`；期限在 `PET_FEED_DEADLINE_S`，正式固件为 86400 秒。
+测试以模拟时间推进，无需实际等待一天，也不缩短正式固件期限。
+
+### 方块猫外观
+
+猫猫改为参考图的实心像素轮廓：方耳、阶梯形脸颊、平底下巴，眼睛与嘴巴镂空。
+单色 OLED 使用亮色身体与黑色五官，无法显示参考图中的蓝色。
+HAPPY 为弯眼笑脸；CONTENT 为方眼小嘴；NEEDY 为方眼下弯嘴；
+HELP 为疲惫眼睛、下弯嘴与闪烁感叹号；SLEEP 为闭眼细嘴与飘动 Z。
+保留眨眼及一像素起伏，四键、属性和显示驱动不变。
+
+## 闲置熄屏与按键唤醒
+
+30 秒没有按钮活动后，OLED 发送 SSD1306 `0xAE` 关闭显示，并暂停像素刷新。
+宠物计时、Happiness/Energy、睡眠恢复及 LED 仍运行；这不是断电，也不是 MCU STOP 模式。
+四个外接按钮与板载 B1 均可在按下稳定约 25ms 后唤醒。
+首次按键仅唤醒，直到所有键松开前均忽略动作（包括 B1 长按重置）；再按才执行原功能。
+按住按钮不会熄屏，松开后重新计时。熄屏不改变宠物的 `is_sleeping`。
+唤醒时先在暗屏中写入完整最新画面，再发送 `0xAF`，正常约 0.16 秒，避免旧画面闪现。
+上电棋盘测试保留，正常闲置唤醒不重播测试图；I2C 故障重连仍保留原初始化测试。
+屏幕失联时沿用超时与每秒重试；重连后服从当前熄屏请求。
+等待时间可修改 `include/screen_idle.h` 中的 `SCREEN_IDLE_TIMEOUT_MS`。
+调试状态 `oled_status=4` 表示闲置熄屏。
+
+板上验收：烧录后等待 30 秒确认熄屏；任意按钮按下确认亮屏且无喂食/睡眠/重置；
+松开后再按确认动作；睡眠中熄屏、唤醒屏幕后仍应是睡眠。
+主机测试覆盖超时边界、计时溢出、按住不熄屏与唤醒按键吞掉动作；仍需在实物确认显示命令与时序。
+
+## 五种基础动画
+
+保留参考方块猫造型，`pet_animation_sample` 仅采样画面，不修改属性或游戏随机数。
+- Blink：每 6 秒窗口中伪随机选一个时刻闭眼约 220ms；走动时也可眨眼。
+- Walk：偶尔左右走动最多 7 像素，交替抬脚后回到中心，精力 >35 才出现。
+- Happy Jump：心情 >=75、精力 >=60 时更容易随机跳跃；有效 Play 后立即播放一次约 1.2 秒跳跃。
+- Yawn：精力 <=35 时周期性打哈欠，精力 <=10 时优先连续打哈欠。
+- Sleeping：闭眼、小幅呼吸起伏、飘动 Z；用户可主动睡眠。
+
+精力 <=10 连续约 3 秒自动进入睡眠，睡眠键可唤醒；若精力仍低，约 3 秒后会再次入睡，
+可在此期间喂食恢复。24 小时未喂食的瘫软状态优先于睡眠，只有喂食才能救助。
+动画在屏幕中央范围绘制，不遮挡指标与侧边反馈。动画本身不增减属性，睡眠状态仍按规则恢复精力。
+伪随机动画采用稳定的时间散列，同一开机时间序列可复现；没有依赖硬件真随机数。
+电脑端动画测试覆盖边界、双向走动、Play 跳跃、打哈欠/睡眠/瘫软优先级、自动睡眠与救助。
+
+### 侧边反馈布局
+
+删除底部状态栏与全宽分隔线，反馈放在宠物左侧 x=2..28，多词反馈分两行显示。
+宠物活动区域向下延伸 6 像素，瘫软的地面线移到 y=61；顶部两行指标保持不变。
+走动时猫猫与左侧文字保持间距，睡眠 Z 和低状态感叹号仍位于右侧。

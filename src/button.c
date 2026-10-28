@@ -15,6 +15,7 @@ static uint32_t elapsed_ms(uint32_t now_ms, uint32_t since_ms)
 void button_init(Button *button, bool raw_pressed, uint32_t now_ms)
 {
     button->stable_pressed = raw_pressed;
+    button->press_armed = false; /* Ignore a button held during startup. */
     button->candidate_pressed = raw_pressed;
     button->candidate_since_ms = now_ms;
     button->press_started_ms = now_ms;
@@ -35,10 +36,13 @@ void button_update(Button *button, bool raw_pressed, uint32_t now_ms)
 
     button->stable_pressed = button->candidate_pressed;
     if (button->stable_pressed) {
+        button->press_armed = true;
         button->press_started_ms = now_ms;
         return;
     }
 
+    if (!button->press_armed) { return; }
+    button->press_armed = false;
     const uint32_t duration_ms = elapsed_ms(now_ms, button->press_started_ms);
     if (duration_ms >= BUTTON_RESET_MS) {
         button->pending_event = BUTTON_EVENT_RESET;

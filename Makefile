@@ -27,8 +27,20 @@ test:
 		-Iinclude tests/pet_test.c src/pet.c -o build/host-tests/pet_test
 	build/host-tests/pet_test
 	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
-		-Iinclude tests/pet_view_test.c src/pet_view.c -o build/host-tests/pet_view_test
+		-Iinclude tests/pet_view_test.c src/pet_view.c src/pet_animation.c -o build/host-tests/pet_view_test
 	build/host-tests/pet_view_test
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
+		-Iinclude tests/button_test.c src/button.c -o build/host-tests/button_test
+	build/host-tests/button_test
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
+		-Iinclude tests/screen_idle_test.c src/screen_idle.c src/button.c src/pet.c -o build/host-tests/screen_idle_test
+	build/host-tests/screen_idle_test
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
+		-Iinclude tests/daily_care_test.c src/pet.c src/pet_view.c src/pet_animation.c -o build/host-tests/daily_care_test
+	build/host-tests/daily_care_test
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
+		-Iinclude tests/pet_animation_test.c src/pet_animation.c src/pet_view.c src/pet.c -o build/host-tests/pet_animation_test
+	build/host-tests/pet_animation_test
 
 clean:
 	rm -rf build

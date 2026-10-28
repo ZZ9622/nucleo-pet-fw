@@ -9,3 +9,8 @@ void display_render(const PetSnapshot *snapshot)
 {
     (void)snapshot;
 }
+
+void display_set_awake(bool awake)
+{
+    (void)awake;
+}

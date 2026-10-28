@@ -14,10 +14,12 @@ set(FIRMWARE_SOURCES
     src/startup.c
     src/board.c
     src/button.c
+    src/screen_idle.c
     src/display_ssd1306.c
     src/led.c
     src/main.c
     src/pet_view.c
+    src/pet_animation.c
     src/pet.c
 )
 

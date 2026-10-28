@@ -1,21 +1,16 @@
 #include "pet.h"
 
-const PetRules PET_RULES_DEMO = {
-    .satiety_decay_awake_per_s = 6U,
-    .energy_decay_awake_per_s = 3U,
-    .joy_decay_awake_per_s = 1U,
-    .hygiene_decay_awake_per_s = 1U,
-    .satiety_decay_sleep_per_s = 1U,
-    .energy_recovery_sleep_per_s = 8U,
-    .joy_decay_sleep_per_s = 0U,
-    .health_recovery_per_s = 1U,
-    .health_decay_when_critical_per_s = 2U,
-    .feed_satiety_gain = 35U,
-    .care_joy_gain = 10U,
-    .play_joy_gain = 20U,
-    .play_energy_cost = 12U,
-    .clean_hygiene_gain = 30U,
-    .medicine_health_gain = 25U
+const PetRules PET_RULES_DEFAULT = {
+    .awake_decay_interval_s = 3600U,
+    .sleep_recovery_interval_s = 60U,
+    .energy_decay_awake_per_step = 1U,
+    .happiness_decay_awake_per_step = 1U,
+    .energy_recovery_sleep_per_step = 1U,
+    .happiness_decay_sleep_per_step = 0U,
+    .feed_energy_gain = 30U,
+    .pet_happiness_gain = 10U,
+    .play_happiness_gain = 20U,
+    .play_energy_cost = 12U
 };
 
 static uint8_t increase_need(uint8_t value, uint32_t amount)
@@ -44,42 +39,14 @@ static uint16_t increase_u16(uint16_t value, uint32_t amount)
 
 static uint8_t lowest_need(const PetState *pet)
 {
-    uint8_t lowest = pet->satiety;
-
-    if (pet->energy < lowest) {
-        lowest = pet->energy;
-    }
-    if (pet->joy < lowest) {
-        lowest = pet->joy;
-    }
-    if (pet->hygiene < lowest) {
-        lowest = pet->hygiene;
-    }
-    if (pet->health < lowest) {
-        lowest = pet->health;
-    }
-    return lowest;
+    return pet->energy < pet->happiness ? pet->energy : pet->happiness;
 }
 
 static uint32_t attention_mask(const PetState *pet)
 {
     uint32_t mask = 0U;
-
-    if (pet->satiety <= 50U) {
-        mask |= PET_ATTENTION_SATIETY;
-    }
-    if (pet->energy <= 50U) {
-        mask |= PET_ATTENTION_ENERGY;
-    }
-    if (pet->joy <= 50U) {
-        mask |= PET_ATTENTION_JOY;
-    }
-    if (pet->hygiene <= 50U) {
-        mask |= PET_ATTENTION_HYGIENE;
-    }
-    if (pet->health <= 50U) {
-        mask |= PET_ATTENTION_HEALTH;
-    }
+    if (pet->energy <= 50U) { mask |= PET_ATTENTION_ENERGY; }
+    if (pet->happiness <= 50U) { mask |= PET_ATTENTION_HAPPINESS; }
     return mask;
 }
 
@@ -117,18 +84,20 @@ static void update_level(PetState *pet, PetTransition *transition)
 
 void pet_init(PetState *pet, uint32_t seed)
 {
-    pet->satiety = 85U;
     pet->energy = 80U;
-    pet->joy = 75U;
-    pet->hygiene = 90U;
-    pet->health = 100U;
+    pet->happiness = 75U;
     pet->experience = 0U;
     pet->coins = 0U;
     pet->level = 1U;
     pet->stage = PET_STAGE_HATCHLING;
-    pet->asleep = false;
+    pet->is_sleeping = false;
+    pet->seconds_since_feed = 0U;
+    pet->low_energy_awake_s = 0U;
+    pet->awake_decay_elapsed_s = 0U;
+    pet->sleep_recovery_elapsed_s = 0U;
     pet->game_time_s = 0U;
     pet->rng_state = seed;
+    pet->feedback = PET_EVENT_NONE;
 }
 
 void pet_advance(PetState *pet, const PetRules *rules, uint32_t elapsed_s,
@@ -138,28 +107,46 @@ void pet_advance(PetState *pet, const PetRules *rules, uint32_t elapsed_s,
     transition_clear(transition);
 
     for (uint32_t second = 0U; second < elapsed_s; second++) {
-        if (pet->asleep) {
-            pet->satiety = decrease_need(pet->satiety,
-                                         rules->satiety_decay_sleep_per_s);
-            pet->energy = increase_need(pet->energy,
-                                        rules->energy_recovery_sleep_per_s);
-            pet->joy = decrease_need(pet->joy, rules->joy_decay_sleep_per_s);
-        } else {
-            pet->satiety = decrease_need(pet->satiety,
-                                         rules->satiety_decay_awake_per_s);
-            pet->energy = decrease_need(pet->energy,
-                                        rules->energy_decay_awake_per_s);
-            pet->joy = decrease_need(pet->joy, rules->joy_decay_awake_per_s);
-            pet->hygiene = decrease_need(pet->hygiene,
-                                         rules->hygiene_decay_awake_per_s);
+        if (pet->seconds_since_feed < PET_FEED_DEADLINE_S) {
+            pet->seconds_since_feed++;
+            if (pet->seconds_since_feed == PET_FEED_DEADLINE_S) {
+                pet->energy = 0U;
+                transition_add(transition, PET_EVENT_NEEDS_ATTENTION);
+            }
         }
-
-        if (lowest_need(pet) <= 20U) {
-            pet->health = decrease_need(pet->health,
-                                        rules->health_decay_when_critical_per_s);
+        if (pet->seconds_since_feed >= PET_FEED_DEADLINE_S) {
+            /* Sleeping cannot substitute for food once the pet has collapsed. */
+            pet->game_time_s++;
+            continue;
+        }
+        if (pet->is_sleeping) {
+            pet->sleep_recovery_elapsed_s++;
+            if (rules->sleep_recovery_interval_s == 0U ||
+                pet->sleep_recovery_elapsed_s >= rules->sleep_recovery_interval_s) {
+                pet->sleep_recovery_elapsed_s = 0U;
+                pet->energy = increase_need(pet->energy, rules->energy_recovery_sleep_per_step);
+                pet->happiness = decrease_need(pet->happiness, rules->happiness_decay_sleep_per_step);
+            }
         } else {
-            pet->health = increase_need(pet->health,
-                                        rules->health_recovery_per_s);
+            pet->awake_decay_elapsed_s++;
+            if (rules->awake_decay_interval_s == 0U ||
+                pet->awake_decay_elapsed_s >= rules->awake_decay_interval_s) {
+                pet->awake_decay_elapsed_s = 0U;
+                pet->energy = decrease_need(pet->energy, rules->energy_decay_awake_per_step);
+                pet->happiness = decrease_need(pet->happiness, rules->happiness_decay_awake_per_step);
+            }
+        }
+        if (!pet->is_sleeping && pet->energy <= PET_AUTO_SLEEP_ENERGY) {
+            if (pet->low_energy_awake_s < PET_AUTO_SLEEP_DELAY_S) {
+                pet->low_energy_awake_s++;
+            }
+            if (pet->low_energy_awake_s >= PET_AUTO_SLEEP_DELAY_S) {
+                pet->is_sleeping = true;
+                pet->low_energy_awake_s = 0U;
+                transition_add(transition, PET_EVENT_SLEPT);
+            }
+        } else {
+            pet->low_energy_awake_s = 0U;
         }
         pet->game_time_s++;
     }
@@ -181,46 +168,51 @@ void pet_apply(PetState *pet, const PetRules *rules, const PetCommand *command,
         return;
     }
 
+    if (pet->seconds_since_feed >= PET_FEED_DEADLINE_S) {
+        if (command->type != PET_CMD_FEED) { return; }
+        pet->is_sleeping = false; /* Feeding rescues even a sleeping collapsed cat. */
+    }
+
     if (command->type == PET_CMD_SLEEP_TOGGLE) {
-        pet->asleep = !pet->asleep;
-        transition_add(transition, pet->asleep ? PET_EVENT_SLEPT : PET_EVENT_WOKE);
+        pet->is_sleeping = !pet->is_sleeping;
+        pet->low_energy_awake_s = 0U;
+        pet->feedback = pet->is_sleeping ? PET_EVENT_SLEPT : PET_EVENT_WOKE;
+        transition_add(transition, pet->is_sleeping ? PET_EVENT_SLEPT : PET_EVENT_WOKE);
         return;
     }
 
-    if (pet->asleep) {
+    if (pet->is_sleeping) {
         return;
     }
 
     switch (command->type) {
     case PET_CMD_FEED:
-        pet->satiety = increase_need(pet->satiety, rules->feed_satiety_gain);
-        pet->joy = increase_need(pet->joy, rules->care_joy_gain);
+        pet->seconds_since_feed = 0U;
+        pet->low_energy_awake_s = 0U;
+        pet->awake_decay_elapsed_s = 0U;
+        pet->energy = increase_need(pet->energy, rules->feed_energy_gain);
         pet->experience = increase_u16(pet->experience, 5U);
         transition_add(transition, PET_EVENT_FED);
         update_level(pet, transition);
         break;
     case PET_CMD_PLAY:
-        pet->joy = increase_need(pet->joy, rules->play_joy_gain);
+        pet->happiness = increase_need(pet->happiness, rules->play_happiness_gain);
         pet->energy = decrease_need(pet->energy, rules->play_energy_cost);
         pet->experience = increase_u16(pet->experience, 10U);
         transition_add(transition, PET_EVENT_PLAYED);
         update_level(pet, transition);
         break;
-    case PET_CMD_CLEAN:
-        pet->hygiene = increase_need(pet->hygiene, rules->clean_hygiene_gain);
-        transition_add(transition, PET_EVENT_CLEANED);
-        break;
-    case PET_CMD_MEDICINE:
-        pet->health = increase_need(pet->health, rules->medicine_health_gain);
-        transition_add(transition, PET_EVENT_MEDICATED);
+    case PET_CMD_PET:
+        pet->happiness = increase_need(pet->happiness, rules->pet_happiness_gain);
+        transition_add(transition, PET_EVENT_PETTED);
         break;
     case PET_CMD_SUBMIT_GAME_RESULT:
         if (command->game.completed) {
             const uint32_t score = command->game.score;
-            const uint32_t joy_gain = 5U + (score / 10U);
+            const uint32_t happiness_gain = 5U + (score / 10U);
             const uint32_t energy_cost = 3U + (command->game.duration_s / 60U);
 
-            pet->joy = increase_need(pet->joy, joy_gain);
+            pet->happiness = increase_need(pet->happiness, happiness_gain);
             pet->energy = decrease_need(pet->energy, energy_cost);
             pet->experience = increase_u16(pet->experience, 5U + (score / 20U));
             pet->coins = increase_u16(pet->coins, score / 50U);
@@ -233,30 +225,32 @@ void pet_apply(PetState *pet, const PetRules *rules, const PetCommand *command,
     default:
         break;
     }
+    if (transition->count != 0U) { pet->feedback = transition->events[0]; }
 }
 
 void pet_make_snapshot(const PetState *pet, PetSnapshot *snapshot)
 {
-    snapshot->satiety = pet->satiety;
     snapshot->energy = pet->energy;
-    snapshot->joy = pet->joy;
-    snapshot->hygiene = pet->hygiene;
-    snapshot->health = pet->health;
+    snapshot->happiness = pet->happiness;
     snapshot->experience = pet->experience;
     snapshot->coins = pet->coins;
     snapshot->level = pet->level;
     snapshot->stage = pet->stage;
-    snapshot->asleep = pet->asleep;
+    snapshot->feedback = pet->feedback;
+    snapshot->feedback_elapsed_ms = 0U;
+    snapshot->is_sleeping = pet->is_sleeping;
     snapshot->attention_mask = attention_mask(pet);
+    snapshot->is_collapsed = pet->seconds_since_feed >= PET_FEED_DEADLINE_S;
 
-    if (pet->asleep) {
+    if (snapshot->is_collapsed) {
+        snapshot->mood = PET_MOOD_CRITICAL;
+    } else if (pet->is_sleeping) {
         snapshot->mood = PET_MOOD_SLEEPING;
     } else if (lowest_need(pet) <= 20U) {
         snapshot->mood = PET_MOOD_CRITICAL;
     } else if (snapshot->attention_mask != 0U) {
         snapshot->mood = PET_MOOD_NEEDY;
-    } else if ((pet->satiety >= 75U) && (pet->energy >= 75U) &&
-               (pet->joy >= 75U) && (pet->health >= 75U)) {
+    } else if ((pet->energy >= 75U) && (pet->happiness >= 75U)) {
         snapshot->mood = PET_MOOD_HAPPY;
     } else {
         snapshot->mood = PET_MOOD_CONTENT;
