@@ -108,6 +108,13 @@ void pet_view_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
     stat(frame, 10, "ENERGY", pet->energy);
     rect(frame, 0, 18, 128, 1, true);
 
+    if (pet->is_away || pet->is_transferring) {
+        rect(frame, 53, 25, 22, 28, false);
+        rect(frame, 69, 39, 2, 2, true);
+        text(frame, 20, 58, pet->is_transferring ? "TRANSFER PENDING" : "VISITING PHONE");
+        return;
+    }
+
     if (pet->is_collapsed) {
         /* Lying on the floor, head down, paws out; only the back breathes. */
         const int breath = (int)(time_ms / 1200U % 2U);

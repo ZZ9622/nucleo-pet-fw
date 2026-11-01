@@ -1,0 +1,6 @@
+module CPetCore {
+    header "pet.h"
+    header "pet_view.h"
+    header "pet_animation.h"
+    export *
+}

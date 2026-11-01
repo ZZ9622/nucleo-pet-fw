@@ -18,7 +18,7 @@ struct HomeView: View {
                 HStack {
                     Eyebrow(text: "NUCLEO / LITTLE COMPANION")
                     Spacer(minLength: 4)
-                    DemoBadge()
+                    if !store.physicalMode { DemoBadge() }
                 }
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 7) {

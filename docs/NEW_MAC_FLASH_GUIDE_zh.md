@@ -179,4 +179,4 @@ make flash
 - **运行 iPhone App**：另装兼容 macOS 的完整 Xcode，在 `ios/NucleoPet.xcodeproj` 运行；真机还需设置签名 Team。
 - **尝试 USB → Mac → App 真实属性读取**：另需 Python 3（`python3 --version` 检查，没有时 `brew install python`），按 [USB 接入指南](USB_INTEGRATION_zh.md) 启动桥接。脚本不需要额外 pip 包。
 
-烧录成功不代表 App 已连接。当前 USB 接入只读真实属性；召唤和返回仍为模拟，真实迁移尚待实现。
+烧录成功不代表 App 已连接。当前 USB＋Mac 桥接已支持真实手动接入和返回；请按 USB 接入指南连接 App。

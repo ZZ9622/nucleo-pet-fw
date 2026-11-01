@@ -50,22 +50,22 @@ public struct TransferOffer: Codable, Equatable, Identifiable {
 public struct CompanionSession: Codable, Equatable {
     public let petID: UUID
     public var name: String
-    public private(set) var state: FirmwareState
-    public private(set) var residence: Residence
-    public private(set) var revision: UInt64
-    public private(set) var pendingTransfer: TransferOffer?
-    public private(set) var lastCompletedTransferID: UUID?
-    public private(set) var updatedAt: Date
-    public private(set) var lastActionAt: Date?
+    public internal(set) var state: FirmwareState
+    public internal(set) var residence: Residence
+    public internal(set) var revision: UInt64
+    public internal(set) var pendingTransfer: TransferOffer?
+    public internal(set) var lastCompletedTransferID: UUID?
+    public internal(set) var updatedAt: Date
+    public internal(set) var lastActionAt: Date?
     public let createdAt: Date
-    public private(set) var journal: [JourneyEntry]
+    public internal(set) var journal: [JourneyEntry]
 
-    public init(name: String = "方方", now: Date = Date(), state: FirmwareState = FirmwareState()) {
-        petID = UUID()
+    public init(name: String = "方方", now: Date = Date(), state: FirmwareState = FirmwareState(), petID: UUID = UUID(), residence: Residence = .device, revision: UInt64 = 0) {
+        self.petID = petID
         self.name = name
         self.state = state
-        residence = .device
-        revision = 0
+        self.residence = residence
+        self.revision = revision
         updatedAt = now
         createdAt = now
         journal = [JourneyEntry(date: now, title: "遇见方方", detail: "从一块小小的像素屏，开始我们的故事。", symbol: "sparkles")]

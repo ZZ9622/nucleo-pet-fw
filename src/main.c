@@ -89,7 +89,9 @@ int main(void)
     uint32_t last_action_ms = started_ms;
     bool has_feedback = false;
     Led led;
-    PetState pet;
+    PetHandoff handoff;
+    PetState *pet = &handoff.pet;
+    uint32_t last_checkpoint_ms = started_ms;
     PetSnapshot snapshot;
 
     button_init(&button, board_button_pressed(), started_ms);
@@ -97,13 +99,20 @@ int main(void)
         button_init(&actions[i], board_action_pressed((BoardAction)i), started_ms);
     }
     led_init(&led, started_ms);
-    pet_init(&pet, 0x4010F00DU);
+    pet_handoff_init(&handoff);
     display_init();
     pet_serial_init();
 
     while (1) {
         const uint32_t now_ms = board_millis();
-        pet_serial_poll(&pet);
+        const uint32_t previous_phase = handoff.phase;
+        pet_serial_poll(&handoff);
+        if (previous_phase != handoff.phase) {
+            screen_idle_init(&screen, now_ms);
+            last_pet_tick_ms = now_ms;
+            has_feedback = false;
+        }
+        const bool active = pet_handoff_active(&handoff);
 
         button_update(&button, board_button_pressed(), now_ms);
         bool any_pressed = button.stable_pressed;
@@ -114,8 +123,8 @@ int main(void)
         const bool allow_actions = screen_idle_update(&screen, any_pressed, now_ms);
         display_set_awake(screen.awake);
         const ButtonEvent b1 = button_take_event(&button);
-        if (allow_actions && b1 != BUTTON_EVENT_NONE) {
-            apply_button_event(b1, &pet, &led, now_ms);
+        if (allow_actions && active && b1 != BUTTON_EVENT_NONE) {
+            apply_button_event(b1, pet, &led, now_ms);
             last_action_ms = now_ms;
             has_feedback = true;
         }
@@ -126,27 +135,34 @@ int main(void)
             /* All qualified releases, including holds, perform exactly one action.
              * Only the onboard B1 can reset the pet. */
             const ButtonEvent event = button_take_event(&actions[i]);
-            if (allow_actions && event != BUTTON_EVENT_NONE) {
+            if (allow_actions && active && event != BUTTON_EVENT_NONE) {
                 const PetCommand command = {.type = commands[i]};
                 PetTransition transition;
-                pet_apply(&pet, &PET_RULES_DEFAULT, &command, &transition);
+                pet_apply(pet, &PET_RULES_DEFAULT, &command, &transition);
                 play_transition_feedback(&transition, &led, now_ms);
                 last_action_ms = now_ms;
                 has_feedback = true;
             }
         }
         if (has_feedback && elapsed_ms(now_ms, last_action_ms) >= 2500U) {
-            pet.feedback = PET_EVENT_NONE;
+            pet->feedback = PET_EVENT_NONE;
             has_feedback = false;
         }
 
-        while (elapsed_ms(now_ms, last_pet_tick_ms) >= PET_TICK_MS) {
+        if (!active) { last_pet_tick_ms = now_ms; }
+        while (active && elapsed_ms(now_ms, last_pet_tick_ms) >= PET_TICK_MS) {
             PetTransition transition;
-            pet_advance(&pet, &PET_RULES_DEFAULT, 1U, &transition);
+            pet_advance(pet, &PET_RULES_DEFAULT, 1U, &transition);
             last_pet_tick_ms += PET_TICK_MS;
         }
 
-        pet_make_snapshot(&pet, &snapshot);
+        pet_make_snapshot(pet, &snapshot);
+        if (active && ((has_feedback && last_action_ms == now_ms) || elapsed_ms(now_ms, last_checkpoint_ms) >= 300000U)) {
+            pet_handoff_checkpoint(&handoff);
+            last_checkpoint_ms = now_ms;
+        }
+        snapshot.is_away = handoff.phase == PET_PHONE;
+        snapshot.is_transferring = !pet_handoff_active(&handoff) && !snapshot.is_away;
         snapshot.feedback_elapsed_ms = elapsed_ms(now_ms, last_action_ms);
         led_set_base(&led, led_pattern_for_snapshot(&snapshot), now_ms);
 

@@ -26,7 +26,7 @@ struct TravelView: View {
                                 .accessibilityIdentifier("travel.close")
                         }
                     }.padding(.bottom, 25)
-                    DemoBadge()
+                    if !store.physicalMode { DemoBadge() }
                     Text(title).font(.system(size: 29, weight: .semibold, design: .rounded))
                     Text(subtitle).font(.system(size: 14)).foregroundStyle(Palette.muted)
                         .multilineTextAlignment(.center).lineSpacing(5)
@@ -53,12 +53,12 @@ struct TravelView: View {
                     } else {
                         Button(stage == .interrupted ? "继续这次旅程" : "出发吧") { attempt += 1 }.buttonStyle(FilledButtonStyle())
                             .accessibilityIdentifier("travel.start")
-                        if store.session.pendingTransfer != nil {
+                        if store.session.pendingTransfer != nil && !store.physicalMode {
                             Button("暂时留在原来的家") { store.cancelTransfer(); dismiss() }
                                 .font(.system(size: 12)).foregroundStyle(Palette.muted)
                         }
                     }
-                    Text("本次为离线体验，真实挂件不会发生变化。")
+                    Text(store.physicalMode ? "真实 USB 往返 · 交接中请保持 Mac 桥接运行；中断后继续同一次旅程。" : "本次为离线体验，真实挂件不会发生变化。")
                         .font(.system(size: 11)).foregroundStyle(Palette.muted).multilineTextAlignment(.center)
                 }.padding(28)
             }
@@ -81,7 +81,7 @@ struct TravelView: View {
         switch stage {
         case .ready: return "同一个方方，带着原来的心情和精力。\n换个地方，继续陪着你。"
         case .travelling: return "小屋和挂件，正在交接它的记录。"
-        case .interrupted: return "记录已经保留。继续出发，\n或者让它先待在原来的家。"
+        case .interrupted: return store.physicalMode ? "交接记录已保留。请恢复连接后继续，\n完成前双方暂停互动。" : "记录已经保留。继续出发，\n或者让它先待在原来的家。"
         case .arrived: return "心情、精力和睡眠状态，都一起到了。"
         }
     }
@@ -98,6 +98,11 @@ struct TravelView: View {
         stage = .travelling
         failure = nil
         do {
+            if store.physicalMode {
+                try await store.travelWithHardware(to: destination)
+                stage = .arrived
+                return
+            }
             let offer = try store.beginTransfer(to: destination)
             try await Task.sleep(for: .milliseconds(1_100))
             if store.simulateDisconnect {

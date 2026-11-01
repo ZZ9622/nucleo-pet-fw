@@ -48,9 +48,9 @@ struct DeviceView: View {
             VStack(alignment: .leading, spacing: 24) {
                 PageHeader(eyebrow: "A HOME IN YOUR POCKET", title: "口袋里的另一个家", subtitle: "带它出门，也带它回家。")
                 VStack(spacing: 20) {
-                    HStack { Eyebrow(text: "FANGFANG / 01"); Spacer(); DemoBadge() }
+                    HStack { Eyebrow(text: "FANGFANG / 01"); Spacer(); if !store.physicalMode { DemoBadge() } }
                     TinyDevice(session: store.session).padding(.vertical, 14)
-                    Text("方方的体验挂件").font(.system(size: 20, weight: .semibold, design: .rounded))
+                    Text(store.physicalMode ? "方方的真实挂件" : "方方的体验挂件").font(.system(size: 20, weight: .semibold, design: .rounded))
                     Text(store.session.residence == .device ? "方方在这里看风景" : "方方去手机小屋玩了")
                         .font(.system(size: 13)).foregroundStyle(Palette.muted)
                     Divider().overlay(Palette.line)
@@ -62,8 +62,8 @@ struct DeviceView: View {
                     .background(Palette.room.opacity(0.65), in: RoundedRectangle(cornerRadius: 29))
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Label("目前是离线体验", systemImage: "info.circle").font(.system(size: 14, weight: .semibold))
-                    Text("这里的挂件是体验设备。可以体验往返和互动，宠物记录会保存在这台手机上。体验宠物不会改变你的真实开发板；下方可单独读取实物属性。")
+                    Label(store.physicalMode ? "已切换为真实挂件" : "目前是离线体验", systemImage: "info.circle").font(.system(size: 14, weight: .semibold))
+                    Text(store.physicalMode ? "手机小屋和板子共用同一只宠物。接到手机后，板上只显示空门；送回时会保留在手机里的互动结果。" : "连接下方真实挂件后，小屋将使用板上的宠物。连接前仍可体验离线演示。")
                         .font(.system(size: 13)).foregroundStyle(Palette.muted).lineSpacing(5)
                     Button("了解实物连接") { showConnectionInfo = true }
                         .font(.system(size: 13, weight: .semibold)).padding(.top, 5)
@@ -71,23 +71,23 @@ struct DeviceView: View {
 
                 HardwareMonitorView()
 
-                VStack(alignment: .leading, spacing: 13) {
+                if !store.physicalMode { VStack(alignment: .leading, spacing: 13) {
                     Eyebrow(text: "DEMO / TRY A LITTLE DETOUR")
                     Toggle("下次传送时模拟中断", isOn: $store.simulateDisconnect)
                         .font(.system(size: 13)).tint(Palette.muted)
                         .accessibilityIdentifier("demo.interrupt")
                     Text("试试旅程中断后继续，心情和精力仍会被保留。")
                         .font(.system(size: 11)).foregroundStyle(Palette.muted)
-                }.padding(18).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 21))
+                }.padding(18).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 21)) }
             }.foregroundStyle(Palette.ink).padding(25)
         }
         .sheet(isPresented: $showConnectionInfo) {
             VStack(alignment: .leading, spacing: 23) {
                 Eyebrow(text: "THE NEXT LITTLE STEP")
                 Text("让它真的跑过来").font(.system(size: 28, weight: .semibold, design: .rounded))
-                Text("当前 NUCLEO-F401RE 固件还没有手机通信和存档功能。USB 读取可通过 Mac 桥接；实物往返仍需双端持久化状态交接，再在两台设备上验证。")
+                Text("USB 连接开发板和 Mac，在 Mac 运行双向桥接。手机与 Mac 位于同一局域网，填写 Mac 名称和口令后连接。")
                     .font(.system(size: 15)).foregroundStyle(Palette.muted).lineSpacing(6)
-                Text("这个版本先把手机小屋和往返体验做好。实物连接开放后，会在这里完成配对。")
+                Text("往返中断时保留原手机的 App 存档，恢复连接后继续同一次旅程。不要删除 App 或强制重置板上存档。")
                     .font(.system(size: 14)).foregroundStyle(Palette.muted).lineSpacing(6)
                 Button("知道了") { showConnectionInfo = false }.buttonStyle(FilledButtonStyle())
             }.padding(30)
@@ -95,86 +95,24 @@ struct DeviceView: View {
     }
 }
 
-/// A separate read-only instrument; never imports telemetry into the demo pet.
 private struct HardwareMonitorView: View {
-    @State private var host = ""
-    @State private var token = ""
-    @State private var message = "尚未读取真实设备"
-    @State private var state: LiveBoardState?
-    @State private var reading = false
-
+    @EnvironmentObject private var store: CompanionStore
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("真实挂件 · USB 经 Mac").font(.headline)
-            TextField("Mac 名称，例如 lindas-mac.local", text: $host)
-                .textContentType(.URL).autocorrectionDisabled().disabled(reading)
-            SecureField("桥接访问口令", text: $token).disabled(reading)
-            Button(reading ? "读取中…" : "读取真实属性") {
-                Task { await readState() }
-            }.disabled(reading || host.isEmpty || token.isEmpty)
-            Text(message).font(.caption)
-            if let state {
-                Text("Happiness \(state.happiness) · Energy \(state.energy)")
-                Text(state.sleeping ? "正在睡觉" : "醒着").font(.caption)
-            }
-            Text("这里只读真实属性，不改变体验宠物；出发和返回仍是模拟。")
+            TextField("Mac 的 .local 名称", text: $store.bridgeHost)
+                .textContentType(.URL).autocorrectionDisabled()
+                .accessibilityIdentifier("hardware.host")
+            SecureField("桥接访问口令", text: $store.bridgeToken)
+                .accessibilityIdentifier("hardware.token")
+            Button(store.hardwareBusy ? "连接中…" : "连接真实挂件") {
+                Task { await store.connectHardware() }
+            }.disabled(store.hardwareBusy || store.bridgeHost.isEmpty || store.bridgeToken.isEmpty)
+                .accessibilityIdentifier("hardware.connect")
+            Text(store.hardwareMessage).font(.caption)
+                .accessibilityIdentifier("hardware.status")
+            Text("连接后，小屋的出发和返回会操作这块板子。首次绑定不会覆盖体验存档。口令仅保存在本次运行内。")
                 .font(.caption).foregroundStyle(Palette.muted)
         }.padding(18).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 21))
-        .onChange(of: host) { _, _ in state = nil }
-        .onChange(of: token) { _, _ in state = nil }
-        .task(id: state?.seq) {
-            guard state != nil else { return }
-            try? await Task.sleep(for: .seconds(3))
-            guard !Task.isCancelled else { return }
-            state = nil
-            message = "数据已过期，请重新读取"
-        }
     }
-
-    @MainActor private func readState() async {
-        reading = true
-        state = nil
-        defer { reading = false }
-        let name = host.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Local hostname only: avoid transmitting this development token to public hosts.
-        guard name.hasSuffix(".local"), !name.contains("/"), !name.contains(":"),
-              !name.contains("@"), let url = URL(string: "http://\(name):8765/state") else {
-            message = "请填写 Mac 的 .local 名称（系统设置 → 通用 → 共享）"
-            return
-        }
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 3
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                message = "桥接访问失败，请检查口令"
-                return
-            }
-            let result = try JSONDecoder().decode(LiveBoardResponse.self, from: data)
-            guard result.connected, let value = result.state,
-                  value.v == 1, (0...100).contains(value.energy),
-                  (0...100).contains(value.happiness) else {
-                message = "挂件已断开或数据已过期"
-                return
-            }
-            state = value
-            message = "刚刚读取 · 3 秒后过期"
-        } catch {
-            message = "无法读取，请检查 Mac 桥接、同一 Wi-Fi 和本地网络权限"
-        }
-    }
-}
-
-private struct LiveBoardResponse: Decodable {
-    let connected: Bool
-    let state: LiveBoardState?
-}
-private struct LiveBoardState: Decodable {
-    let v: Int
-    let seq: UInt32
-    let energy: Int
-    let happiness: Int
-    let sleeping: Bool
 }

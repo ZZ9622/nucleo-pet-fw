@@ -1,1 +1,8 @@
 /build/
+
+# macOS metadata and local Xcode state
+._*
+.DS_Store
+**/xcuserdata/
+**/.build/
+**/.swiftpm/

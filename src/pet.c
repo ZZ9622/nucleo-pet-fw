@@ -238,6 +238,8 @@ void pet_make_snapshot(const PetState *pet, PetSnapshot *snapshot)
     snapshot->stage = pet->stage;
     snapshot->feedback = pet->feedback;
     snapshot->feedback_elapsed_ms = 0U;
+    snapshot->is_away = false;
+    snapshot->is_transferring = false;
     snapshot->is_sleeping = pet->is_sleeping;
     snapshot->attention_mask = attention_mask(pet);
     snapshot->is_collapsed = pet->seconds_since_feed >= PET_FEED_DEADLINE_S;

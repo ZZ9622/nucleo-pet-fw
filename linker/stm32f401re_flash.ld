@@ -3,7 +3,7 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-    FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 512K
+    FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 256K /* sectors 6/7 reserved for handoff journal */
     RAM (xrw)   : ORIGIN = 0x20000000, LENGTH = 96K
 }
 

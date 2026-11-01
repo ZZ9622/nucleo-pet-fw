@@ -68,7 +68,7 @@ struct RootView: View {
                 Text("原记录暂时无法读取，已保留。可以重试；也可以先备份原文件，再创建新的体验宠物。")
                     .foregroundStyle(Palette.muted)
                 Button("重新读取") { store.reload() }.buttonStyle(FilledButtonStyle())
-                Button("备份后重新开始") { store.recoverWithBackup() }.buttonStyle(QuietButtonStyle())
+                if !store.physicalMode { Button("备份后重新开始") { store.recoverWithBackup() }.buttonStyle(QuietButtonStyle()) }
             }
             .padding(32).interactiveDismissDisabled()
         }

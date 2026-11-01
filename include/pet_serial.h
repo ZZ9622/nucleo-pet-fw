@@ -1,7 +1,6 @@
 #ifndef PET_SERIAL_H
 #define PET_SERIAL_H
-#include "pet.h"
-/* Read-only bring-up: '?' requests a versioned state response. */
+#include "pet_handoff.h"
 void pet_serial_init(void);
-void pet_serial_poll(const PetState *pet);
+void pet_serial_poll(PetHandoff *handoff);
 #endif

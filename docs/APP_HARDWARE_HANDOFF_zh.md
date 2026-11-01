@@ -1,3 +1,5 @@
+> 历史设计文档：以下原型说明保留作背景。2026-11-01 已实现真实 USB 手动往返，当前运行步骤、状态机和限制以 [双向接入指南](USB_INTEGRATION_zh.md) 为准。
+
 # iPhone App 与 STM32 软硬件联调交接
 
 > 工作区副本已新增 USB 只读接入；最新实现、运行步骤和剩余限制见 [USB_INTEGRATION_zh.md](USB_INTEGRATION_zh.md)。以下为 c79bad5 原交接说明。

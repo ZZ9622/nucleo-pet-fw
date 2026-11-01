@@ -11,8 +11,12 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 set(FIRMWARE_SOURCES
+    src/memory.c
     src/startup.c
     src/pet_serial.c
+    src/pet_handoff.c
+    src/pet_storage.c
+    src/pet_flash.c
     src/board.c
     src/button.c
     src/screen_idle.c
