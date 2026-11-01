@@ -5,8 +5,22 @@
 
 本 README 记录当前硬件范围、已实现功能和 **macOS** 开发流程。
 
+## iPhone App 与软硬件联调
+
+原生 iPhone App 源码位于 [`ios/`](ios/README.md)，使用 Xcode 打开
+[`ios/NucleoPet.xcodeproj`](ios/NucleoPet.xcodeproj)，选择 **NucleoPet → iPhone 模拟器** 后按 **⌘R**。
+App 包含手机小屋、心情／精力、照顾互动、本地存档和“挂件 ↔ 手机”的模拟往返。
+
+**当前 App 是离线体验版，尚未接入真实硬件通信。** 现有 CN1 USB 是开发和烧录接口，
+不能仅接上这根线就让 iPhone 与宠物同步；真实连通需要补充通信硬件／通道与双端状态交接。
+
+朋友接手请先阅读 **[软硬件联调交接指南](docs/APP_HARDWARE_HANDOFF_zh.md)**，
+其中列出了运行步骤、待实现的通信入口、模块选择前提和实物验收清单。
+
 ## 开发记录
 
+- **2026-11-01 · iOS App 0.1**：加入原生 iPhone App、共享 C 宠物核心、模拟往返与存档；
+  14 项逻辑测试与 3 项 iPhone 模拟器界面测试通过，提供软硬件联调交接文档。真实设备同步待接入。
 - **2026-10-25 · Demo 0.1**：完成 STM32 NUCLEO-F401RE 与 OLED 的初步物理连接，
   完成首代电子宠物 Demo 烧录并确认实物正常运行；实现小猫动画、属性显示、
   喂食、睡眠 / 唤醒、重置及 LED 状态反馈。
