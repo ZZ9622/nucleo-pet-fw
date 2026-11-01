@@ -11,7 +11,7 @@ let package = Package(
     targets: [
         .target(name: "CPetCore", publicHeadersPath: "include"),
         .target(name: "PetDomain", dependencies: ["CPetCore"]),
-        .executableTarget(name: "PetPreview", dependencies: ["PetDomain"], path: "App", exclude: ["Assets.xcassets"]),
+        .executableTarget(name: "PetPreview", dependencies: ["PetDomain"], path: "App", exclude: ["Assets.xcassets", "Info.plist"]),
         .testTarget(name: "PetDomainTests", dependencies: ["PetDomain"])
     ]
 )

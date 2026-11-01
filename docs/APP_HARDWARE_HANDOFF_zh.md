@@ -1,5 +1,7 @@
 # iPhone App 与 STM32 软硬件联调交接
 
+> 工作区副本已新增 USB 只读接入；最新实现、运行步骤和剩余限制见 [USB_INTEGRATION_zh.md](USB_INTEGRATION_zh.md)。以下为 c79bad5 原交接说明。
+
 ## 这次交付了什么
 
 | 部分 | 当前状态 |

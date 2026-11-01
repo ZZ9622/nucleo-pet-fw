@@ -60,6 +60,7 @@ def generate_project():
             CODE_SIGN_STYLE = Automatic;
             CURRENT_PROJECT_VERSION = 1;
             GENERATE_INFOPLIST_FILE = YES;
+            INFOPLIST_FILE = App/Info.plist;
             INFOPLIST_KEY_CFBundleDisplayName = "方方的小屋";
             INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
             INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

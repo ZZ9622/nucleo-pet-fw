@@ -12,6 +12,7 @@ set(CMAKE_C_EXTENSIONS ON)
 
 set(FIRMWARE_SOURCES
     src/startup.c
+    src/pet_serial.c
     src/board.c
     src/button.c
     src/screen_idle.c

@@ -5,6 +5,7 @@
 #include "display.h"
 #include "led.h"
 #include "pet.h"
+#include "pet_serial.h"
 #include "screen_idle.h"
 
 enum {
@@ -98,9 +99,11 @@ int main(void)
     led_init(&led, started_ms);
     pet_init(&pet, 0x4010F00DU);
     display_init();
+    pet_serial_init();
 
     while (1) {
         const uint32_t now_ms = board_millis();
+        pet_serial_poll(&pet);
 
         button_update(&button, board_button_pressed(), now_ms);
         bool any_pressed = button.stable_pressed;

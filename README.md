@@ -11,8 +11,8 @@
 [`ios/NucleoPet.xcodeproj`](ios/NucleoPet.xcodeproj)，选择 **NucleoPet → iPhone 模拟器** 后按 **⌘R**。
 App 包含手机小屋、心情／精力、照顾互动、本地存档和“挂件 ↔ 手机”的模拟往返。
 
-**当前 App 是离线体验版，尚未接入真实硬件通信。** 现有 CN1 USB 是开发和烧录接口，
-不能仅接上这根线就让 iPhone 与宠物同步；真实连通需要补充通信硬件／通道与双端状态交接。
+**App 的宠物往返仍是离线体验。** 新增 USB → Mac 桥接 → App 的真实属性只读入口，
+运行步骤见 [USB 接入指南](docs/USB_INTEGRATION_zh.md)。真实召唤与返回还需要持久化状态交接，尚未实现。
 
 朋友接手请先阅读 **[软硬件联调交接指南](docs/APP_HARDWARE_HANDOFF_zh.md)**，
 其中列出了运行步骤、待实现的通信入口、模块选择前提和实物验收清单。
@@ -96,6 +96,8 @@ Mac 只有 USB-C 接口时，可使用支持数据传输的转接器。
 - 尚未实现存档、实时时钟、声音、传感器或联网；断电或复位会重新初始化宠物。
 
 ## macOS 开发与烧录
+
+第一次在新 Mac 上烧录，请按 [新 Mac 烧录指南](docs/NEW_MAC_FLASH_GUIDE_zh.md) 操作。
 
 ### 1. 安装工具
 
