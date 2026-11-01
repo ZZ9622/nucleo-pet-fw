@@ -15,11 +15,11 @@ struct JourneyView: View {
                             .font(.system(size: 12)).foregroundStyle(Palette.muted)
                     }
                     Spacer()
-                }.padding(20).background(Palette.sage.opacity(0.5), in: RoundedRectangle(cornerRadius: 23))
+                }.padding(20).background(Palette.sage.opacity(0.5), in: PixelFrame(cornerRadius: 23))
                 ForEach(store.session.journal) { entry in
                     HStack(alignment: .top, spacing: 17) {
                         Image(systemName: entry.symbol).font(.system(size: 18))
-                            .frame(width: 42, height: 42).background(Palette.room, in: Circle())
+                            .frame(width: 42, height: 42).background(Palette.room, in: Rectangle())
                         VStack(alignment: .leading, spacing: 7) {
                             Text(entry.date, format: .dateTime.month(.twoDigits).day(.twoDigits).hour().minute())
                                 .font(.system(size: 10, design: .monospaced)).foregroundStyle(Palette.muted)
@@ -50,7 +50,7 @@ struct DeviceView: View {
                 VStack(spacing: 20) {
                     HStack { Eyebrow(text: "FANGFANG / 01"); Spacer(); if !store.physicalMode { DemoBadge() } }
                     TinyDevice(session: store.session).padding(.vertical, 14)
-                    Text(store.physicalMode ? "方方的真实挂件" : "方方的体验挂件").font(.system(size: 20, weight: .semibold, design: .rounded))
+                    Text(store.physicalMode ? "方方的真实挂件" : "方方的体验挂件").font(.system(size: 20, weight: .semibold, design: .monospaced))
                     Text(store.session.residence == .device ? "方方在这里看风景" : "方方去手机小屋玩了")
                         .font(.system(size: 13)).foregroundStyle(Palette.muted)
                     Divider().overlay(Palette.line)
@@ -59,7 +59,7 @@ struct DeviceView: View {
                         Text(String(store.session.petID.uuidString.prefix(8))).monospaced()
                     }.font(.system(size: 11)).foregroundStyle(Palette.muted)
                 }.padding(23).frame(maxWidth: .infinity)
-                    .background(Palette.room.opacity(0.65), in: RoundedRectangle(cornerRadius: 29))
+                    .background(Palette.room.opacity(0.65), in: PixelFrame(cornerRadius: 29))
 
                 VStack(alignment: .leading, spacing: 10) {
                     Label(store.physicalMode ? "已切换为真实挂件" : "目前是离线体验", systemImage: "info.circle").font(.system(size: 14, weight: .semibold))
@@ -69,7 +69,9 @@ struct DeviceView: View {
                         .font(.system(size: 13, weight: .semibold)).padding(.top, 5)
                 }
 
-                HardwareMonitorView()
+                Button("连接设置") { store.showConnectionSettings() }
+                    .buttonStyle(FilledButtonStyle())
+                    .accessibilityIdentifier("hardware.settings")
 
                 if !store.physicalMode { VStack(alignment: .leading, spacing: 13) {
                     Eyebrow(text: "DEMO / TRY A LITTLE DETOUR")
@@ -78,13 +80,13 @@ struct DeviceView: View {
                         .accessibilityIdentifier("demo.interrupt")
                     Text("试试旅程中断后继续，心情和精力仍会被保留。")
                         .font(.system(size: 11)).foregroundStyle(Palette.muted)
-                }.padding(18).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 21)) }
+                }.padding(18).background(.white.opacity(0.6), in: PixelFrame(cornerRadius: 21)) }
             }.foregroundStyle(Palette.ink).padding(25)
         }
         .sheet(isPresented: $showConnectionInfo) {
             VStack(alignment: .leading, spacing: 23) {
                 Eyebrow(text: "THE NEXT LITTLE STEP")
-                Text("让它真的跑过来").font(.system(size: 28, weight: .semibold, design: .rounded))
+                Text("让它真的跑过来").font(.system(size: 28, weight: .semibold, design: .monospaced))
                 Text("USB 连接开发板和 Mac，在 Mac 运行双向桥接。手机与 Mac 位于同一局域网，填写 Mac 名称和口令后连接。")
                     .font(.system(size: 15)).foregroundStyle(Palette.muted).lineSpacing(6)
                 Text("往返中断时保留原手机的 App 存档，恢复连接后继续同一次旅程。不要删除 App 或强制重置板上存档。")
@@ -95,24 +97,9 @@ struct DeviceView: View {
     }
 }
 
-private struct HardwareMonitorView: View {
+struct HardwareMonitorView: View {
     @EnvironmentObject private var store: CompanionStore
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("真实挂件 · USB 经 Mac").font(.headline)
-            TextField("Mac 的 .local 名称", text: $store.bridgeHost)
-                .textContentType(.URL).autocorrectionDisabled()
-                .accessibilityIdentifier("hardware.host")
-            SecureField("桥接访问口令", text: $store.bridgeToken)
-                .accessibilityIdentifier("hardware.token")
-            Button(store.hardwareBusy ? "连接中…" : "连接真实挂件") {
-                Task { await store.connectHardware() }
-            }.disabled(store.hardwareBusy || store.bridgeHost.isEmpty || store.bridgeToken.isEmpty)
-                .accessibilityIdentifier("hardware.connect")
-            Text(store.hardwareMessage).font(.caption)
-                .accessibilityIdentifier("hardware.status")
-            Text("连接后，小屋的出发和返回会操作这块板子。首次绑定不会覆盖体验存档。口令仅保存在本次运行内。")
-                .font(.caption).foregroundStyle(Palette.muted)
-        }.padding(18).background(.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 21))
+        ConnectionFields()
     }
 }

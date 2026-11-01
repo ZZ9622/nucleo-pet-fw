@@ -2,23 +2,57 @@ import SwiftUI
 import PetDomain
 
 enum Palette {
-    static let paper = Color(red: 0.98, green: 0.97, blue: 0.94)
-    static let ink = Color(red: 0.17, green: 0.25, blue: 0.21)
-    static let muted = Color(red: 0.49, green: 0.52, blue: 0.46)
-    static let line = Color(red: 0.88, green: 0.88, blue: 0.82)
-    static let sage = Color(red: 0.87, green: 0.91, blue: 0.83)
-    static let coral = Color(red: 0.87, green: 0.50, blue: 0.40)
-    static let blush = Color(red: 0.98, green: 0.90, blue: 0.84)
-    static let room = Color(red: 0.94, green: 0.92, blue: 0.86)
+    static let paper = Color(red: 0.97, green: 0.99, blue: 1)
+    static let ink = Color(red: 0.08, green: 0.26, blue: 0.68)
+    static let muted = Color(red: 0.29, green: 0.43, blue: 0.65)
+    static let line = Color(red: 0.74, green: 0.83, blue: 0.96)
+    static let sage = Color(red: 0.86, green: 0.93, blue: 1)
+    static let coral = Color(red: 0.16, green: 0.39, blue: 0.88)
+    static let blush = Color(red: 0.90, green: 0.95, blue: 1)
+    static let room = Color.white
+}
+
+/// Square pixels and stepped corners, matching the monochrome board renderer.
+struct PixelFrame: Shape {
+    var corner: CGFloat = 8
+    init(cornerRadius: CGFloat = 8) { corner = min(cornerRadius, 8) }
+    func path(in rect: CGRect) -> Path {
+        let c = min(corner, min(rect.width, rect.height) / 3)
+        var p = Path()
+        p.move(to: CGPoint(x: c, y: 0))
+        for point in [CGPoint(x: rect.width-c, y: 0), CGPoint(x: rect.width-c, y: c),
+            CGPoint(x: rect.width, y: c), CGPoint(x: rect.width, y: rect.height-c),
+            CGPoint(x: rect.width-c, y: rect.height-c), CGPoint(x: rect.width-c, y: rect.height),
+            CGPoint(x: c, y: rect.height), CGPoint(x: c, y: rect.height-c),
+            CGPoint(x: 0, y: rect.height-c), CGPoint(x: 0, y: c), CGPoint(x: c, y: c)] { p.addLine(to: point) }
+        p.closeSubpath()
+        return p.offsetBy(dx: rect.minX, dy: rect.minY)
+    }
+}
+
+struct PixelGrid: View {
+    var body: some View {
+        Canvas { context, size in
+            var grid = Path()
+            for x in stride(from: 0.0, through: size.width, by: 24) {
+                for y in stride(from: 0.0, through: size.height, by: 24) {
+                    grid.addRect(CGRect(x: x, y: y, width: 2, height: 2))
+                }
+            }
+            context.fill(grid, with: .color(Palette.line.opacity(0.5)))
+        }.accessibilityHidden(true).allowsHitTesting(false)
+    }
 }
 
 struct FilledButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 15, weight: .semibold))
             .foregroundStyle(Palette.paper).frame(maxWidth: .infinity).padding(.vertical, 18)
-            .background(Palette.ink, in: RoundedRectangle(cornerRadius: 19))
+            .background(Palette.ink, in: PixelFrame())
+            .compositingGroup()
+            .shadow(color: Palette.line, radius: 0, x: 4, y: 4)
             .opacity(configuration.isPressed ? 0.8 : 1)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .offset(y: configuration.isPressed ? 2 : 0)
     }
 }
 
@@ -26,7 +60,7 @@ struct QuietButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(.system(size: 14, weight: .medium))
             .foregroundStyle(Palette.ink).frame(maxWidth: .infinity).padding(.vertical, 16)
-            .background(Palette.sage.opacity(configuration.isPressed ? 0.6 : 0.35), in: RoundedRectangle(cornerRadius: 17))
+            .background(Palette.sage.opacity(configuration.isPressed ? 0.6 : 0.35), in: PixelFrame(cornerRadius: 17))
     }
 }
 
@@ -45,7 +79,7 @@ struct PageHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Eyebrow(text: eyebrow)
-            Text(title).font(.system(size: 31, weight: .semibold, design: .rounded)).foregroundStyle(Palette.ink)
+            Text(title).font(.system(size: 31, weight: .semibold, design: .monospaced)).foregroundStyle(Palette.ink)
             Text(subtitle).font(.system(size: 14)).foregroundStyle(Palette.muted)
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -55,7 +89,7 @@ struct DemoBadge: View {
     var body: some View {
         Text("体验模式").font(.system(size: 10, weight: .medium))
             .foregroundStyle(Palette.muted).padding(.horizontal, 9).padding(.vertical, 6)
-            .background(Palette.line.opacity(0.45), in: Capsule())
+            .background(Palette.line.opacity(0.45), in: Rectangle())
             .accessibilityLabel("体验模式，尚未连接真实挂件")
     }
 }
@@ -97,61 +131,64 @@ struct PixelPet: View {
 struct TinyDevice: View {
     let session: CompanionSession
     var body: some View {
-        VStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 4).stroke(Palette.ink.opacity(0.3), lineWidth: 3)
-                .frame(width: 20, height: 12).padding(.top, 8)
+        VStack(spacing: 10) {
+            HStack { Text("NUCLEO / 01"); Spacer(); Rectangle().frame(width: 6, height: 6) }
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
             ZStack {
-                RoundedRectangle(cornerRadius: 12).fill(Palette.ink)
+                Rectangle().fill(Palette.ink)
                 if session.residence == .device {
-                    PixelPet(session: session, color: Palette.sage, fullScreen: true).padding(10)
+                    PixelPet(session: session, color: .white, fullScreen: true).padding(8)
                 } else {
-                    VStack(spacing: 7) {
-                        Image(systemName: "door.left.hand.open").font(.title2)
-                        Text("去手机里玩啦").font(.system(size: 10))
-                    }.foregroundStyle(Palette.sage)
+                    VStack(spacing: 8) {
+                        PixelDoor().stroke(.white, lineWidth: 3).frame(width: 20, height: 28)
+                        Text("VISITING PHONE").font(.system(size: 8, weight: .bold, design: .monospaced))
+                    }.foregroundStyle(.white)
                 }
-            }.frame(height: 100).padding(.horizontal, 14)
-            Circle().fill(Palette.paper).frame(width: 22, height: 22)
-                .overlay(Circle().stroke(Palette.ink.opacity(0.15), lineWidth: 1)).padding(.bottom, 15)
-        }
-        .frame(width: 190)
-        .background(Palette.sage, in: RoundedRectangle(cornerRadius: 35))
-        .overlay(RoundedRectangle(cornerRadius: 35).stroke(Palette.ink.opacity(0.15), lineWidth: 1))
-        .rotationEffect(.degrees(-7))
-        .shadow(color: Palette.ink.opacity(0.09), radius: 12, x: 0, y: 12)
-        .accessibilityElement(children: .combine)
+            }.frame(height: 90)
+            HStack(spacing: 12) {
+                ForEach(0..<4) { _ in Rectangle().fill(Palette.ink).frame(width: 9, height: 9) }
+            }.padding(.vertical, 3)
+        }.padding(14).frame(width: 190)
+            .background(Palette.sage, in: PixelFrame())
+            .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
+            .compositingGroup()
+            .shadow(color: Palette.line, radius: 0, x: 5, y: 5)
+            .accessibilityElement(children: .combine)
+    }
+}
+
+struct PixelDoor: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path(rect)
+        p.addRect(CGRect(x: rect.width * 0.7, y: rect.height * 0.5, width: 2, height: 2))
+        return p
     }
 }
 
 struct RoomBackdrop: View {
     var body: some View {
         Canvas { context, size in
-            let w = size.width, h = size.height
-            let floorY = h * 0.76
-            var floor = Path()
-            floor.move(to: CGPoint(x: 0, y: floorY)); floor.addLine(to: CGPoint(x: w, y: floorY))
-            for x in stride(from: -w, through: w * 2, by: w / 4) {
-                floor.move(to: CGPoint(x: w / 2 + (x - w / 2) * 0.7, y: floorY))
-                floor.addLine(to: CGPoint(x: x, y: h))
+            let unit: CGFloat = 6
+            func block(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ color: Color) {
+                context.fill(Path(CGRect(x: x, y: y, width: w, height: h)), with: .color(color))
             }
-            context.stroke(floor, with: .color(Palette.line.opacity(0.75)), lineWidth: 1)
-            let window = CGRect(x: w * 0.12, y: h * 0.21, width: w * 0.25, height: h * 0.29)
-            context.fill(Path(roundedRect: window, cornerRadius: 35), with: .color(Palette.paper.opacity(0.8)))
-            context.fill(Path(ellipseIn: CGRect(x: window.minX + 17, y: window.minY + 14, width: 21, height: 21)), with: .color(Palette.coral.opacity(0.55)))
-            var bars = Path()
-            bars.move(to: CGPoint(x: window.midX, y: window.minY)); bars.addLine(to: CGPoint(x: window.midX, y: window.maxY))
-            bars.move(to: CGPoint(x: window.minX, y: window.midY)); bars.addLine(to: CGPoint(x: window.maxX, y: window.midY))
-            context.stroke(bars, with: .color(Palette.room), lineWidth: 4)
-            let plantX = w * 0.83
-            context.fill(Path(roundedRect: CGRect(x: plantX - 11, y: floorY - 26, width: 22, height: 27), cornerRadius: 5), with: .color(Palette.coral.opacity(0.55)))
-            var stem = Path(); stem.move(to: CGPoint(x: plantX, y: floorY - 26)); stem.addLine(to: CGPoint(x: plantX, y: floorY - 70))
-            context.stroke(stem, with: .color(Palette.muted), lineWidth: 2)
-            for i in 0..<3 {
-                let y = floorY - 65 + CGFloat(i) * 12
-                context.fill(Path(ellipseIn: CGRect(x: plantX - 17, y: y, width: 17, height: 8)), with: .color(Palette.muted.opacity(0.55)))
-                context.fill(Path(ellipseIn: CGRect(x: plantX, y: y - 5, width: 16, height: 8)), with: .color(Palette.muted.opacity(0.45)))
+            let floorY = floor(size.height * 0.8 / unit) * unit
+            block(0, floorY, size.width, 3, Palette.ink)
+            for x in stride(from: CGFloat(0), through: size.width, by: 24) {
+                block(x, floorY + 18, 12, 2, Palette.line)
+                block(x + 12, floorY + 36, 12, 2, Palette.line)
             }
-        }
-        .accessibilityHidden(true)
+            let x: CGFloat = 24, y: CGFloat = 60
+            block(x, y, 66, 60, Palette.line)
+            block(x+3, y+3, 60, 54, Palette.sage)
+            block(x+30, y, 3, 60, Palette.ink)
+            block(x, y+30, 66, 3, Palette.ink)
+            block(x+42, y+9, 12, 12, Palette.coral)
+            let potX = size.width - 57
+            block(potX, floorY-21, 30, 21, Palette.ink)
+            block(potX+12, floorY-57, 6, 36, Palette.coral)
+            block(potX, floorY-51, 12, 6, Palette.coral)
+            block(potX+18, floorY-42, 12, 6, Palette.coral)
+        }.accessibilityHidden(true)
     }
 }

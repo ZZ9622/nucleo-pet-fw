@@ -22,7 +22,7 @@ struct HomeView: View {
                 }
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text("方方的小屋").font(.system(size: 31, weight: .semibold, design: .rounded))
+                        Text("方方的小屋").font(.system(size: 31, weight: .semibold, design: .monospaced))
                         Text("换个地方，继续陪你。").font(.system(size: 14)).foregroundStyle(Palette.muted)
                     }
                     Spacer()
@@ -33,7 +33,7 @@ struct HomeView: View {
                             .accessibilityIdentifier("care.sleep")
                     } label: {
                         Image(systemName: "leaf").font(.system(size: 20))
-                            .frame(width: 43, height: 43).background(Palette.sage.opacity(0.5), in: Circle())
+                            .frame(width: 43, height: 43).background(Palette.sage.opacity(0.5), in: Rectangle())
                     }
                     .disabled(!store.session.canInteract)
                     .accessibilityLabel("照顾菜单，喂食和睡眠")
@@ -49,24 +49,24 @@ struct HomeView: View {
                                 Text("状态已保留，点这里接着走。").font(.system(size: 11))
                             }
                             Spacer(); Image(systemName: "chevron.right")
-                        }.padding(15).background(Palette.blush, in: RoundedRectangle(cornerRadius: 17))
+                        }.padding(15).background(Palette.blush, in: PixelFrame(cornerRadius: 17))
                     }.buttonStyle(.plain).accessibilityIdentifier("travel.resume")
                 }
 
                 ZStack(alignment: .topLeading) {
-                    RoundedRectangle(cornerRadius: 30).fill(Palette.room)
+                    PixelFrame(cornerRadius: 30).fill(Palette.room)
                     RoomBackdrop()
                     HStack(spacing: 6) {
-                        Circle().fill(isHere ? Palette.ink : Palette.coral).frame(width: 6, height: 6)
+                        Rectangle().fill(isHere ? Palette.ink : Palette.coral).frame(width: 6, height: 6)
                         Text(store.session.pendingTransfer != nil ? "正在旅途中" : (isHere ? "正在手机小屋" : "正在随身挂件"))
                             .font(.system(size: 11, weight: .medium))
-                    }.padding(12).background(Palette.paper.opacity(0.85), in: Capsule()).padding(18)
+                    }.padding(12).background(Palette.paper.opacity(0.85), in: Rectangle()).padding(18)
 
                     VStack(spacing: 0) {
                         Spacer(minLength: 45)
                         if isHere {
                             ZStack {
-                                Ellipse().fill(Palette.ink.opacity(0.07)).frame(width: 120, height: 17).offset(y: 63)
+                                Rectangle().fill(Palette.line.opacity(0.5)).frame(width: 120, height: 17).offset(y: 63)
                                 PixelPet(session: store.session).frame(width: 260, height: 145)
                             }
                             .onTapGesture { store.care(.pet) }
@@ -79,12 +79,12 @@ struct HomeView: View {
                         Text(isHere ? store.session.state.moodTitle : "小屋留着一盏灯，等它来玩。")
                             .font(.system(size: 12)).foregroundStyle(Palette.muted).padding(.bottom, 20)
                     }.frame(maxWidth: .infinity)
-                }.frame(height: 250).clipShape(RoundedRectangle(cornerRadius: 30))
+                }.frame(height: 250).clipShape(PixelFrame()).overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
 
                 VStack(alignment: .leading, spacing: 9) {
                     HStack {
                         Text(isHere ? "今天，也想靠近你一点。" : "它在挂件里，等你叫它。")
-                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .font(.system(size: 18, weight: .semibold, design: .monospaced))
                         Spacer()
                         Image(systemName: "sparkle").foregroundStyle(Palette.coral)
                     }
@@ -98,7 +98,7 @@ struct HomeView: View {
                     stat("心情", english: "HAPPINESS", value: store.session.state.happiness, symbol: "heart.fill", tint: Palette.coral)
                     Rectangle().fill(Palette.line).frame(width: 1, height: 46)
                     stat("精力", english: "ENERGY", value: store.session.state.energy, symbol: "bolt.fill", tint: Palette.muted)
-                }.padding(18).background(.white.opacity(0.65), in: RoundedRectangle(cornerRadius: 22))
+                }.padding(18).background(.white.opacity(0.65), in: PixelFrame(cornerRadius: 22))
 
                 if isHere && store.session.pendingTransfer == nil {
                     HStack(spacing: 12) {
@@ -137,12 +137,12 @@ struct HomeView: View {
                 Image(systemName: symbol).foregroundStyle(tint).font(.system(size: 12))
                 Text(title).font(.system(size: 12, weight: .medium))
                 Spacer(minLength: 4)
-                Text("\(value)").font(.system(size: 18, weight: .semibold, design: .rounded)).monospacedDigit()
+                Text("\(value)").font(.system(size: 18, weight: .semibold, design: .monospaced)).monospacedDigit()
             }
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Palette.line.opacity(0.6))
-                    Capsule().fill(tint.opacity(0.75)).frame(width: geometry.size.width * Double(value) / 100)
+                    Rectangle().fill(Palette.line.opacity(0.6))
+                    Rectangle().fill(tint.opacity(0.75)).frame(width: geometry.size.width * Double(value) / 100)
                 }
             }.frame(height: 5)
             Eyebrow(text: english).font(.system(size: 8))
@@ -159,7 +159,7 @@ struct HomeView: View {
                     Text(subtitle).font(.system(size: 10)).foregroundStyle(Palette.muted)
                 }
                 Spacer(minLength: 0)
-            }.padding(17).frame(maxWidth: .infinity).background(color, in: RoundedRectangle(cornerRadius: 21))
+            }.padding(17).frame(maxWidth: .infinity).background(color, in: PixelFrame(cornerRadius: 21))
         }.buttonStyle(.plain).accessibilityIdentifier("care.\(action.rawValue)")
     }
 }

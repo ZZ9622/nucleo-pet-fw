@@ -22,10 +22,11 @@ final class CompanionStore: ObservableObject {
     @Published var needsRecovery = false
     @Published var simulateDisconnect = false
     @Published var response: String?
+    @Published private(set) var hasEnteredHome = false
     @Published private(set) var physicalMode = false
     @Published private(set) var hardwareBusy = false
     @Published var hardwareMessage = "填写 Mac 名称和口令，连接真实挂件"
-    @Published var bridgeHost = UserDefaults.standard.string(forKey: "bridgeHost") ?? "CHUNdeMacBook-Pro.local"
+    @Published var bridgeHost = UserDefaults.standard.string(forKey: "bridgeHost") ?? ""
     @Published var bridgeToken = ""
     private var physical: PhysicalSession?
     private var physicalRepository: PhysicalRepository!
@@ -182,6 +183,25 @@ final class CompanionStore: ObservableObject {
         do { try transaction { $0.cancelSimulatedTransfer() } }
         catch { errorMessage = error.localizedDescription }
     }
+    func showConnectionSettings() {
+        hasEnteredHome = false
+    }
+
+    #if DEBUG
+    func enterDevelopmentPreview() {
+        guard !hardwareBusy else { return }
+        // Load the separate demo record; never alter real ownership or its save.
+        do {
+            let demo = try repository.load() ?? CompanionSession()
+            session = demo
+            physical = nil
+            physicalMode = false
+            physicalBlocked = false
+            hasEnteredHome = true
+        } catch { errorMessage = error.localizedDescription }
+    }
+    #endif
+
     private func savePhysical(_ value: PhysicalSession) throws {
         try physicalRepository.save(value)
         physical = value
@@ -196,10 +216,11 @@ final class CompanionStore: ObservableObject {
         defer { hardwareBusy = false }
         do {
             let record = try await HardwareBridge(host: bridgeHost, token: bridgeToken).request()
-            var next = try physical ?? PhysicalSession(board: record)
+            var next = try physical ?? physicalRepository.load() ?? PhysicalSession(board: record)
             try next.observe(record)
             try savePhysical(next)
             physicalBlocked = false
+            hasEnteredHome = true
             UserDefaults.standard.set(bridgeHost, forKey: "bridgeHost")
             hardwareMessage = next.intent == nil ? "真实挂件已连接 · 可以在小屋手动往返" : "交接记录已找回，请在小屋继续旅程"
         } catch {

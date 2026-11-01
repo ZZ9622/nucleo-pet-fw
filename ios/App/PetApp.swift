@@ -30,7 +30,10 @@ struct RootView: View {
     var body: some View {
         ZStack {
             Palette.paper.ignoresSafeArea()
-            VStack(spacing: 0) {
+            PixelGrid().ignoresSafeArea()
+            if !store.hasEnteredHome {
+                ConnectionView().frame(maxWidth: 520)
+            } else { VStack(spacing: 0) {
                 Group {
                     switch tab {
                     case 1: JourneyView()
@@ -48,9 +51,11 @@ struct RootView: View {
                 .background(Palette.paper)
                 .overlay(alignment: .top) { Rectangle().fill(Palette.line).frame(height: 1) }
             }
-            .frame(maxWidth: 520)
+            .frame(maxWidth: 520) }
         }
+        .fontDesign(.monospaced)
         .tint(Palette.ink)
+        .onChange(of: store.hasEnteredHome) { _, entered in if entered { tab = 0 } }
         .onReceive(timer) { _ in if !AppRuntime.isUITesting { store.refresh() } }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { store.refresh() } else { store.flush() }
@@ -79,7 +84,7 @@ struct RootView: View {
             VStack(spacing: 5) {
                 Image(systemName: symbol).font(.system(size: 20, weight: tab == index ? .semibold : .regular))
                 Text(title).font(.system(size: 11, weight: .medium))
-                Capsule().fill(tab == index ? Palette.ink : .clear).frame(width: 14, height: 3)
+                Rectangle().fill(tab == index ? Palette.ink : .clear).frame(width: 14, height: 3)
             }
             .foregroundStyle(tab == index ? Palette.ink : Palette.muted)
             .frame(maxWidth: .infinity).contentShape(Rectangle())

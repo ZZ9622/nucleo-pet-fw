@@ -8,6 +8,7 @@ final class CompanionUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["--uitesting", "--reset-demo"]
         app.launch()
+        tap("connection.preview")
     }
 
     func element(_ id: String) -> XCUIElement {
@@ -76,6 +77,7 @@ final class CompanionUITests: XCTestCase {
         app.terminate()
         app.launchArguments = ["--uitesting"]
         app.launch()
+        tap("connection.preview")
         tap("travel.resume")
         finishTrip()
         tap("care.pet")
@@ -96,5 +98,35 @@ final class CompanionUITests: XCTestCase {
         tap("care.menu")
         tap("care.feed")
         checkStat("energy", value: 100)
+    }
+}
+
+final class ConnectionUITests: XCTestCase {
+    func testLaunchGateAndFailedConnectionStayOnSettings() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--uitesting", "--reset-demo"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["connection.title"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["tab.0"].exists)
+        XCTAssertFalse(app.buttons["hardware.connect"].isEnabled)
+        let host = app.textFields["hardware.host"]
+        host.tap()
+        let previous = host.value as? String ?? ""
+        host.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + "invalid")
+        let token = app.secureTextFields["hardware.token"]
+        token.tap()
+        token.typeText("ui-test")
+        app.buttons["hardware.connect"].tap()
+        XCTAssertTrue(app.staticTexts["connection.title"].exists)
+        XCTAssertFalse(app.buttons["tab.0"].exists)
+        XCTAssertTrue(app.staticTexts["hardware.status"].label.contains(".local"))
+        app.buttons["connection.preview"].tap()
+        XCTAssertTrue(app.buttons["tab.0"].waitForExistence(timeout: 10))
+        app.buttons["tab.2"].tap()
+        app.swipeUp()
+        let settings = app.buttons["hardware.settings"]
+        if !settings.isHittable { app.swipeUp() }
+        settings.tap()
+        XCTAssertTrue(app.staticTexts["connection.title"].waitForExistence(timeout: 5))
     }
 }

@@ -126,7 +126,7 @@ def generate_project():
 
 def generate_icon():
     size = 1024
-    bg, green, coral = (250, 247, 240), (43, 64, 54), (222, 128, 102)
+    bg, green, coral = (247, 252, 255), (20, 66, 173), (41, 99, 224)
     data = bytearray(bytes(bg) * size * size)
 
     def rect(x, y, w, h, color):

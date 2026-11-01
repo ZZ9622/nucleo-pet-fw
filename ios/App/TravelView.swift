@@ -21,17 +21,17 @@ struct TravelView: View {
                         Eyebrow(text: "ONE FRIEND / TWO LITTLE WORLDS")
                         Spacer()
                         if stage != .travelling {
-                            Button { dismiss() } label: { Image(systemName: "xmark").padding(10).background(Palette.line.opacity(0.5), in: Circle()) }
+                            Button { dismiss() } label: { Image(systemName: "xmark").padding(10).background(Palette.line.opacity(0.5), in: Rectangle()) }
                                 .buttonStyle(.plain).accessibilityLabel("关闭旅程")
                                 .accessibilityIdentifier("travel.close")
                         }
                     }.padding(.bottom, 25)
                     if !store.physicalMode { DemoBadge() }
-                    Text(title).font(.system(size: 29, weight: .semibold, design: .rounded))
+                    Text(title).font(.system(size: 29, weight: .semibold, design: .monospaced))
                     Text(subtitle).font(.system(size: 14)).foregroundStyle(Palette.muted)
                         .multilineTextAlignment(.center).lineSpacing(5)
                     ZStack {
-                        Circle().fill(Palette.sage.opacity(0.4)).frame(width: 240, height: 240)
+                        Rectangle().fill(Palette.sage.opacity(0.4)).frame(width: 240, height: 240)
                         PixelPet(session: store.session).frame(width: 250, height: 170)
                             .offset(x: stage == .travelling && !motionPaused ? 18 : 0)
                             .animation(stage == .travelling && !motionPaused ? .easeInOut(duration: 0.45).repeatForever(autoreverses: true) : .default, value: stage)
