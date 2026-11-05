@@ -71,6 +71,7 @@ const char *pet_handoff_command(PetHandoff *h,const char *command,
 {
     if(h->fault || h->phase==PET_LOCKED) { return "storage_locked"; }
     if(!(id[0]|id[1]|id[2]|id[3]) || revision==0xFFFFFFFFU) { return "invalid_request"; }
+    if(h->item_status==1) { return "item_pending"; }
     const bool same=equal_id(h->transaction,id);
     PetHandoff next=*h;
     if(command_is(command,"TAKE_PREPARE")) {
@@ -103,4 +104,45 @@ const char *pet_handoff_command(PetHandoff *h,const char *command,
     } else { return "unknown_command"; }
     if(!pet_storage_save(&next)) { h->fault=true; return "storage_failed"; }
     *h=next; return 0;
+}
+
+/* The service permits one outstanding inventory operation per identity.
+ * Durable receipts let the app settle a lost BLE reply without charging twice. */
+const char *pet_item_command(PetHandoff *h,const char *command,const uint32_t id[4],uint32_t revision)
+{
+    if(!pet_handoff_active(h)) { return "conflict"; }
+    if(!(id[0]|id[1]|id[2]|id[3])) { return "invalid_request"; }
+    const uint32_t kind=command_is(command,"ITEM_OPEN")?1U:2U;
+    const uint32_t level=command_is(command,"ITEM_FOOD2")?2U:1U;
+    if(h->item_status && equal_id(h->item_id,id)) {
+        return h->item_kind==kind && h->item_level==level ? 0 : "conflict";
+    }
+    if(h->revision!=revision || h->item_status==1) { return "conflict"; }
+    if(h->pet.is_sleeping && (kind==1 || h->pet.seconds_since_feed<PET_FEED_DEADLINE_S)) { return "pet_sleeping"; }
+    if(kind==1 && h->pet.energy<10) { return "low_energy"; }
+    PetHandoff next=*h;
+    for(unsigned i=0;i<4;++i) { next.item_id[i]=id[i]; }
+    next.item_kind=kind;next.item_level=level;next.item_status=1U;
+    if(kind==1) { next.pet.energy-=10; }
+    if(!pet_storage_save(&next)) { h->fault=true;return "storage_failed"; }
+    *h=next;return 0;
+}
+bool pet_item_confirm(PetHandoff *h)
+{
+    if(!pet_handoff_active(h) || h->item_status!=1 || h->item_kind!=2 || (h->pet.is_sleeping && h->pet.seconds_since_feed<PET_FEED_DEADLINE_S)) { return false; }
+    PetHandoff next=*h;PetTransition transition;
+    const PetCommand feed={.type=PET_CMD_FEED};
+    pet_apply(&next.pet,&PET_RULES_DEFAULT,&feed,&transition);
+    if(h->item_level==2) { unsigned e=next.pet.energy+20U;next.pet.energy=(uint8_t)(e>100U?100U:e); }
+    next.item_status=2;
+    if(!pet_storage_save(&next)) { h->fault=true;return false; }
+    *h=next;return true;
+}
+
+bool pet_item_finish_box(PetHandoff *h)
+{
+    if(!pet_handoff_active(h) || h->item_status!=1 || h->item_kind!=1) { return false; }
+    PetHandoff next=*h;next.item_status=2;
+    if(!pet_storage_save(&next)) { h->fault=true;return false; }
+    *h=next;return true;
 }

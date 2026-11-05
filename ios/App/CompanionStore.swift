@@ -22,10 +22,18 @@ final class CompanionStore: ObservableObject {
     @Published var needsRecovery = false
     @Published var simulateDisconnect = false
     @Published var response: String?
+    enum ConnectionKind { case bluetooth, usb }
+    @Published var connectionKind: ConnectionKind = .bluetooth
+    let bluetooth = BluetoothTransport()
+    let world = PomiWorldStore()
+    @Published private(set) var lastHardwareRead: Date?
+    @Published private(set) var liveMessage = "等待挂件同步"
+    private var pollTask: Task<Void,Never>?
+    private var lastPoll = Date.distantPast
     @Published private(set) var hasEnteredHome = false
     @Published private(set) var physicalMode = false
     @Published private(set) var hardwareBusy = false
-    @Published var hardwareMessage = "填写 Mac 名称和口令，连接真实挂件"
+    @Published var hardwareMessage = "搜索附近的 Pomi，选择挂件后连接"
     @Published var bridgeHost = UserDefaults.standard.string(forKey: "bridgeHost") ?? ""
     @Published var bridgeToken = ""
     private var physical: PhysicalSession?
@@ -59,7 +67,7 @@ final class CompanionStore: ObservableObject {
                 physicalMode = true
                 session = saved.companion
                 needsRecovery = false
-                hardwareMessage = "已保留真实挂件记录；往返前请连接 Mac 桥接"
+                hardwareMessage = "已保留真实挂件记录；请连接挂件后继续"
             }
         } catch {
             physicalMode = true
@@ -105,6 +113,9 @@ final class CompanionStore: ObservableObject {
     func refresh() {
         guard !needsRecovery, !hardwareBusy else { return }
         if physicalMode {
+            if hasEnteredHome && connectionKind == .bluetooth && bluetooth.ready && Date().timeIntervalSince(lastPoll) >= 2 && pollTask == nil {
+                lastPoll=Date();pollTask=Task { await self.pollHardware();self.pollTask=nil }
+            }
             guard !physicalBlocked, var next = physical else { return }
             next.advance(to: Date())
             physical = next
@@ -135,38 +146,76 @@ final class CompanionStore: ObservableObject {
         return result
     }
 
-    func care(_ action: CareAction) {
-        guard !hardwareBusy, !needsRecovery else { return }
-        do {
-            let accepted: Bool
-            if physicalMode {
-                guard !physicalBlocked, var next = physical else { throw CompanionError.invalidState }
-                accepted = try next.care(action)
-                try savePhysical(next)
-            } else { accepted = try transaction { try $0.care(action) } }
-            responseAt = Date()
-            if accepted {
-                switch action {
-                case .feed: response = "小点心，刚刚好。"
-                case .pet: response = "嗯，再摸一下也可以。"
-                case .play: response = "刚才那一下，超开心！"
-                case .sleep: response = session.state.isSleeping ? "晚安，陪我做个好梦。" : "醒来就能看见你，真好。"
-                }
-                #if canImport(UIKit)
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                #endif
-            } else {
-                response = session.state.isCollapsed ? "给我一点小点心，就能恢复啦。" : "它正在做梦，先轻轻叫醒吧。"
-            }
-        } catch {
-            if error is CompanionError {
-                responseAt = Date()
-                response = error.localizedDescription
-            } else { errorMessage = error.localizedDescription }
-        }
+    func renamePet(to value: String) throws {
+        guard !hardwareBusy, !needsRecovery else { throw CompanionError.invalidState }
+        if physicalMode {
+            guard var next = physical else { throw CompanionError.invalidState }
+            try next.rename(to: value)
+            try savePhysical(next)
+        } else { try transaction { try $0.rename(to: value) } }
     }
 
+    func care(_ action: CareAction) {
+        response="请在挂件上照顾宠物";responseAt=Date()
+    }
+
+    private func pollHardware() async {
+        guard !hardwareBusy, physical?.intent == nil else { return }
+        hardwareBusy=true;defer{hardwareBusy=false}
+        do {
+            let record=try await transport.request("/device",intent:nil,petID:nil)
+            guard var next=physical else { return }
+            try next.observe(record);try savePhysical(next)
+            lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
+            try await settleItemReceipt(record)
+        } catch { liveMessage=error.localizedDescription }
+    }
+
+    func startItem(kind: String, id: String) async {
+        guard !hardwareBusy,session.residence == .device,session.pendingTransfer == nil else { world.message="宠物回到挂件后才能操作";return }
+        if physicalMode && (connectionKind != .bluetooth || !bluetooth.ready) { world.message="请先连接蓝牙挂件";return }
+        if kind=="open" && session.state.energy<10 { world.message="精力不足 10，请让宠物在挂件上休息";return }
+        do {
+            var body: [String:Any] = ["kind":kind,"petID":session.petID.uuidString]
+            body[kind=="open" ? "boxID":"itemID"]=id
+            _ = try await world.perform("/prepare",body)
+            await continueItem()
+        } catch { world.message=error.localizedDescription }
+    }
+    func continueItem() async {
+        guard !hardwareBusy,let p=world.inventory.pending,session.residence == .device,
+              session.pendingTransfer == nil,p.petID.lowercased()==session.petID.uuidString.lowercased(),let id=UUID(uuidString:p.id) else { return }
+        guard physicalMode else { world.message=p.kind=="food" ? "预览：等待模拟挂件按键确认" : "预览：宠物已将盒子推到门口，点击模拟确认完成";return }
+        guard connectionKind == .bluetooth,bluetooth.ready else { world.message="请连接原挂件后继续";return }
+        hardwareBusy=true;defer{hardwareBusy=false}
+        do {
+            let intent=PhysicalIntent(id:id,destination:.device,baseRevision:UInt32(session.revision),snapshot:nil,released:false)
+            let record=try await bluetooth.request(p.kind=="open" ? "/items/open" : (p.level==2 ? "/items/food2":"/items/food1"),intent:intent,petID:session.petID)
+            if var next=physical { try next.observe(record);try savePhysical(next) }
+            lastHardwareRead=Date()
+            try await settleItemReceipt(record)
+            if world.inventory.pending != nil { world.message=p.kind=="open" ? "挂件正在把盒子推到门口…" : "已送达挂件，请按 B1 确认使用食物；若睡着，先长按 B1 叫醒" }
+        } catch { world.message=error.localizedDescription }
+    }
+    private func settleItemReceipt(_ record: BoardRecord) async throws {
+        guard let p=world.inventory.pending,let id=UUID(uuidString:p.id),record.petID==session.petID,
+              record.itemOperationID==id,record.itemStatus==2 else { return }
+        guard record.itemKind==(p.kind=="open" ? 1:2),record.itemLevel==UInt32(p.level) else { throw CompanionError.invalidState }
+        _ = try await world.perform("/settle",["operationID":p.id,"receiptID":p.id,"petID":p.petID],requestID:"settle-"+p.id)
+        world.message=p.kind=="open" ? "盒子打开了，物品已放入仓库" : "挂件已确认，食物已使用"
+    }
+    #if DEBUG
+    func confirmPreviewItem() async {
+        guard !physicalMode,let p=world.inventory.pending else { return }
+        do {
+            try session.simulateBoardItem(open:p.kind=="open",level:p.level)
+            _ = try await world.perform("/settle",["operationID":p.id]);flush()
+        } catch { world.message=error.localizedDescription }
+    }
+    #endif
+
     func beginTransfer(to destination: Residence) throws -> TransferOffer {
+        guard world.inventory.pending == nil else { throw PhysicalError.message("请先完成待确认物品操作") }
         guard !physicalMode else { throw CompanionError.transferInProgress }
         return try transaction { try $0.beginTransfer(to: destination) }
     }
@@ -198,6 +247,7 @@ final class CompanionStore: ObservableObject {
             physicalMode = false
             physicalBlocked = false
             hasEnteredHome = true
+            world.configure(preview:true)
         } catch { errorMessage = error.localizedDescription }
     }
     #endif
@@ -210,19 +260,45 @@ final class CompanionStore: ObservableObject {
         lastSavedAt = Date()
     }
 
+    private var transport: any DeviceTransport {
+        if connectionKind == .bluetooth { return bluetooth }
+        return HardwareBridge(host: bridgeHost, token: bridgeToken)
+    }
+
+    private func acceptHardware(_ record: BoardRecord) throws {
+        var next = try physical ?? physicalRepository.load() ?? PhysicalSession(board: record)
+        try next.observe(record)
+        try savePhysical(next)
+        physicalBlocked = false
+        hasEnteredHome = true
+        lastHardwareRead=Date();liveMessage="属性已同步"
+        world.configure(preview:false)
+        if !world.serviceURL.isEmpty { Task { await world.connect() } }
+        hardwareMessage = next.intent == nil ? "真实挂件已连接 · 可以在小屋手动往返" : "交接记录已找回，请在小屋继续旅程"
+    }
+
+    func connectBluetooth(_ id: UUID) async {
+        guard !hardwareBusy, !needsRecovery else { return }
+        hardwareBusy = true
+        connectionKind = .bluetooth
+        defer { hardwareBusy = false }
+        do {
+            try await bluetooth.connect(to: id)
+            try acceptHardware(try await bluetooth.request())
+        } catch {
+            if physical != nil { physicalBlocked = true }
+            hardwareMessage = error.localizedDescription
+        }
+    }
+
     func connectHardware() async {
         guard !hardwareBusy, !needsRecovery else { return }
         hardwareBusy = true
         defer { hardwareBusy = false }
         do {
-            let record = try await HardwareBridge(host: bridgeHost, token: bridgeToken).request()
-            var next = try physical ?? physicalRepository.load() ?? PhysicalSession(board: record)
-            try next.observe(record)
-            try savePhysical(next)
-            physicalBlocked = false
-            hasEnteredHome = true
-            UserDefaults.standard.set(bridgeHost, forKey: "bridgeHost")
-            hardwareMessage = next.intent == nil ? "真实挂件已连接 · 可以在小屋手动往返" : "交接记录已找回，请在小屋继续旅程"
+            let record = try await transport.request("/device", intent: nil, petID: nil)
+            try acceptHardware(record)
+            if connectionKind == .usb { UserDefaults.standard.set(bridgeHost, forKey: "bridgeHost") }
         } catch {
             // Unavailable network is not a loss of phone ownership. An inconsistent
             // board is handled by observe throwing; freeze until next verified read.
@@ -232,13 +308,14 @@ final class CompanionStore: ObservableObject {
     }
 
     func travelWithHardware(to destination: Residence) async throws {
+        guard world.inventory.pending == nil else { throw PhysicalError.message("请先完成开盒或食物确认，再让宠物出门") }
         guard !hardwareBusy, !needsRecovery, var next = physical else { throw CompanionError.invalidState }
-        guard !bridgeToken.isEmpty else { throw PhysicalError.message("请先在挂件页填写桥接口令并连接。") }
+        guard connectionKind == .bluetooth || !bridgeToken.isEmpty else { throw PhysicalError.message("请先连接挂件。") }
         hardwareBusy = true
         defer { hardwareBusy = false }
-        let client = HardwareBridge(host: bridgeHost, token: bridgeToken)
+        let client = transport
         if next.intent == nil {
-            let current = try await client.request()
+            let current = try await client.request("/device", intent: nil, petID: nil)
             try next.observe(current)
         }
         try next.begin(to: destination)

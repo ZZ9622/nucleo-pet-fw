@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>NSLocalNetworkUsageDescription</key><string>通过同一网络中的 Mac 读取 USB 挂件属性。</string>
+<key>NSBluetoothAlwaysUsageDescription</key><string>Pomi 使用蓝牙连接随身挂件，读取宠物属性并完成往返交接。</string>
+<key>NSLocalNetworkUsageDescription</key><string>连接同一网络中的小屋服务或 Mac USB 调试桥接，同步物品和挂件属性。</string>
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict></plist>

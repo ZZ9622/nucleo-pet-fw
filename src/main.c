@@ -88,6 +88,8 @@ int main(void)
     Button actions[BOARD_ACTION_COUNT];
     uint32_t last_action_ms = started_ms;
     bool has_feedback = false;
+    uint32_t item_animation_ms=started_ms;
+    bool item_animation=false;
     Led led;
     PetHandoff handoff;
     PetState *pet = &handoff.pet;
@@ -106,7 +108,15 @@ int main(void)
     while (1) {
         const uint32_t now_ms = board_millis();
         const uint32_t previous_phase = handoff.phase;
+        const uint32_t previous_item_status=handoff.item_status;
         pet_serial_poll(&handoff);
+        if(handoff.item_kind==1 && handoff.item_status==1 && !item_animation) {
+            item_animation=true;item_animation_ms=now_ms;screen_idle_init(&screen,now_ms);
+        }
+        if(item_animation && elapsed_ms(now_ms,item_animation_ms)>=2400U) {
+            (void)pet_item_finish_box(&handoff);item_animation=false;
+        }
+        if(handoff.item_status==1 && previous_item_status!=1 && handoff.item_kind==2) { screen_idle_init(&screen,now_ms); }
         if (previous_phase != handoff.phase) {
             screen_idle_init(&screen, now_ms);
             last_pet_tick_ms = now_ms;
@@ -122,9 +132,17 @@ int main(void)
         }
         const bool allow_actions = screen_idle_update(&screen, any_pressed, now_ms);
         display_set_awake(screen.awake);
+        const bool food_confirmation=handoff.item_status==1;
         const ButtonEvent b1 = button_take_event(&button);
         if (allow_actions && active && b1 != BUTTON_EVENT_NONE) {
-            apply_button_event(b1, pet, &led, now_ms);
+            if(handoff.item_status==1) {
+                /* Consume this event, including long holds, so confirmation cannot
+                 * also feed, toggle sleep or reset. Wake-only presses stay wake-only. */
+                if(handoff.item_kind==2 && pet->is_sleeping && b1==BUTTON_EVENT_LONG) {
+                    const PetCommand wake={.type=PET_CMD_SLEEP_TOGGLE};PetTransition t;
+                    pet_apply(pet,&PET_RULES_DEFAULT,&wake,&t);(void)pet_handoff_checkpoint(&handoff);
+                } else { (void)pet_item_confirm(&handoff); }
+            } else { apply_button_event(b1, pet, &led, now_ms); }
             last_action_ms = now_ms;
             has_feedback = true;
         }
@@ -135,7 +153,7 @@ int main(void)
             /* All qualified releases, including holds, perform exactly one action.
              * Only the onboard B1 can reset the pet. */
             const ButtonEvent event = button_take_event(&actions[i]);
-            if (allow_actions && active && event != BUTTON_EVENT_NONE) {
+            if (allow_actions && active && !food_confirmation && event != BUTTON_EVENT_NONE) {
                 const PetCommand command = {.type = commands[i]};
                 PetTransition transition;
                 pet_apply(pet, &PET_RULES_DEFAULT, &command, &transition);
@@ -161,9 +179,12 @@ int main(void)
             pet_handoff_checkpoint(&handoff);
             last_checkpoint_ms = now_ms;
         }
+        snapshot.item_food_pending=handoff.item_status==1 && handoff.item_kind==2;
+        snapshot.item_box_animation=item_animation;
+        snapshot.feedback_elapsed_ms=elapsed_ms(now_ms,item_animation_ms);
         snapshot.is_away = handoff.phase == PET_PHONE;
         snapshot.is_transferring = !pet_handoff_active(&handoff) && !snapshot.is_away;
-        snapshot.feedback_elapsed_ms = elapsed_ms(now_ms, last_action_ms);
+        if(!item_animation) { snapshot.feedback_elapsed_ms = elapsed_ms(now_ms, last_action_ms); }
         led_set_base(&led, led_pattern_for_snapshot(&snapshot), now_ms);
 
         if (elapsed_ms(now_ms, last_display_refresh_ms) >= DISPLAY_REFRESH_MS) {

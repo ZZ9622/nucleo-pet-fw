@@ -53,6 +53,43 @@ int main(void) {
         reboot(&h);assert(h.phase==PET_OFFER_PHONE || h.phase==PET_PHONE);
         assert(!pet_handoff_active(&h));
     }
+    memset(flash,255,sizeof flash);reboot(&h);
+    /* v2 journal records migrate without inventing an item operation. */
+    flash[1]=2;for(unsigned i=24;i<62;++i) { flash[i]=0xFFFFFFFFU; }
+    flash[62]=pet_crc32(flash,62U*4U);reboot(&h);
+    assert(h.item_status==0 && h.item_kind==0);
+    const uint32_t box[4]={11,12,13,14},food[4]={15,16,17,18};
+    assert(!pet_item_command(&h,"ITEM_OPEN",box,0));assert(h.pet.energy==70);
+    reboot(&h);assert(h.item_status==1 && h.pet.energy==70);
+    assert(pet_item_finish_box(&h));reboot(&h);assert(h.item_status==2);
+    assert(!pet_item_command(&h,"ITEM_OPEN",box,0));assert(h.pet.energy==70);
+    assert(pet_item_command(&h,"ITEM_FOOD1",box,0));
+    assert(!pet_item_command(&h,"ITEM_FOOD2",food,0));assert(h.pet.energy==70);
+    reboot(&h);assert(h.item_status==1);
+    assert(pet_handoff_command(&h,"TAKE_PREPARE",take,0,0));
+    assert(pet_item_confirm(&h));assert(h.pet.energy==100);
+    reboot(&h);assert(h.item_status==2 && !pet_item_confirm(&h));
+    h.pet.energy=9;assert(pet_item_command(&h,"ITEM_OPEN",take,0));assert(h.pet.energy==9);
+    h.pet.energy=10;h.pet.is_sleeping=true;assert(pet_item_command(&h,"ITEM_OPEN",take,0));
+    h.pet.is_sleeping=false;assert(!pet_item_command(&h,"ITEM_OPEN",take,0));assert(h.pet.energy==0);
+    for(int cut=0;cut<36;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);fail_after=cut;
+        (void)pet_item_command(&h,"ITEM_OPEN",box,0);reboot(&h);
+        assert(h.pet.energy==80 || (h.pet.energy==70 && h.item_status==1));
+        assert(!pet_item_command(&h,"ITEM_OPEN",box,0));assert(h.pet.energy==70);
+    }
+    memset(flash,255,sizeof flash);reboot(&h);
+    h.pet.energy=0;h.pet.is_sleeping=true;h.pet.seconds_since_feed=PET_FEED_DEADLINE_S;
+    assert(!pet_item_command(&h,"ITEM_FOOD1",food,0));assert(pet_item_confirm(&h));
+    assert(h.pet.energy==30 && !h.pet.is_sleeping && h.pet.seconds_since_feed==0);
+    for(int cut=0;cut<36;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);
+        assert(!pet_item_command(&h,"ITEM_FOOD1",food,0));fail_after=cut;
+        (void)pet_item_confirm(&h);reboot(&h);
+        if(h.item_status==1) { assert(h.pet.energy==80);assert(pet_item_confirm(&h)); }
+        assert(h.item_status==2 && h.pet.energy==100 && !pet_item_confirm(&h));
+    }
+    puts("item operations: durable charge, duplicate receipt, button confirmation, low energy and torn writes passed");
     memset(flash,255,sizeof flash);flash[0]=0;pet_handoff_init(&h);
     assert(h.fault && h.phase==PET_LOCKED && !pet_handoff_active(&h));
     puts("handoff + journal: roundtrip, retries, stale IDs, 28 torn writes, reboot, sector rotation passed");

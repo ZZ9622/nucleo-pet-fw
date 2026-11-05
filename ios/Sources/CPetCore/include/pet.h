@@ -107,6 +107,8 @@ typedef struct {
     uint8_t level;
     PetLifeStage stage;
     uint32_t feedback_elapsed_ms;
+    bool item_food_pending;
+    bool item_box_animation;
     bool is_away;
     bool is_transferring;
     PetMood mood;

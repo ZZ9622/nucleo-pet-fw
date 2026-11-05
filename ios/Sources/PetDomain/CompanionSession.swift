@@ -6,10 +6,11 @@ public enum Residence: String, Codable {
 }
 
 public enum CompanionError: LocalizedError {
-    case invalidState, transferInProgress, wrongResidence, noTransfer, unsupportedSave
+    case invalidName, invalidState, transferInProgress, wrongResidence, noTransfer, unsupportedSave
 
     public var errorDescription: String? {
         switch self {
+        case .invalidName: return "请输入 1–24 个字符的宠物名字，不能包含换行。"
         case .invalidState: return "这份宠物记录不完整，暂时不能使用。"
         case .transferInProgress: return "它还在路上，等旅程完成再互动吧。"
         case .wrongResidence: return "它还在挂件里，先接到手机小屋吧。"
@@ -68,7 +69,16 @@ public struct CompanionSession: Codable, Equatable {
         self.revision = revision
         updatedAt = now
         createdAt = now
-        journal = [JourneyEntry(date: now, title: "遇见方方", detail: "从一块小小的像素屏，开始我们的故事。", symbol: "sparkles")]
+        journal = [JourneyEntry(date: now, title: "遇见\(name)", detail: "从一块小小的像素屏，开始我们的故事。", symbol: "sparkles")]
+    }
+
+    public mutating func rename(to value: String) throws {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count <= 24,
+              trimmed.rangeOfCharacter(from: .controlCharacters) == nil else {
+            throw CompanionError.invalidName
+        }
+        name = trimmed
     }
 
     public var canInteract: Bool { residence == .phone && pendingTransfer == nil }
@@ -96,7 +106,7 @@ public struct CompanionSession: Codable, Equatable {
         let text: (String, String, String)
         switch action {
         case .feed: text = ("吃了一口小点心", "精力补充好了，继续陪你。", "carrot")
-        case .pet: text = ("被温柔地摸摸", "方方把这份喜欢，悄悄收好了。", "heart")
+        case .pet: text = ("被温柔地摸摸", "\(name)把这份喜欢，悄悄收好了。", "heart")
         case .play: text = ("一起玩了一会儿", "小小的跳跃，大大的开心。", "tennisball")
         case .sleep: text = state.isSleeping
             ? ("开始做一个好梦", "休息的时候，精力会慢慢恢复。", "moon")
@@ -166,3 +176,16 @@ public struct CompanionSession: Codable, Equatable {
         journal = Array(journal.prefix(100))
     }
 }
+
+#if DEBUG
+extension CompanionSession {
+    /// Only the separate development pet uses this; real state comes from board receipts.
+    public mutating func simulateBoardItem(open:Bool,level:Int) throws {
+        guard residence == .device,pendingTransfer==nil else { throw CompanionError.wrongResidence }
+        if open {
+            guard state.energy>=10 else { throw PhysicalError.message("精力不足 10") }
+            state.energy-=10
+        } else { state.energy=UInt8(min(100,Int(state.energy)+(level==2 ? 50:30))) }
+    }
+}
+#endif

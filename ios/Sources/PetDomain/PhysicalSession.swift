@@ -10,11 +10,26 @@ public struct BoardRecord: Codable, Equatable {
     public let transferID: UUID
     public let payloadHash: UInt32
     public let state: FirmwareState
+    public var itemOperationID: UUID? = nil
+    public var itemStatus: UInt32? = nil
+    public var itemKind: UInt32? = nil
+    public var itemLevel: UInt32? = nil
 
     public func validate() throws {
         try state.validate()
         guard v == 2, ok, phase < 4, revision < UInt32.max else {
-            throw PhysicalError.message(error.isEmpty ? "挂件记录不可用，请检查固件和存档。" : error)
+            let message: String
+            switch error {
+            case "low_energy": message = "精力不足 10，请在挂件上休息后再开盒。"
+            case "pet_sleeping": message = "请先在挂件上叫醒宠物。"
+            case "item_pending": message = "请先完成待确认的物品操作。"
+            case "conflict": message = "挂件记录已变化，请重新连接后继续原来的旅程。"
+            case "wrong_pet": message = "这不是已绑定的挂件，请连接原来的小伙伴。"
+            case "storage_locked", "storage_failed": message = "挂件存档暂时无法确认，已停止交接。请保留记录并检查设备。"
+            case "invalid_state", "invalid_request": message = "挂件没有接受这份记录，请保留存档并重试连接。"
+            default: message = "挂件记录不可用，请检查固件和存档。"
+            }
+            throw PhysicalError.message(message)
         }
     }
 }
@@ -30,6 +45,9 @@ public struct PhysicalIntent: Codable, Equatable {
     public let baseRevision: UInt32
     public var snapshot: FirmwareState?
     public var released: Bool
+    public init(id:UUID,destination:Residence,baseRevision:UInt32,snapshot:FirmwareState?,released:Bool) {
+        self.id=id;self.destination=destination;self.baseRevision=baseRevision;self.snapshot=snapshot;self.released=released
+    }
 }
 
 /// Durable ownership record; never activates a received pet before board commit.
@@ -51,6 +69,11 @@ public struct PhysicalSession: Codable, Equatable {
         try board.validate()
         guard board.petID == companion.petID else { throw PhysicalError.message("这不是已绑定的挂件。") }
         guard intent == nil else { return }
+        // A board-owned, inactive local copy can refresh after another phone
+        // returned the pet. Never overwrite phone ownership, pending work or a rollback.
+        if companion.residence == .device, board.phase == 0, UInt64(board.revision) >= companion.revision {
+            companion.revision = UInt64(board.revision)
+        }
         guard UInt64(board.revision) == companion.revision,
               board.phase == (companion.residence == .device ? 0 : 2) else {
             throw PhysicalError.message("两端记录不一致，已停止互动。请保留手机存档并检查挂件。")
@@ -59,6 +82,10 @@ public struct PhysicalSession: Codable, Equatable {
             companion.state = board.state
             companion.updatedAt = now
         } else { companion.advance(to: now) }
+    }
+
+    public mutating func rename(to value: String) throws {
+        try companion.rename(to: value)
     }
 
     public mutating func advance(to now: Date) {

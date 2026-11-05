@@ -1,7 +1,7 @@
 import Foundation
 import PetDomain
 
-struct HardwareBridge {
+struct HardwareBridge: DeviceTransport {
     let host: String
     let token: String
 

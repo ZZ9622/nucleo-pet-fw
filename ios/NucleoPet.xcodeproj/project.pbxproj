@@ -1,19 +1,29 @@
 // !$*UTF8*$!
 { archiveVersion = 1; classes = {}; objectVersion = 56; objects = {
+		3B264E39EE4D9196876EB8B3 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BluetoothTransport.swift"; sourceTree = "<group>"; };
+		1ABD1FE475EBBAD88D506018 = { isa = PBXBuildFile; fileRef = 3B264E39EE4D9196876EB8B3; };
 		BA83E5B3EAA5762C622813D2 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompanionStore.swift"; sourceTree = "<group>"; };
 		68A7D34D9B4A369085E9C94D = { isa = PBXBuildFile; fileRef = BA83E5B3EAA5762C622813D2; };
 		515827EFD08426C3F57D08BF = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ConnectionView.swift"; sourceTree = "<group>"; };
 		B56A9555CB2391B101DA4C54 = { isa = PBXBuildFile; fileRef = 515827EFD08426C3F57D08BF; };
+		DF8FE6C8DD79B9339AEFFC45 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CottageView.swift"; sourceTree = "<group>"; };
+		CB1D7D1D45B55C1E6DD30DA1 = { isa = PBXBuildFile; fileRef = DF8FE6C8DD79B9339AEFFC45; };
 		F6A6ABC622C8A615B5E97F17 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignSystem.swift"; sourceTree = "<group>"; };
 		8C6C64A5FA7FCD1367ADBDCB = { isa = PBXBuildFile; fileRef = F6A6ABC622C8A615B5E97F17; };
+		91223A109CEFD1EE7E1EDB73 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeviceTransport.swift"; sourceTree = "<group>"; };
+		32023D089BFCAF17A31A05A8 = { isa = PBXBuildFile; fileRef = 91223A109CEFD1EE7E1EDB73; };
 		11236BFAC32761C6493689D9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HardwareBridge.swift"; sourceTree = "<group>"; };
 		A78A1EAD828E5AD3131A171D = { isa = PBXBuildFile; fileRef = 11236BFAC32761C6493689D9; };
 		16C3D4E1D36E3F9627F44346 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeView.swift"; sourceTree = "<group>"; };
 		95140CBCBF751AA7F548E156 = { isa = PBXBuildFile; fileRef = 16C3D4E1D36E3F9627F44346; };
 		0CC45E6078AF34E95E93B228 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JourneyDeviceViews.swift"; sourceTree = "<group>"; };
 		286AD9908A63F218961DBBEB = { isa = PBXBuildFile; fileRef = 0CC45E6078AF34E95E93B228; };
+		AA84740EB12795CE9E4D4D83 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionDebugView.swift"; sourceTree = "<group>"; };
+		2AC86579BCF93FA2A865265F = { isa = PBXBuildFile; fileRef = AA84740EB12795CE9E4D4D83; };
 		993BE81FFA3427B7AFA162A5 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PetApp.swift"; sourceTree = "<group>"; };
 		0E252E60059B72D89260E561 = { isa = PBXBuildFile; fileRef = 993BE81FFA3427B7AFA162A5; };
+		5372A9DD9521DC4B907C1917 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PomiWorldStore.swift"; sourceTree = "<group>"; };
+		B587556E3597978D871A89B5 = { isa = PBXBuildFile; fileRef = 5372A9DD9521DC4B907C1917; };
 		13A4BD6BB9104CBD621754C8 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TravelView.swift"; sourceTree = "<group>"; };
 		0CBBF08306D34B0F8AA92440 = { isa = PBXBuildFile; fileRef = 13A4BD6BB9104CBD621754C8; };
 		3685E330EC5277A9DD5661C6 = { isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -23,10 +33,10 @@
 		64FF3C8D719B0055D4092657 = { isa = PBXBuildFile; fileRef = 26809650F2BC9377C8579F28; };
 		11F49EDBF308A47902D18BBF = { isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NucleoPetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A286A31D61489E8A656E50D = { isa = PBXGroup; path = UITests; sourceTree = "<group>"; children = (26809650F2BC9377C8579F28); };
-		3C3B0F03DC089F93B8457928 = { isa = PBXGroup; path = App; sourceTree = "<group>"; children = (BA83E5B3EAA5762C622813D2,515827EFD08426C3F57D08BF,F6A6ABC622C8A615B5E97F17,11236BFAC32761C6493689D9,16C3D4E1D36E3F9627F44346,0CC45E6078AF34E95E93B228,993BE81FFA3427B7AFA162A5,13A4BD6BB9104CBD621754C8,3685E330EC5277A9DD5661C6); };
+		3C3B0F03DC089F93B8457928 = { isa = PBXGroup; path = App; sourceTree = "<group>"; children = (3B264E39EE4D9196876EB8B3,BA83E5B3EAA5762C622813D2,515827EFD08426C3F57D08BF,DF8FE6C8DD79B9339AEFFC45,F6A6ABC622C8A615B5E97F17,91223A109CEFD1EE7E1EDB73,11236BFAC32761C6493689D9,16C3D4E1D36E3F9627F44346,0CC45E6078AF34E95E93B228,AA84740EB12795CE9E4D4D83,993BE81FFA3427B7AFA162A5,5372A9DD9521DC4B907C1917,13A4BD6BB9104CBD621754C8,3685E330EC5277A9DD5661C6); };
 		615B463D1028E4E24B674CF7 = { isa = PBXGroup; name = Products; sourceTree = "<group>"; children = (38A007151ABE87CC01A5B6E9, 11F49EDBF308A47902D18BBF); };
 		42944EBC669F21BC22392EB5 = { isa = PBXGroup; sourceTree = "<group>"; children = (3C3B0F03DC089F93B8457928, 5A286A31D61489E8A656E50D, 615B463D1028E4E24B674CF7); };
-		BCE16DD0260827ECF338C787 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (68A7D34D9B4A369085E9C94D,B56A9555CB2391B101DA4C54,8C6C64A5FA7FCD1367ADBDCB,A78A1EAD828E5AD3131A171D,95140CBCBF751AA7F548E156,286AD9908A63F218961DBBEB,0E252E60059B72D89260E561,0CBBF08306D34B0F8AA92440); runOnlyForDeploymentPostprocessing = 0; };
+		BCE16DD0260827ECF338C787 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (1ABD1FE475EBBAD88D506018,68A7D34D9B4A369085E9C94D,B56A9555CB2391B101DA4C54,CB1D7D1D45B55C1E6DD30DA1,8C6C64A5FA7FCD1367ADBDCB,32023D089BFCAF17A31A05A8,A78A1EAD828E5AD3131A171D,95140CBCBF751AA7F548E156,286AD9908A63F218961DBBEB,2AC86579BCF93FA2A865265F,0E252E60059B72D89260E561,B587556E3597978D871A89B5,0CBBF08306D34B0F8AA92440); runOnlyForDeploymentPostprocessing = 0; };
 		7561BFB015D8F536760CB671 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (672CEE08E83CB7E9FA2F495E); runOnlyForDeploymentPostprocessing = 0; };
 		0189424A5A60FED329FA868E = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (716E9590E60B3AFA6E62BF18); runOnlyForDeploymentPostprocessing = 0; };
 		CF21FADD42EAB8F8303A3895 = { isa = XCLocalSwiftPackageReference; relativePath = "."; };
@@ -44,7 +54,7 @@
             CURRENT_PROJECT_VERSION = 1;
             GENERATE_INFOPLIST_FILE = YES;
             INFOPLIST_FILE = App/Info.plist;
-            INFOPLIST_KEY_CFBundleDisplayName = "方方的小屋";
+            INFOPLIST_KEY_CFBundleDisplayName = "Pomi";
             INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
             INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
             INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -77,7 +87,7 @@
             CURRENT_PROJECT_VERSION = 1;
             GENERATE_INFOPLIST_FILE = YES;
             INFOPLIST_FILE = App/Info.plist;
-            INFOPLIST_KEY_CFBundleDisplayName = "方方的小屋";
+            INFOPLIST_KEY_CFBundleDisplayName = "Pomi";
             INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
             INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
             INFOPLIST_KEY_UILaunchScreen_Generation = YES;

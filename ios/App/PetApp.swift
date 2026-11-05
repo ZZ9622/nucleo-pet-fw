@@ -34,17 +34,20 @@ struct RootView: View {
             if !store.hasEnteredHome {
                 ConnectionView().frame(maxWidth: 520)
             } else { VStack(spacing: 0) {
+                if store.physicalMode && store.connectionKind == .bluetooth {
+                    BluetoothStatusBanner(radio: store.bluetooth)
+                }
                 Group {
                     switch tab {
-                    case 1: JourneyView()
+                    case 1: CottageView().environmentObject(store.world)
                     case 2: DeviceView()
                     default: HomeView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(spacing: 0) {
-                    tabButton("小屋", symbol: "house", index: 0)
-                    tabButton("足迹", symbol: "sparkles", index: 1)
+                    tabButton("主页", symbol: "house", index: 0)
+                    tabButton("家装小屋", symbol: "house.fill", index: 1)
                     tabButton("挂件", symbol: "lanyardcard", index: 2)
                 }
                 .padding(.top, 14).padding(.bottom, 10)
@@ -56,7 +59,7 @@ struct RootView: View {
         .fontDesign(.monospaced)
         .tint(Palette.ink)
         .onChange(of: store.hasEnteredHome) { _, entered in if entered { tab = 0 } }
-        .onReceive(timer) { _ in if !AppRuntime.isUITesting { store.refresh() } }
+        .onReceive(timer) { _ in if scenePhase == .active && !AppRuntime.isUITesting { store.refresh() } }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { store.refresh() } else { store.flush() }
         }

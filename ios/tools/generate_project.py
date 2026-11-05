@@ -14,7 +14,7 @@ def ident(name):
 
 
 def generate_project():
-    files = sorted((ROOT / 'App').glob('*.swift'))
+    files = sorted(p for p in (ROOT / 'App').glob('*.swift') if not p.name.startswith('.'))
     records = []
 
     def obj(name, text):
@@ -61,7 +61,7 @@ def generate_project():
             CURRENT_PROJECT_VERSION = 1;
             GENERATE_INFOPLIST_FILE = YES;
             INFOPLIST_FILE = App/Info.plist;
-            INFOPLIST_KEY_CFBundleDisplayName = "方方的小屋";
+            INFOPLIST_KEY_CFBundleDisplayName = "Pomi";
             INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
             INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
             INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -126,7 +126,7 @@ def generate_project():
 
 def generate_icon():
     size = 1024
-    bg, green, coral = (247, 252, 255), (20, 66, 173), (41, 99, 224)
+    bg, green, coral = (0, 0, 0), (100, 205, 255), (100, 205, 255)
     data = bytearray(bytes(bg) * size * size)
 
     def rect(x, y, w, h, color):

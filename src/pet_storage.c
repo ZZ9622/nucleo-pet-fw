@@ -11,12 +11,17 @@ static bool record_read(uint32_t address, PetHandoff *h,uint32_t *sequence)
 {
     uint32_t w[64];
     for(unsigned i=0;i<64;++i) { w[i]=pet_flash_read(address+i*4U); }
-    if(w[0]!=MAGIC || w[1]!=2 || w[63]!=COMMIT || w[62]!=pet_crc32(w,62U*4U) ||
+    if(w[0]!=MAGIC || (w[1]!=2 && w[1]!=3) || w[63]!=COMMIT || w[62]!=pet_crc32(w,62U*4U) ||
        w[2]==0 || w[3]>PET_RETURN_STAGED || w[4]==0xFFFFFFFFU) { return false; }
     PetState p;
     if(!pet_state_decode(&p,&w[10])) { return false; }
     *h=(PetHandoff){.phase=w[3],.revision=w[4],.payload_hash=w[9],.pet=p};
     for(unsigned i=0;i<4;++i) { h->transaction[i]=w[5+i]; }
+    if(w[1]==3) {
+        if(w[28]>2 || w[29]>2 || w[30]>2) { return false; }
+        for(unsigned i=0;i<4;++i) { h->item_id[i]=w[24+i]; }
+        h->item_status=w[28];h->item_kind=w[29];h->item_level=w[30];
+    }
     *sequence=w[2]; return true;
 }
 static bool blank(uint32_t address)
@@ -49,9 +54,11 @@ bool pet_storage_save(const PetHandoff *h)
         address=BASE+sector*SECTOR_BYTES;
     }
     uint32_t w[64]; for(unsigned i=0;i<64;++i) { w[i]=0xFFFFFFFFU; }
-    w[0]=MAGIC; w[1]=2; w[2]=newest_sequence+1; w[3]=h->phase; w[4]=h->revision;
+    w[0]=MAGIC; w[1]=3; w[2]=newest_sequence+1; w[3]=h->phase; w[4]=h->revision;
     for(unsigned i=0;i<4;++i) { w[5+i]=h->transaction[i]; }
     w[9]=h->payload_hash; pet_state_encode(&h->pet,&w[10]);
+    for(unsigned i=0;i<4;++i) { w[24+i]=h->item_id[i]; }
+    w[28]=h->item_status;w[29]=h->item_kind;w[30]=h->item_level;
     w[62]=pet_crc32(w,62U*4U); w[63]=COMMIT;
     for(unsigned i=0;i<64;++i) {
         if(w[i]!=0xFFFFFFFFU && !pet_flash_write(address+i*4U,w[i])) { return false; }

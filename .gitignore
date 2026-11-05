@@ -6,3 +6,11 @@
 **/xcuserdata/
 **/.build/
 **/.swiftpm/
+
+# Python development caches
+__pycache__/
+*.py[cod]
+
+# Local Pomi service state (identities and inventory)
+*.sqlite
+*.sqlite-*

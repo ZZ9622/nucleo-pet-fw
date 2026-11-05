@@ -124,7 +124,7 @@ struct PixelPet: View {
                 context.fill(path, with: .color(color))
             }
         }
-        .accessibilityLabel("方块猫方方，\(session.state.moodTitle)")
+        .accessibilityLabel("方块猫\(session.name)，\(session.state.moodTitle)")
     }
 }
 
@@ -132,7 +132,7 @@ struct TinyDevice: View {
     let session: CompanionSession
     var body: some View {
         VStack(spacing: 10) {
-            HStack { Text("NUCLEO / 01"); Spacer(); Rectangle().frame(width: 6, height: 6) }
+            HStack { Text("Pomi / 01"); Spacer(); Rectangle().frame(width: 6, height: 6) }
                 .font(.system(size: 8, weight: .bold, design: .monospaced))
             ZStack {
                 Rectangle().fill(Palette.ink)

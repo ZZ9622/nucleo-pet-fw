@@ -16,28 +16,17 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 23) {
                 HStack {
-                    Eyebrow(text: "NUCLEO / LITTLE COMPANION")
+                    Eyebrow(text: "Pomi / LITTLE COMPANION")
                     Spacer(minLength: 4)
                     if !store.physicalMode { DemoBadge() }
                 }
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text("方方的小屋").font(.system(size: 31, weight: .semibold, design: .monospaced))
+                        Text("\(store.session.name)的小屋").font(.system(size: 31, weight: .semibold, design: .monospaced))
                         Text("换个地方，继续陪你。").font(.system(size: 14)).foregroundStyle(Palette.muted)
                     }
                     Spacer()
-                    Menu {
-                        Button("喂一点小点心", systemImage: "carrot") { store.care(.feed) }
-                            .accessibilityIdentifier("care.feed")
-                        Button(store.session.state.isSleeping ? "轻轻叫醒" : "让它睡一会儿", systemImage: "moon") { store.care(.sleep) }
-                            .accessibilityIdentifier("care.sleep")
-                    } label: {
-                        Image(systemName: "leaf").font(.system(size: 20))
-                            .frame(width: 43, height: 43).background(Palette.sage.opacity(0.5), in: Rectangle())
-                    }
-                    .disabled(!store.session.canInteract)
-                    .accessibilityLabel("照顾菜单，喂食和睡眠")
-                    .accessibilityIdentifier("care.menu")
+
                 }
 
                 if store.session.pendingTransfer != nil {
@@ -69,9 +58,7 @@ struct HomeView: View {
                                 Rectangle().fill(Palette.line.opacity(0.5)).frame(width: 120, height: 17).offset(y: 63)
                                 PixelPet(session: store.session).frame(width: 260, height: 145)
                             }
-                            .onTapGesture { store.care(.pet) }
-                            .accessibilityAddTraits(.isButton)
-                            .accessibilityHint("轻点摸摸方方")
+
                         } else {
                             TinyDevice(session: store.session).scaleEffect(0.72).frame(height: 145)
                         }
@@ -88,7 +75,7 @@ struct HomeView: View {
                         Spacer()
                         Image(systemName: "sparkle").foregroundStyle(Palette.coral)
                     }
-                    Text(store.response ?? (isHere ? "摸摸它，或者一起玩一小会儿。" : "接它来手机小屋，带着同一份心情和精力。"))
+                    Text(store.response ?? (isHere ? "在这里陪它看看小屋；照顾互动请在挂件上进行。" : "接它来手机小屋，带着同一份心情和精力。"))
                         .font(.system(size: 13)).foregroundStyle(Palette.muted)
                         .frame(minHeight: 19, alignment: .leading)
                         .accessibilityAddTraits(.updatesFrequently)
@@ -100,11 +87,12 @@ struct HomeView: View {
                     stat("精力", english: "ENERGY", value: store.session.state.energy, symbol: "bolt.fill", tint: Palette.muted)
                 }.padding(18).background(.white.opacity(0.65), in: PixelFrame(cornerRadius: 22))
 
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(store.physicalMode ? (store.bluetooth.ready ? store.liveMessage : "蓝牙未连接 · 显示上次记录") : "独立预览数据").font(.caption)
+                    if let date=store.lastHardwareRead,store.physicalMode { Text("上次更新 \(date.formatted(date: .omitted,time: .standard))").font(.caption2) }
+                    Text("喂食、摸摸、玩耍和睡眠请在挂件上操作").font(.caption).foregroundStyle(Palette.muted)
+                }
                 if isHere && store.session.pendingTransfer == nil {
-                    HStack(spacing: 12) {
-                        careButton("摸摸", subtitle: "一点温柔", symbol: "heart", action: .pet, color: Palette.blush)
-                        careButton("玩一会儿", subtitle: "一起开心", symbol: "tennisball", action: .play, color: Palette.sage)
-                    }
                     Button { openTravel() } label: {
                         HStack {
                             Image(systemName: "arrow.turn.up.left")
@@ -115,11 +103,12 @@ struct HomeView: View {
                     }.buttonStyle(.plain).accessibilityIdentifier("travel.open")
                 } else {
                     Button { openTravel() } label: {
-                        Label(store.session.pendingTransfer == nil ? "接方方来小屋" : "继续这次旅程", systemImage: "door.left.hand.open")
+                        Label(store.session.pendingTransfer == nil ? "接\(store.session.name)来小屋" : "继续这次旅程", systemImage: "door.left.hand.open")
                     }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("travel.open")
                     Text("同一只小伙伴，两个小世界。").font(.system(size: 11))
                         .foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
                 }
+                JourneySection()
             }.foregroundStyle(Palette.ink).padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 25)
         }
         .sheet(item: $travelRoute) { route in
@@ -150,16 +139,4 @@ struct HomeView: View {
             .accessibilityIdentifier("stat.\(english.lowercased())")
     }
 
-    private func careButton(_ title: String, subtitle: String, symbol: String, action: CareAction, color: Color) -> some View {
-        Button { store.care(action) } label: {
-            HStack(spacing: 12) {
-                Image(systemName: symbol).font(.system(size: 23))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.system(size: 15, weight: .semibold))
-                    Text(subtitle).font(.system(size: 10)).foregroundStyle(Palette.muted)
-                }
-                Spacer(minLength: 0)
-            }.padding(17).frame(maxWidth: .infinity).background(color, in: PixelFrame(cornerRadius: 21))
-        }.buttonStyle(.plain).accessibilityIdentifier("care.\(action.rawValue)")
-    }
 }

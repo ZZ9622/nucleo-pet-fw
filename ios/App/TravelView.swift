@@ -58,7 +58,7 @@ struct TravelView: View {
                                 .font(.system(size: 12)).foregroundStyle(Palette.muted)
                         }
                     }
-                    Text(store.physicalMode ? "真实 USB 往返 · 交接中请保持 Mac 桥接运行；中断后继续同一次旅程。" : "本次为离线体验，真实挂件不会发生变化。")
+                    Text(store.physicalMode ? (store.connectionKind == .bluetooth ? "真实蓝牙往返 · 请保持挂件在附近；中断后继续同一次旅程。" : "真实 USB 往返 · 交接中请保持 Mac 桥接运行；中断后继续同一次旅程。") : "本次为离线体验，真实挂件不会发生变化。")
                         .font(.system(size: 11)).foregroundStyle(Palette.muted).multilineTextAlignment(.center)
                 }.padding(28)
             }
@@ -70,7 +70,7 @@ struct TravelView: View {
 
     private var title: String {
         switch stage {
-        case .ready: return destination == .phone ? "接方方来坐坐" : "送方方回口袋"
+        case .ready: return destination == .phone ? "接\(store.session.name)来坐坐" : "送\(store.session.name)回口袋"
         case .travelling: return "带着心情，出发啦"
         case .interrupted: return "小旅程，暂停了一下"
         case .arrived: return destination == .phone ? "我来啦！" : "已经回到挂件啦"
@@ -79,7 +79,7 @@ struct TravelView: View {
 
     private var subtitle: String {
         switch stage {
-        case .ready: return "同一个方方，带着原来的心情和精力。\n换个地方，继续陪着你。"
+        case .ready: return "同一个\(store.session.name)，带着原来的心情和精力。\n换个地方，继续陪着你。"
         case .travelling: return "小屋和挂件，正在交接它的记录。"
         case .interrupted: return store.physicalMode ? "交接记录已保留。请恢复连接后继续，\n完成前双方暂停互动。" : "记录已经保留。继续出发，\n或者让它先待在原来的家。"
         case .arrived: return "心情、精力和睡眠状态，都一起到了。"
@@ -108,7 +108,7 @@ struct TravelView: View {
             if store.simulateDisconnect {
                 store.simulateDisconnect = false
                 stage = .interrupted
-                failure = "模拟连接中断，方方仍在原来的家。"
+                failure = "模拟连接中断，\(store.session.name)仍在原来的家。"
                 return
             }
             try store.finishTransfer(id: offer.id)

@@ -55,7 +55,7 @@ final class PhysicalTests: XCTestCase {
     func testWrongRevisionHashAndUnknownOwnerFailClosed() throws {
         XCTAssertThrowsError(try PhysicalSession(board: board(phase: 2, revision: 1)))
         var session = try PhysicalSession(board: board(phase: 0, revision: 0), now: now)
-        XCTAssertThrowsError(try session.observe(board(phase: 0, revision: 2)))
+        XCTAssertThrowsError(try session.observe(board(phase: 2, revision: 2)))
         try session.begin(to: .phone, now: now)
         let tx = try XCTUnwrap(session.intent).id
         XCTAssertThrowsError(try session.acceptPrepared(board(phase: 1, revision: 0)))
@@ -63,6 +63,19 @@ final class PhysicalTests: XCTestCase {
         XCTAssertThrowsError(try session.finish(board(phase: 2, revision: 1, tx: tx, hash: 0)))
         XCTAssertFalse(session.companion.canInteract)
     }
+    func testInactiveBoardCopyCanRefreshButPhoneOwnershipAndRollbackAreProtected() throws {
+        var session = try PhysicalSession(board: board(phase: 0, revision: 0), now: now)
+        try session.observe(board(phase: 0, revision: 4), now: now)
+        XCTAssertEqual(session.companion.revision, 4)
+        XCTAssertThrowsError(try session.observe(board(phase: 0, revision: 2)))
+        try session.begin(to: .phone, now: now)
+        let tx = try XCTUnwrap(session.intent).id
+        try session.acceptPrepared(board(phase: 1, revision: 4, tx: tx))
+        try session.finish(board(phase: 2, revision: 5, tx: tx), now: now)
+        XCTAssertThrowsError(try session.observe(board(phase: 0, revision: 6)))
+        XCTAssertEqual(session.companion.residence, .phone)
+    }
+
     func testPendingRestartFreezesElapsedTimeAndCannotChangeDestination() throws {
         var session = try PhysicalSession(board: board(phase: 0, revision: 0), now: now)
         try session.begin(to: .phone, now: now)

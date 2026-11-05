@@ -115,6 +115,19 @@ void pet_view_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
         return;
     }
 
+    if(pet->item_food_pending) {
+        rect(frame,53,27,22,20,true);rect(frame,53,23,5,7,true);rect(frame,70,23,5,7,true);
+        cut_rect(frame,58,33,3,3);cut_rect(frame,67,33,3,3);
+        text(frame,pet->is_sleeping && !pet->is_collapsed?7:17,56,pet->is_sleeping && !pet->is_collapsed?"HOLD B1 TO WAKE":"B1 CONFIRM FOOD");return;
+    }
+    if(pet->item_box_animation) {
+        const int x=20+(int)(pet->feedback_elapsed_ms*45U/2400U);
+        rect(frame,103,25,20,28,false);rect(frame,118,38,2,2,true);
+        rect(frame,x,32,22,19,true);rect(frame,x,27,5,8,true);rect(frame,x+17,27,5,8,true);
+        cut_rect(frame,x+5,37,3,3);cut_rect(frame,x+14,37,3,3);
+        rect(frame,x+23,38,12,13,false);rect(frame,x+28,38,2,13,true);
+        text(frame,34,57,"YOUR BOX");return;
+    }
     if (pet->is_collapsed) {
         /* Lying on the floor, head down, paws out; only the back breathes. */
         const int breath = (int)(time_ms / 1200U % 2U);
