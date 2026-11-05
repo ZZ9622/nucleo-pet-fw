@@ -1,4 +1,4 @@
-# 方方的小屋 · Nucleo Pet iOS
+# 方方的小屋 · pomi iOS
 
 原生 iPhone App 原型，使用 **SwiftUI + Swift + 共享 C 宠物核心**，最低部署版本 iOS 17。
 产品概念是同一只宠物在随身挂件与手机小屋之间往返，带着相同的身份、心情、精力和睡眠状态。

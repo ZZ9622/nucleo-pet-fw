@@ -1,4 +1,4 @@
-# 新 Mac 烧录指南：Little Wanderer / NUCLEO-F401RE
+# 新 Mac 烧录指南：pomi / NUCLEO-F401RE
 
 这份指南用于在另一台 Mac 上下载项目、编译固件并烧录到 NUCLEO-F401RE。
 只烧录开发板时不需要安装完整 Xcode、STM32CubeIDE、Arduino IDE 或蓝牙模块。
@@ -69,8 +69,8 @@ openocd --version
 推荐重新从 GitHub 下载，避免把另一台 Mac 的编译缓存一起拷过来：
 
 ```sh
-mkdir -p ~/Documents/LittleWanderer
-cd ~/Documents/LittleWanderer
+mkdir -p ~/Documents/pomi
+cd ~/Documents/pomi
 git clone https://github.com/ZZ9622/nucleo-pet-fw.git
 cd nucleo-pet-fw
 git rev-parse --short HEAD

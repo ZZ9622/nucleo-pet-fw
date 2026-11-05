@@ -1,4 +1,4 @@
-# USB＋Mac 真实手动往返
+# pomi · USB＋Mac 真实手动往返
 
 2026-11-01：已实现并使用 NUCLEO-F401RE 实物验证。Mac 使用 Python 3 标准库，App 使用 Xcode 原生 iOS 工程。
 
