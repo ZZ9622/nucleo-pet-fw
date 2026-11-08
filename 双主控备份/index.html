@@ -1,0 +1,86 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pomi 双主控接线备份</title><style>body{margin:0;background:#f5f8fc;color:#19334a;font:16px system-ui}main{max-width:1320px;margin:auto;padding:24px}button{padding:9px 15px;margin:4px;border:1px solid #bbcbd8;border-radius:20px;background:white;cursor:pointer}button[aria-pressed=true]{background:#19334a;color:white}svg{width:100%;height:auto}.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.gallery img{width:100%;height:340px;object-fit:contain;background:#e8eef5}a{color:#216fc2}p{line-height:1.7}</style><main><h1>Pomi · 双主控原型数字备份</h1><p>选择网络查看连线。此为代码与实物照片相结合的接线模型，未执行硬件仿真；实际孔位与遮挡端点仍需核对。</p><nav id="filters"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="scl" aria-pressed="false">I²C SCL</button><button data-filter="sda" aria-pressed="false">I²C SDA</button><button data-filter="power" aria-pressed="false">3.3V</button><button data-filter="ground" aria-pressed="false">共地</button><button data-filter="tx" aria-pressed="false">STM32 → ESP</button><button data-filter="rx" aria-pressed="false">ESP → STM32</button></nav><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 1030" role="img" aria-label="Pomi 双板原型逻辑接线模型">
+<style>text{font-family:Arial,'PingFang SC',sans-serif;fill:#19334a}.h{font-size:25px;font-weight:700}.label{font-size:17px}.small{font-size:14px}.pin{font-size:16px;font-family:monospace}.wire{fill:none;stroke-width:4;stroke-linejoin:round}.part{stroke:#b5cadc;stroke-width:2}.net{cursor:pointer}.net:hover .wire{stroke-width:7}</style><rect width="1320" height="1030" fill="#f5f8fc"/>
+<text x="40" y="49" class="h">pomi / 当前双主控接线模型</text>
+<text x="40" y="78" class="small">照片 + 固件记录 · 2026-11-08 · 逻辑连线，不按比例；不是已运行的电路仿真</text>
+<rect x="45" y="110" width="1230" height="65" rx="16" fill="#fff4d9" class="part"/>
+<text x="65" y="138" class="label">实物确认：NUCLEO、Olimex、OLED、面包板四键、Qwiic 传感器与两路 USB。</text>
+<text x="65" y="160" class="small">图中引脚依据固件与历史联调；遮挡端点、孔位和按钮实际顺序仍待逐根确认。</text>
+<rect x="55" y="215" width="350" height="620" rx="16" fill="#fff" class="part"/>
+<text x="80" y="252" class="h">STM32 NUCLEO-F401RE</text>
+<rect x="175" y="285" width="110" height="70" rx="16" fill="#263749" class="part"/>
+<text x="186" y="326" class="label" style="fill:#fff">STM32</text>
+<text x="80" y="382" class="small">板载 B1 / ST-LINK 保留</text>
+<text x="85" y="425" class="pin">D15 / PB8 · SCL</text>
+<circle cx="405" cy="420" r="5" fill="#19334a"/>
+<text x="85" y="470" class="pin">D14 / PB9 · SDA</text>
+<circle cx="405" cy="465" r="5" fill="#19334a"/>
+<text x="85" y="515" class="pin">3V3</text>
+<circle cx="405" cy="510" r="5" fill="#19334a"/>
+<text x="85" y="560" class="pin">GND</text>
+<circle cx="405" cy="555" r="5" fill="#19334a"/>
+<text x="85" y="635" class="pin">D8 / PA9 · TX</text>
+<circle cx="405" cy="630" r="5" fill="#19334a"/>
+<text x="85" y="680" class="pin">D2 / PA10 · RX</text>
+<circle cx="405" cy="675" r="5" fill="#19334a"/>
+<text x="80" y="720" class="pin">A0 / PA0   → 喂食</text>
+<text x="80" y="749" class="pin">A1 / PA1   → 抚摸</text>
+<text x="80" y="778" class="pin">A2 / PA4   → 睡眠</text>
+<text x="80" y="807" class="pin">A3 / PB0   → 玩耍</text>
+<rect x="690" y="215" width="580" height="355" rx="16" fill="#fff" class="part"/>
+<text x="715" y="248" class="h">400 孔面包板 / 布局简化</text>
+<rect x="870" y="280" width="350" height="110" rx="16" fill="#132d44" class="part"/>
+<text x="902" y="317" class="h" style="fill:#fff">SSD1306 OLED</text>
+<text x="909" y="350" class="label" style="fill:#fff">128 × 64 / I²C</text>
+<text x="710" y="298" class="pin">SCL</text>
+<text x="710" y="329" class="pin">SDA</text>
+<text x="710" y="360" class="pin">VCC</text>
+<text x="710" y="391" class="pin">GND</text>
+<rect x="730" y="437" width="85" height="62" rx="5" fill="#dce6ed" class="part"/>
+<circle cx="772" cy="466" r="16" fill="#283342"/>
+<text x="730" y="524" class="small">喂食</text>
+<rect x="860" y="437" width="85" height="62" rx="5" fill="#dce6ed" class="part"/>
+<circle cx="902" cy="466" r="16" fill="#283342"/>
+<text x="860" y="524" class="small">抚摸</text>
+<rect x="990" y="437" width="85" height="62" rx="5" fill="#dce6ed" class="part"/>
+<circle cx="1032" cy="466" r="16" fill="#283342"/>
+<text x="990" y="524" class="small">睡眠</text>
+<rect x="1120" y="437" width="85" height="62" rx="5" fill="#dce6ed" class="part"/>
+<circle cx="1162" cy="466" r="16" fill="#283342"/>
+<text x="1120" y="524" class="small">玩耍</text>
+<text x="710" y="551" class="small">功能顺序示意，非照片中四键上下顺序</text>
+<rect x="690" y="615" width="580" height="190" rx="16" fill="#fff" class="part"/>
+<text x="715" y="649" class="h">Olimex ESP32-C3-DevKit-Lipo</text>
+<text x="715" y="687" class="pin">GPIO4 / RX</text>
+<text x="715" y="731" class="pin">GPIO5 / TX</text>
+<text x="715" y="774" class="pin">GND · 与 STM32 共地</text>
+<rect x="1070" y="667" width="165" height="80" rx="4" fill="#b9c4cd" class="part"/>
+<text x="1082" y="713" class="label">ESP32-C3</text>
+<text x="1075" y="778" class="small">USB-C 独立供电</text>
+<rect x="55" y="860" width="350" height="125" rx="16" fill="#fff" class="part"/>
+<text x="80" y="895" class="h">LIS3DH / Qwiic 模块</text>
+<text x="80" y="922" class="pin"><tspan fill="#b98100" style="fill:#b98100">SCL（黄）</tspan><tspan dx="12" style="fill:#216fc2">SDA（蓝）</tspan></text>
+<text x="80" y="945" class="pin"><tspan style="fill:#d54459">3V3（红）</tspan><tspan dx="12" style="fill:#283342">GND（黑）</tspan></text>
+<text x="80" y="966" class="small">历史实测地址 0x19</text>
+<text x="80" y="984" class="small">照片未露出完整丝印，型号依购买记录</text>
+<g class="net" data-net="scl"><title>D15 / PB8 · SCL → OLED 对应端</title><path class="wire" stroke="#b98100" d="M405 420 H455 V294 H695"/></g>
+<g class="net" data-net="scl"><title>D15 / PB8 · SCL → LIS3DH 对应端（共同网络）</title><path class="wire" stroke="#b98100" d="M455 420 V900 H405"/></g>
+<text x="459" y="590" class="small" style="fill:#b98100">SCL</text>
+<g class="net" data-net="sda"><title>D14 / PB9 · SDA → OLED 对应端</title><path class="wire" stroke="#216fc2" d="M405 465 H485 V325 H695"/></g>
+<g class="net" data-net="sda"><title>D14 / PB9 · SDA → LIS3DH 对应端（共同网络）</title><path class="wire" stroke="#216fc2" d="M485 465 V918 H405"/></g>
+<text x="489" y="607" class="small" style="fill:#216fc2">SDA</text>
+<g class="net" data-net="power"><title>3V3 → OLED 对应端</title><path class="wire" stroke="#d54459" d="M405 510 H515 V356 H695"/></g>
+<g class="net" data-net="power"><title>3V3 → LIS3DH 对应端（共同网络）</title><path class="wire" stroke="#d54459" d="M515 510 V936 H405"/></g>
+<text x="519" y="624" class="small" style="fill:#d54459">POWER</text>
+<g class="net" data-net="ground"><title>GND → OLED 对应端</title><path class="wire" stroke="#586574" d="M405 555 H545 V387 H695"/></g>
+<g class="net" data-net="ground"><title>GND → LIS3DH 对应端（共同网络）</title><path class="wire" stroke="#586574" d="M545 555 V954 H405"/></g>
+<text x="549" y="641" class="small" style="fill:#586574">GROUND</text>
+<g class="net" data-net="tx"><title>STM32 TX → ESP32-C3 RX</title><path class="wire" stroke="#7857bb" d="M405 630 H605 V682 H695"/></g>
+<g class="net" data-net="rx"><title>ESP32-C3 TX → STM32 RX</title><path class="wire" stroke="#159288" d="M405 675 H630 V726 H695"/></g>
+<g class="net" data-net="ground"><title>共地；不是连接两块板的电源输出</title><path class="wire" stroke="#586574" d="M545 555 V770 H695"/></g>
+<text x="690" y="850" class="label">四键网络：A0 / A1 / A2 / A3 → 各自按钮 → GND</text>
+<text x="690" y="878" class="small">按钮内部上拉、按下接地；A4/A5 不作四键输入。</text>
+<text x="690" y="910" class="label">供电：STM32 CN1 USB + Olimex USB-C</text>
+<text x="690" y="938" class="small">Qwiic 已标实际线色；其余连线颜色仅用于区分网络。</text>
+<text x="690" y="966" class="small">OLED 与传感器共享 I²C；交叉线无圆点不表示相连。</text>
+<text x="40" y="1014" class="small">边界：未验证 Velxio 导入 / BLE 仿真 / 精确外形尺寸；本文件不改变硬件或固件。</text>
+</svg><h2>已保存的原始照片</h2><p>原图保留，无裁剪。布线颜色与图中网络配色不对应。四键功能映射来自代码，照片无法可靠确认其物理顺序。</p><div class="gallery"><figure><a href="photos/photo-01.jpg"><img src="photos/photo-01.jpg" alt="实物照片 1" loading="lazy"></a><figcaption>实物照片 1 · 点击查看原图</figcaption></figure><figure><a href="photos/photo-02.jpg"><img src="photos/photo-02.jpg" alt="实物照片 2" loading="lazy"></a><figcaption>实物照片 2 · 点击查看原图</figcaption></figure><figure><a href="photos/photo-03.jpg"><img src="photos/photo-03.jpg" alt="实物照片 3" loading="lazy"></a><figcaption>实物照片 3 · 点击查看原图</figcaption></figure><figure><a href="photos/photo-04.jpg"><img src="photos/photo-04.jpg" alt="实物照片 4" loading="lazy"></a><figcaption>实物照片 4 · 点击查看原图</figcaption></figure><figure><a href="photos/photo-05.jpg"><img src="photos/photo-05.jpg" alt="实物照片 5" loading="lazy"></a><figcaption>实物照片 5 · 点击查看原图</figcaption></figure></div><p><a href="README_zh.md">接线记录与待核对项</a> · <a href="wiring-model.svg">下载 SVG 接线图</a> · <a href="photos-manifest.json">照片校验清单</a></p><script>document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{let k=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));document.querySelectorAll('[data-net]').forEach(g=>g.style.opacity=k==='all'||g.dataset.net===k?'1':'.10')}));</script></main></html>

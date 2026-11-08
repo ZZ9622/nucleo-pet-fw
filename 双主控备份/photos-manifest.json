@@ -1,0 +1,27 @@
+[
+  {
+    "file": "photos/photo-01.jpg",
+    "original": "微信图片_20261108162327_916_343.jpg",
+    "sha256": "4ba7c7d46e1cfd9126dfd9109b8149d715553e73bd901106a3bba406f89d90ab"
+  },
+  {
+    "file": "photos/photo-02.jpg",
+    "original": "1.jpg",
+    "sha256": "e8b4e3da6fab36e56c5ae2c78cd5b62a1d84a9f5682960b16c63bbbe0cd88aba"
+  },
+  {
+    "file": "photos/photo-03.jpg",
+    "original": "2.jpg",
+    "sha256": "66dd95239f07d685a174686a4575f921dadf994aca1fc7ed3f43d61fe2a9eb05"
+  },
+  {
+    "file": "photos/photo-04.jpg",
+    "original": "3.jpg",
+    "sha256": "f18e35bc4865525b16add3f6dde89591ec975a3fbfd1cbc627eb9ec35586fc9b"
+  },
+  {
+    "file": "photos/photo-05.jpg",
+    "original": "4.jpg",
+    "sha256": "f5b2341bb400fdde9de3a7181c89c4cf2f4057f76cb59dc3430ac3aa9eadfe3f"
+  }
+]
