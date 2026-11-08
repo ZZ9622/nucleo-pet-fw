@@ -255,3 +255,33 @@ HELP 为疲惫眼睛、下弯嘴与闪烁感叹号；SLEEP 为闭眼细嘴与飘
 ## 活动自动获得盒子
 
 已接入挂件持久活动进度、服务端去重领取与App自动同步。正式规则为累计10分钟1盒、每日最多3盒；另提供30秒测试配置。断电保留已保存的整秒，跨日由小屋服务确认。构建、局限与实物验收见 [活动盒子说明](docs/ACTIVITY_BOXES_zh.md)。
+
+### 朋友拉取并烧录：30 秒活动盒子测试版
+
+在已安装 ARM 工具链、CMake 和 OpenOCD 的 Mac 上，打开终端进入本仓库根目录，依次执行：
+
+```sh
+git pull --ff-only origin main
+
+cmake -S . -B build/activity-test \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake \
+  -DPOMI_ACTIVITY_SECONDS=30
+
+cmake --build build/activity-test
+
+openocd -f openocd/nucleo-f401re.cfg \
+  -c "program build/activity-test/pet.hex verify reset exit"
+```
+
+烧录前先让宠物回到挂件，并完成待确认的开盒或食物操作。**不要执行整片擦除（mass erase）**，以保留宠物存档；ESP32 蓝牙透传模块无需重刷。
+
+这是 **30 秒 / 盒、每个服务确认日最多 3 盒** 的短周期测试配置。小屋服务必须同时使用 `--development --activity-seconds 30`；若 iPhone 连接的 Mac 已启动匹配的小屋服务，朋友只需烧录，无需另起服务。若自行启动，请沿用自己的原数据库路径：
+
+```sh
+python3 server/pomi_server.py \
+  --db /你的原数据库路径/pomi.sqlite \
+  --host 0.0.0.0 --port 8787 \
+  --development --activity-seconds 30
+```
+
+不要把数据库路径示例原样复制，也不要为升级删除原数据库。烧录后在 iPhone 重新连接 Pomi 并同步真实仓库，确认显示“短周期测试 · 30 秒 / 盒”，再按 [活动盒子实物验收](docs/ACTIVITY_BOXES_zh.md#iphone-实物验收) 测试。正式版使用 `-DPOMI_ACTIVITY_SECONDS=600`，服务默认600秒；切换前先同步完测试奖励，原每日已领数量不会清零。
