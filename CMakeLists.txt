@@ -11,6 +11,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 set(FIRMWARE_SOURCES
+    src/activity_reward.c
     src/memory.c
     src/startup.c
     src/pet_serial.c
@@ -100,3 +101,9 @@ else()
         COMMENT "OpenOCD is required to flash the NUCLEO-F401RE"
     )
 endif()
+
+set(POMI_ACTIVITY_SECONDS "600" CACHE STRING "600 production / 30 test seconds per box")
+if(NOT POMI_ACTIVITY_SECONDS MATCHES "^(600|30)$")
+    message(FATAL_ERROR "POMI_ACTIVITY_SECONDS must be 600 or 30")
+endif()
+target_compile_definitions(pet.elf PRIVATE POMI_ACTIVITY_SECONDS=${POMI_ACTIVITY_SECONDS})

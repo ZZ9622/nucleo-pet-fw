@@ -1,4 +1,5 @@
 #include "pet_handoff.h"
+#include "activity_reward.h"
 #include "pet_flash.h"
 #include <assert.h>
 #include <stdio.h>
@@ -13,7 +14,41 @@ bool pet_flash_write(uint32_t address,uint32_t value) {
 }
 bool pet_flash_erase(unsigned sector) {assert(sector==6||sector==7);memset(&flash[(sector-6)*32768],255,131072);return true;}
 static void reboot(PetHandoff *h) { fail_after=-1;pet_handoff_init(h);assert(!h->fault); }
+static void add_seconds(PetHandoff *h,unsigned seconds) {
+    for(unsigned i=0;i<seconds*10U;++i) { pet_activity_add(h,100U); }
+}
+static void test_activity(void) {
+    memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);
+    add_seconds(&h,2);assert(h.activity_day==0 && h.activity_progress==0);
+    assert(!pet_activity_sync(&h,739928U,0,0));
+    add_seconds(&h,7);reboot(&h);assert(h.activity_progress==7);
+    pet_activity_add(&h,9999);assert(h.activity_progress==7);
+    add_seconds(&h,POMI_ACTIVITY_SECONDS-7U);assert(h.activity_earned==1 && h.activity_progress==0);
+    reboot(&h);assert(h.activity_earned==1);
+    add_seconds(&h,POMI_ACTIVITY_SECONDS*3U);assert(h.activity_earned==3 && h.activity_progress==0);
+    assert(pet_activity_sync(&h,739929U,739928U,2));
+    assert(!pet_activity_sync(&h,739929U,739928U,3));
+    assert(h.activity_earned==0);add_seconds(&h,8);reboot(&h);assert(h.activity_progress==8);
+    assert(pet_activity_sync(&h,739928U,739928U,3));
+    assert(!pet_activity_sync(&h,739929U,0,0));assert(h.activity_progress==8);
+    const uint32_t travel[4]={101,102,103,104};
+    assert(!pet_handoff_command(&h,"TAKE_PREPARE",travel,h.revision,0));
+    add_seconds(&h,5);assert(h.activity_progress==8);
+    /* Every interrupted flash write leaves either the last saved second or
+     * a fully committed entitlement. Never expose or repeat a half-written box. */
+    for(int cut=0;cut<40;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);assert(!pet_activity_sync(&h,739928U,0,0));
+        h.activity_progress=POMI_ACTIVITY_SECONDS-1;assert(pet_handoff_checkpoint(&h));
+        fail_after=cut;add_seconds(&h,1);reboot(&h);
+        assert((h.activity_earned==0 && h.activity_progress==POMI_ACTIVITY_SECONDS-1) ||
+               (h.activity_earned==1 && h.activity_progress==0));
+        if(h.activity_earned==0) { add_seconds(&h,1); }
+        assert(h.activity_earned==1 && h.activity_progress==0);
+    }
+    puts("activity rewards: persisted seconds, daily cap, rollover ACK, offline recovery, 40 torn writes passed");
+}
 int main(void) {
+    test_activity();
     assert(pet_crc32("123456789",9)==0xcbf43926);
     memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);
     assert(pet_handoff_active(&h));

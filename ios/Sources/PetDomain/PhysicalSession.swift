@@ -10,6 +10,7 @@ public struct BoardRecord: Codable, Equatable {
     public let transferID: UUID
     public let payloadHash: UInt32
     public let state: FirmwareState
+    public var activity: ActivityReward? = nil
     public var motion: MotionTelemetry? = nil
     public var itemOperationID: UUID? = nil
     public var itemStatus: UInt32? = nil
@@ -19,9 +20,12 @@ public struct BoardRecord: Codable, Equatable {
     public func validate() throws {
         try state.validate()
         try motion?.validate()
+        try activity?.validate()
         guard v == 2, ok, phase < 4, revision < UInt32.max else {
             let message: String
             switch error {
+            case "activity_unsettled": message = "还有活动奖励等待入库，稍后会自动重试。"
+            case "activity_profile_conflict": message = "活动进度与测试周期不兼容，请保留存档并检查固件配置。"
             case "low_energy": message = "精力不足 10，请在挂件上休息后再开盒。"
             case "pet_sleeping": message = "请先在挂件上叫醒宠物。"
             case "item_pending": message = "请先完成待确认的物品操作。"

@@ -3,12 +3,13 @@ import XCTest
 
 final class BoardWireTests: XCTestCase {
     let id = UUID(uuidString:"00112233-4455-6677-8899-aabbccddeeff")!
-    func response(id: UUID? = nil, words: [UInt32]? = nil, motion: [String: Any]? = nil) throws -> Data {
+    func response(id: UUID? = nil, words: [UInt32]? = nil, motion: [String: Any]? = nil, activity: [String:Any]? = nil) throws -> Data {
         let state: [UInt32] = words ?? [80,75,12,3,1,0,0,0,123,12,0,456,12345678,0]
         var value: [String:Any] = ["v":2,"requestID":BoardWire.hex(id ?? self.id),"ok":true,"error":"",
             "petID":"0069002a323551033434383100000001","phase":0,"revision":4,
             "transferID":String(repeating:"0",count:32),"payloadHash":0,"state":state]
         if let motion { value["motion"] = motion }
+        if let activity { value["activity"] = activity }
         let data=try JSONSerialization.data(withJSONObject:value,options:[.sortedKeys])
         return data + Data(String(format:"|%08x\n",BoardWire.crc32(data)).utf8)
     }
@@ -55,6 +56,17 @@ final class BoardWireTests: XCTestCase {
         motion["xMg"] = 0
         motion["behavior"] = 3
         XCTAssertThrowsError(try BoardWire.decode(response(motion: motion), requestID: id))
+    }
+
+    func testActivityReceiptIsOptionalValidatedAndSurvivesFragmentation() throws {
+        XCTAssertNil(try BoardWire.decode(response(),requestID:id).activity)
+        var activity:[String:Any] = ["day":739928,"progressSeconds":29,"earnedToday":2,"intervalSeconds":30]
+        let data=try response(activity:activity);var buffer=BoardLineBuffer();var lines:[Data]=[]
+        for start in stride(from:0,to:data.count,by:20) { lines += buffer.append(data.subdata(in:start..<min(data.count,start+20))) }
+        let value=try BoardWire.decode(lines[0],requestID:id)
+        XCTAssertEqual(value.activity?.earnedToday,2);XCTAssertTrue(value.activity!.isTest)
+        activity["earnedToday"]=4
+        XCTAssertThrowsError(try BoardWire.decode(response(activity:activity),requestID:id))
     }
 
     func testReturnFrameCarriesFullSnapshotAndStableIdentity() throws {

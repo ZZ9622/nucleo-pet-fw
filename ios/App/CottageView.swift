@@ -46,6 +46,7 @@ struct CottageView: View {
             VStack(alignment:.leading,spacing:20) {
                 PageHeader(eyebrow:"Pomi / LITTLE COLLECTIONS",title:"把日子装进小屋",subtitle:"出门遇见惊喜，回家留下一点风景。")
                 if world.preview { Text("独立预览 · 模拟物品与放生海").font(.caption.bold()).padding(10).background(Palette.blush) }
+                if store.physicalMode { ActivityRewardPanel() }
                 room
                 Picker("小屋内容",selection:$section) {
                     Text("仓库").tag(0);Text("放生海").tag(1)

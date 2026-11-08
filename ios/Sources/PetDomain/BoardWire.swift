@@ -17,12 +17,19 @@ public enum BoardWire {
         let commands = ["/device":"STATUS", "/handoff/take/prepare":"TAKE_PREPARE", "/handoff/take/commit":"TAKE_COMMIT",
                         "/items/open":"ITEM_OPEN", "/items/food1":"ITEM_FOOD1", "/items/food2":"ITEM_FOOD2",
                         "/handoff/return/stage":"RETURN_STAGE", "/handoff/return/commit":"RETURN_COMMIT"]
-        guard let command = commands[path] else { throw CompanionError.invalidState }
+        let components=path.split(separator:"/")
+        var activityValues: [UInt32]?
+        if components.count==5,components[0]=="activity",components[1]=="sync" {
+            let parsed=components.dropFirst(2).compactMap { UInt32($0) }
+            guard parsed.count==3,parsed[0]>0,parsed[0]<=3652059,parsed[1]<=parsed[0],parsed[2]<=3 else { throw CompanionError.invalidState }
+            activityValues=parsed
+        }
+        guard let command = activityValues != nil ? "ACTIVITY_SYNC" : commands[path] else { throw CompanionError.invalidState }
         if command != "STATUS" {
             guard let intent, petID != nil, intent.baseRevision < UInt32.max,
                   intent.id != UUID(uuidString: "00000000-0000-0000-0000-000000000000") else { throw CompanionError.invalidState }
         }
-        var state = ""
+        var state = activityValues?.map(String.init).joined(separator:",") ?? ""
         if command == "RETURN_STAGE" {
             guard let snapshot = intent?.snapshot else { throw CompanionError.invalidState }
             try snapshot.validate()
@@ -46,6 +53,7 @@ public enum BoardWire {
             let petID: String; let phase: UInt32; let revision: UInt32; let transferID: String
             let payloadHash: UInt32; let state: [UInt32]
             let motion: MotionTelemetry?
+            let activity: ActivityReward?
             let itemOperationID: String?; let itemStatus: UInt32?; let itemKind: UInt32?; let itemLevel: UInt32?
         }
         let raw = try JSONDecoder().decode(Raw.self, from: payload)
@@ -54,6 +62,7 @@ public enum BoardWire {
         var value = BoardRecord(v: raw.v, ok: raw.ok, error: raw.error, petID: try uuid(raw.petID),
             phase: raw.phase, revision: raw.revision, transferID: try uuid(raw.transferID), payloadHash: raw.payloadHash, state: state)
         value.motion = raw.motion
+        value.activity = raw.activity
         if let op=raw.itemOperationID { value.itemOperationID=try uuid(op) }
         value.itemStatus=raw.itemStatus;value.itemKind=raw.itemKind;value.itemLevel=raw.itemLevel
         try value.validate()

@@ -26,6 +26,11 @@ final class CompanionStore: ObservableObject {
     @Published var connectionKind: ConnectionKind = .bluetooth
     let bluetooth = BluetoothTransport()
     let world = PomiWorldStore()
+    @Published private(set) var activityReward: ActivityReward?
+    @Published private(set) var activityMessage = "连接小屋服务后启用活动奖励"
+    private var lastActivitySync = Date.distantPast
+    private var lastActivityReceipt: ActivityReward?
+    private var lastActivitySuccess = Date.distantPast
     @Published private(set) var liveMotion: MotionTelemetry?
     @Published private(set) var motionReceivedAt: Date?
     @Published private(set) var lastHardwareRead: Date?
@@ -168,11 +173,36 @@ final class CompanionStore: ObservableObject {
             let record=try await transport.request("/device",intent:nil,petID:nil)
             guard var next=physical else { return }
             try next.observe(record);try savePhysical(next)
+            activityReward=record.activity
             liveMotion = record.motion
             motionReceivedAt = Date()
             lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
             try await settleItemReceipt(record)
+            await syncActivity(record)
         } catch { liveMessage=error.localizedDescription }
+    }
+
+    private func syncActivity(_ record: BoardRecord) async {
+        guard connectionKind == .bluetooth,let receipt=record.activity,world.isConnected,!world.busy,
+              physical?.intent==nil,Date().timeIntervalSince(lastActivitySync)>=5 else { return }
+        if let previous=lastActivityReceipt,previous.day==receipt.day,previous.earnedToday==receipt.earnedToday,
+           Date().timeIntervalSince(lastActivitySuccess)<60 { return }
+        lastActivitySync=Date()
+        do {
+            try await world.recoverActivityRequest()
+            let result=try await world.perform("/activity/sync",[
+                "petID":record.petID.uuidString,"day":receipt.day,"earnedToday":receipt.earnedToday,
+                "progressSeconds":receipt.progressSeconds,"intervalSeconds":receipt.intervalSeconds])
+            guard let ack=result.activitySync else { throw CompanionError.invalidState }
+            let path=try ack.path(for:record.petID,receipt:receipt)
+            if ack.day != receipt.day {
+                let intent=PhysicalIntent(id:UUID(),destination:.device,baseRevision:record.revision,snapshot:nil,released:false)
+                let confirmed=try await bluetooth.request(path,intent:intent,petID:record.petID)
+                activityReward=confirmed.activity
+            }
+            lastActivityReceipt=activityReward ?? receipt;lastActivitySuccess=Date()
+            activityMessage=ack.granted>0 ? "活动获得 \(ack.granted) 个盒子，已放入仓库" : "奖励已同步 · \(ack.dayLabel)"
+        } catch { activityMessage=error.localizedDescription }
     }
 
     func startItem(kind: String, id: String) async {
@@ -249,6 +279,7 @@ final class CompanionStore: ObservableObject {
             session = demo
             physical = nil
             physicalMode = false
+            activityReward=nil
             liveMotion = nil
             motionReceivedAt = nil
             physicalBlocked = false
@@ -277,6 +308,8 @@ final class CompanionStore: ObservableObject {
         try savePhysical(next)
         physicalBlocked = false
         hasEnteredHome = true
+        activityReward=record.activity
+        lastActivitySync = .distantPast
         liveMotion = record.motion
         motionReceivedAt = Date()
         lastHardwareRead=Date();liveMessage="属性已同步"

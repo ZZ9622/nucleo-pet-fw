@@ -7,6 +7,7 @@
 #include "pet.h"
 #include "pet_serial.h"
 #include "motion.h"
+#include "activity_reward.h"
 #include "screen_idle.h"
 
 enum {
@@ -111,7 +112,13 @@ int main(void)
         const uint32_t now_ms = board_millis();
         const uint32_t previous_phase = handoff.phase;
         const uint32_t previous_item_status=handoff.item_status;
+        const MotionState *motion=lis3dh_state();
+        const uint32_t previous_sample=motion->last_sample_ms, previous_samples=motion->samples;
         lis3dh_poll(now_ms);
+        if(motion->connected && motion->samples!=previous_samples && previous_samples &&
+           motion->had_activity && (uint32_t)(motion->last_sample_ms-motion->activity_ms)<1500U) {
+            pet_activity_add(&handoff,motion->last_sample_ms-previous_sample);
+        }
         pet_serial_poll(&handoff);
         if(handoff.item_kind==1 && handoff.item_status==1 && !item_animation) {
             item_animation=true;item_animation_ms=now_ms;screen_idle_init(&screen,now_ms);

@@ -1,4 +1,5 @@
 #include "pet_handoff.h"
+#include "activity_reward.h"
 
 uint32_t pet_crc32(const void *data, size_t size)
 {
@@ -52,6 +53,7 @@ static bool command_is(const char *a,const char *b)
 }
 void pet_handoff_init(PetHandoff *h)
 {
+    pet_activity_reset_runtime();
     *h=(PetHandoff){0};
     const int result=pet_storage_load(h);
     if (result==1) { return; }

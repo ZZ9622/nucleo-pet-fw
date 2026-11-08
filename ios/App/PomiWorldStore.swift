@@ -14,6 +14,7 @@ import PetDomain
     private let previewURL = FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("NucleoPet/world-preview.json")
     private var identityHost: String?
     private var configured=false
+    var isConnected: Bool { !preview && token != nil && identityHost != nil }
 
     func configure(preview: Bool) {
         guard !configured || self.preview != preview else { return }
@@ -97,6 +98,21 @@ import PetDomain
             inventory=try JSONDecoder().decode(PomiInventory.self,from:await send("/state",body:[:]))
             UserDefaults.standard.set(serviceURL,forKey:"pomi.serviceURL");message="真实仓库已同步"
         } catch { message=error.localizedDescription }
+    }
+    func recoverActivityRequest() async throws {
+        guard !busy,!preview,token != nil else { throw PhysicalError.message("请先同步小屋服务") }
+        let host=try baseURL().absoluteString
+        guard host==identityHost else { throw PhysicalError.message("服务地址已改变，请重新同步仓库") }
+        guard let saved=try credential(host+"/outbox"),!saved.isEmpty else { return }
+        guard let data=saved.data(using:.utf8),let out=try JSONSerialization.jsonObject(with:data) as? [String:Any],
+              out["path"] as? String=="/activity/sync",let body=out["body"] as? [String:Any] else {
+            throw PhysicalError.message("有待确认的仓库操作，请先同步真实仓库")
+        }
+        busy=true;defer{busy=false}
+        let response=try await send("/activity/sync",body:body)
+        let next=try JSONDecoder().decode(PomiInventory.self,from:response)
+        _ = try credential(host+"/outbox",value:"")
+        inventory=next
     }
     @discardableResult func perform(_ path: String, _ body: [String:Any] = [:], requestID: String = UUID().uuidString) async throws -> PomiInventory {
         guard !busy else { throw PhysicalError.message("正在同步，请稍后") }

@@ -31,7 +31,7 @@ struct DeviceView: View {
                         .font(.system(size: 13, weight: .semibold)).padding(.top, 5)
                 }
 
-                if store.physicalMode { LiveMotionPanel() }
+                if store.physicalMode { LiveMotionPanel();ActivityRewardPanel() }
 
                 PetNameEditor()
 
@@ -157,5 +157,29 @@ private struct LiveMotionPanel: View {
     private func recent(at now: Date) -> Bool {
         guard let received = store.motionReceivedAt else { return false }
         return (0...6).contains(now.timeIntervalSince(received))
+    }
+}
+
+struct ActivityRewardPanel: View {
+    @EnvironmentObject private var store: CompanionStore
+    var body: some View {
+        VStack(alignment:.leading,spacing:10) {
+            Text("活动盒子").font(.headline)
+            if let reward=store.activityReward {
+                if reward.isTest { Text("短周期测试 · 30 秒 / 盒").font(.caption.bold()).foregroundStyle(Palette.coral) }
+                else { Text("累计 10 分钟 / 盒").font(.caption) }
+                if reward.day==0 { Text("先同步小屋服务以确认日期，再开始累计活动").font(.caption) }
+                else {
+                    Text("今日已获得 \(reward.earnedToday) / 3").accessibilityIdentifier("activity.earned")
+                    if reward.earnedToday<3 {
+                        ProgressView(value:Double(reward.progressSeconds),total:Double(reward.intervalSeconds))
+                        Text("已保存 \(reward.progressSeconds) / \(reward.intervalSeconds) 秒").font(.caption).monospacedDigit().accessibilityIdentifier("activity.progress")
+                    } else { Text("今日已达上限，联网确认新日期后继续").font(.caption) }
+                }
+                if store.physicalMode && !store.bluetooth.ready { Text("蓝牙未连接 · 上次保存的进度").font(.caption) }
+                Text(store.activityMessage).font(.caption).foregroundStyle(Palette.muted)
+                Text("离线保留进度；没有断电走时时钟，跨日以小屋服务确认为准。").font(.caption2).foregroundStyle(Palette.muted)
+            } else { Text("当前固件尚未提供活动奖励进度，请更新挂件固件。").font(.caption) }
+        }.padding(18).frame(maxWidth:.infinity,alignment:.leading).background(Palette.sage,in:PixelFrame())
     }
 }

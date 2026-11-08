@@ -6,6 +6,7 @@ import secrets
 import sqlite3
 import time
 import uuid
+import activity_rewards
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -21,12 +22,16 @@ class RuleError(Exception):
     pass
 
 class World:
-    def __init__(self, path, clock=time.time):
+    def __init__(self, path, clock=time.time, activity_seconds=600, timezone="Europe/Stockholm"):
         self.path, self.clock = path, clock
+        if activity_seconds not in (30,600):raise ValueError("activity_seconds must be 30 or 600")
+        self.activity_seconds,self.timezone=activity_seconds,timezone
         with self.db() as db:
             db.executescript('''
             CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY, token TEXT UNIQUE, data TEXT);
             CREATE TABLE IF NOT EXISTS bottles(id TEXT PRIMARY KEY, owner TEXT, item TEXT);
+            CREATE TABLE IF NOT EXISTS activity_devices(pet TEXT PRIMARY KEY, owner TEXT UNIQUE, last_day INTEGER NOT NULL);
+            CREATE TABLE IF NOT EXISTS activity_claims(pet TEXT, day INTEGER, earned INTEGER, interval INTEGER, PRIMARY KEY(pet,day));
             CREATE TABLE IF NOT EXISTS requests(user TEXT, id TEXT, path TEXT, body TEXT, result TEXT,
               PRIMARY KEY(user,id));
             ''')
@@ -59,7 +64,7 @@ class World:
     def view(self, s):
         return dict(catalog=CATALOG, boxes=s['boxes'], items=s['items'], room=s['room'], log=s['log'],
                     pending=s['pending'], chances=s['chances'], nextChanceAt=s['anchor']+10800,
-                    preferences=s['preferences'])
+                    preferences=s['preferences'], activitySync=s.get('activitySync'))
     def item(self, kind, level=1):
         return dict(id=str(uuid.uuid4()), kind=kind, level=level)
     def note(self,s,text):
@@ -89,6 +94,8 @@ class World:
                 if s['pending'] and s['pending'].get('itemID')==item['id']: raise RuleError('物品正在等待挂件确认')
                 return item
             if path == '/state': pass
+            elif path == '/activity/sync':
+                activity_rewards.sync(self,db,user,s,b,RuleError)
             elif path == '/activity':
                 # Device integration reports cumulative eligible 10-minute segments.
                 # Until trusted sensor receipts exist this endpoint is disabled by HTTP layer.
@@ -184,6 +191,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/identity': result=self.server.world.create()
             else:
                 if self.path=='/activity' and not self.server.development: raise RuleError('活动奖励等待传感器接入，当前服务未开放模拟发放')
+                if self.path=='/activity/sync' and self.server.world.activity_seconds==30 and not self.server.development: raise RuleError('30秒活动测试需显式启用开发模式')
                 auth=self.headers.get('Authorization','')
                 if not auth.startswith('Bearer '): raise RuleError('请先创建身份')
                 result=self.server.world.run(auth[7:],self.path,b)
@@ -195,8 +203,9 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);a=p.parse_args()
-    world=World(a.db)
+    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--activity-seconds',type=int,choices=[30,600],default=600);p.add_argument('--timezone',default='Europe/Stockholm');a=p.parse_args()
+    if a.activity_seconds==30 and not a.development:p.error('30-second test requires --development')
+    world=World(a.db,activity_seconds=a.activity_seconds,timezone=a.timezone)
     if a.seed: world.seed(a.seed)
     server=ThreadingHTTPServer((a.host,a.port),Handler);server.world=world;server.development=a.development
     print(f'Pomi service listening on {a.host}:{a.port}',flush=True);server.serve_forever()

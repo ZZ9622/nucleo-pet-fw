@@ -37,6 +37,7 @@ public struct PomiOperation: Codable, Equatable {
     }
 }
 public struct PomiInventory: Codable, Equatable {
+    public var activitySync: ActivitySyncInfo? = nil
     public var catalog = PomiCatalogEntry.initial
     public var boxes: [String] = []
     public var items: [PomiItem] = []
