@@ -31,6 +31,9 @@ final class CompanionStore: ObservableObject {
     private var lastActivitySync = Date.distantPast
     private var lastActivityReceipt: ActivityReward?
     private var lastActivitySuccess = Date.distantPast
+    private var lastClockSync = Date.distantPast
+    private var lastClockAttempt = Date.distantPast
+    private var activityTimeZone = UserDefaults.standard.string(forKey:"pomi.activityTimeZone") ?? "Europe/Stockholm"
     @Published private(set) var liveMotion: MotionTelemetry?
     @Published private(set) var motionReceivedAt: Date?
     @Published private(set) var lastHardwareRead: Date?
@@ -170,40 +173,69 @@ final class CompanionStore: ObservableObject {
         guard !hardwareBusy, physical?.intent == nil else { return }
         hardwareBusy=true;defer{hardwareBusy=false}
         do {
-            let record=try await transport.request("/device",intent:nil,petID:nil)
+            var record=try await transport.request("/device",intent:nil,petID:nil)
             guard var next=physical else { return }
             try next.observe(record);try savePhysical(next)
-            activityReward=record.activity
-            liveMotion = record.motion
-            motionReceivedAt = Date()
+            activityReward=record.activity;liveMotion=record.motion;motionReceivedAt=Date()
             lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
+            record=await syncActivityClock(record,authorize:false)
             try await settleItemReceipt(record)
             await syncActivity(record)
         } catch { liveMessage=error.localizedDescription }
     }
 
+    private func syncActivityClock(_ record:BoardRecord,authorize:Bool) async -> BoardRecord {
+        guard connectionKind == .bluetooth,let receipt=record.activity,receipt.profileID==3,
+              receipt.offlineClockSupported==true,(receipt.lifetimeEnabled==true || authorize),
+              receipt.clockReady != true || Date().timeIntervalSince(lastClockSync)>=3600 else { return record }
+        guard Date().timeIntervalSince(lastClockAttempt)>=3 else { return record }
+        lastClockAttempt=Date()
+        do {
+            let now=Date(),zone=activityTimeZone
+            let plan=try await Task.detached { try ActivityClockPlan.make(now:now,timeZone:zone) }.value
+            let path="/activity/clock/" + (try plan.payload(receipt:receipt))
+            let intent=PhysicalIntent(id:UUID(),destination:.device,baseRevision:record.revision,snapshot:nil,released:false)
+            let confirmed=try await bluetooth.request(path,intent:intent,petID:record.petID)
+            activityReward=confirmed.activity;lastClockSync=Date()
+            activityMessage="手机已校时 · 有电离线也会在08:00刷新"
+            return confirmed
+        } catch { activityMessage=error.localizedDescription;return record }
+    }
+
     private func syncActivity(_ record: BoardRecord) async {
         guard connectionKind == .bluetooth,let receipt=record.activity,world.isConnected,!world.busy,
               physical?.intent==nil,Date().timeIntervalSince(lastActivitySync)>=5 else { return }
-        if let previous=lastActivityReceipt,previous.day==receipt.day,previous.earnedToday==receipt.earnedToday,previous.profileID==receipt.profileID,previous.configuredProfile==receipt.configuredProfile,
+        if let previous=lastActivityReceipt,previous.day==receipt.day,previous.earnedToday==receipt.earnedToday,
+           previous.profileID==receipt.profileID,previous.configuredProfile==receipt.configuredProfile,
+           previous.issuedTotal==receipt.issuedTotal,previous.lifetimeEnabled==receipt.lifetimeEnabled,
            Date().timeIntervalSince(lastActivitySuccess)<60 { return }
         lastActivitySync=Date()
         do {
             try await world.recoverActivityRequest()
-            let result=try await world.perform("/activity/sync",[
-                "petID":record.petID.uuidString,"day":receipt.day,"earnedToday":receipt.earnedToday,
+            var body:[String:Any] = ["petID":record.petID.uuidString,"day":receipt.day,"earnedToday":receipt.earnedToday,
                 "progressSeconds":receipt.progressSeconds,"intervalSeconds":receipt.intervalSeconds,
-                "profile":receipt.profileID,"configuredProfile":receipt.configuredProfile ?? receipt.profileID])
+                "profile":receipt.profileID,"configuredProfile":receipt.configuredProfile ?? receipt.profileID]
+            if let enabled=receipt.lifetimeEnabled { body["lifetimeEnabled"]=enabled }
+            if let total=receipt.issuedTotal { body["issuedTotal"]=total }
+            if let support=receipt.offlineClockSupported { body["offlineClockSupported"]=support }
+            let result=try await world.perform("/activity/sync",body)
             guard let ack=result.activitySync else { throw CompanionError.invalidState }
+            activityTimeZone=ack.timezone;UserDefaults.standard.set(ack.timezone,forKey:"pomi.activityTimeZone")
             let path=try ack.path(for:record.petID,receipt:receipt)
+            var current=record
             if ack.day != receipt.day || (ack.profile ?? receipt.profileID) != receipt.profileID {
                 let intent=PhysicalIntent(id:UUID(),destination:.device,baseRevision:record.revision,snapshot:nil,released:false)
-                let confirmed=try await bluetooth.request(path,intent:intent,petID:record.petID)
-                activityReward=confirmed.activity
+                current=try await bluetooth.request(path,intent:intent,petID:record.petID)
+                activityReward=current.activity
             }
-            lastActivityReceipt=activityReward ?? receipt;lastActivitySuccess=Date()
+            current=await syncActivityClock(current,authorize:false)
+            if ack.clockBootstrap==true,let observed=current.activity,observed.day==receipt.day,
+               observed.profileID==receipt.profileID,observed.earnedToday==receipt.earnedToday {
+                current=await syncActivityClock(current,authorize:true)
+            }
+            lastActivityReceipt=receipt;lastActivitySuccess=Date()
             activityMessage=ack.granted>0 ? "活动获得 \(ack.granted) 个盒子，已放入仓库" : "奖励已同步 · \(ack.dayLabel)"
-        } catch { activityMessage=error.localizedDescription }
+        } catch { activityMessage=error.localizedDescription;lastActivitySync=Date().addingTimeInterval(55) }
     }
 
     func startItem(kind: String, id: String) async {

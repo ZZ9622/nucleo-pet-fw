@@ -12,6 +12,10 @@ def limit(profile):return 6 if profile==3 else 3
 def target(profile,earned):return STAGES[min(earned,5)] if profile==3 else 30 if profile==1 else 600
 
 def migrate(db):
+    db.execute('CREATE TABLE IF NOT EXISTS activity_totals(pet TEXT PRIMARY KEY, claimed INTEGER NOT NULL, last_day INTEGER NOT NULL, enabled_seen INTEGER NOT NULL)')
+    total_columns={r[1] for r in db.execute('PRAGMA table_info(activity_totals)')}
+    if 'profile' not in total_columns:db.execute('ALTER TABLE activity_totals ADD COLUMN profile INTEGER NOT NULL DEFAULT 0')
+    if 'earned' not in total_columns:db.execute('ALTER TABLE activity_totals ADD COLUMN earned INTEGER NOT NULL DEFAULT 0')
     columns={r[1] for r in db.execute('PRAGMA table_info(activity_devices)')}
     if 'profile' not in columns:db.execute('ALTER TABLE activity_devices ADD COLUMN profile INTEGER NOT NULL DEFAULT 0')
     if 'migration' not in columns:db.execute('ALTER TABLE activity_devices ADD COLUMN migration TEXT')
@@ -20,7 +24,7 @@ def migrate(db):
     db.execute('''UPDATE activity_devices SET profile=COALESCE((SELECT CASE WHEN interval=30 THEN 1 ELSE 2 END
                   FROM activity_claims WHERE pet=activity_devices.pet ORDER BY day DESC LIMIT 1),0) WHERE profile=0''')
 
-def sync(world,db,user,state,body,error):
+def _sync(world,db,user,state,body,error):
     def integer(name,lo,hi,default=None):
         v=body.get(name,default)
         if type(v) is not int or not lo<=v<=hi:raise error('活动回执字段无效：'+name)
@@ -89,3 +93,37 @@ def sync(world,db,user,state,body,error):
     state['activitySync']=dict(petID=pet,day=next_day,dayLabel=datetime.date.fromordinal(next_day).isoformat(),timezone=world.timezone,
         intervalSeconds=target(desired,carry if changing else (earned if day==next_day else 0)),
         ackDay=day,ackEarned=earned,granted=granted,profile=desired,ackProfile=wire,carryEarned=carry,dailyLimit=limit(desired),refreshHour=8 if desired==3 else 0)
+
+def sync(world,db,user,state,body,error):
+    try:pet=str(uuid.UUID(body.get('petID',''))).lower()
+    except (ValueError,TypeError,AttributeError):raise error('挂件身份无效')
+    enabled=body.get('lifetimeEnabled',False)
+    support=body.get('offlineClockSupported',False)
+    if type(enabled) is not bool or type(support) is not bool:raise error('累计奖励标记无效')
+    row=db.execute('SELECT * FROM activity_totals WHERE pet=?',(pet,)).fetchone()
+    if row and row['enabled_seen'] and not enabled:raise error('挂件累计奖励记录回退，请保留存档并升级App')
+    delta=0
+    if enabled:
+        total=body.get('issuedTotal')
+        day=body.get('day')
+        if type(total) is not int or not 0<=total<=0xffffffff or type(day) is not int:raise error('累计奖励计数无效')
+        if not row:raise error('请先完成一次在线校时，保留挂件存档')
+        if total<row['claimed']:raise error('累计奖励计数回退，已停止发放')
+        delta=total-row['claimed']
+        if type(body.get('earnedToday')) is not int or not 0<=body['earnedToday']<=6:raise error('活动计数无效')
+        if body.get('profile')==row['profile'] and day==row['last_day'] and delta>max(0,body.get('earnedToday',0)-row['earned']):raise error('累计奖励与本周期计数不一致')
+        if delta>6*(max(0,day-row['last_day'])+1):raise error('离线奖励超过周期上限，已停止发放')
+    boxes=list(state['boxes']);log=list(state['log'])
+    _sync(world,db,user,state,body,error)
+    if enabled:
+        # The per-cycle receipt still verifies today's state; the monotonic
+        # counter funds all unclaimed cycles, including days spent offline.
+        state['boxes']=boxes;state['log']=log
+        if delta:
+            state['boxes'].extend(str(uuid.uuid4()) for _ in range(delta))
+            world.note(state,f'活动获得 {delta} 个盒子（含离线累计）')
+        db.execute('UPDATE activity_totals SET claimed=?,last_day=?,enabled_seen=1,profile=?,earned=? WHERE pet=?',(total,day,body.get('profile',0),body.get('earnedToday',0),pet))
+        state['activitySync']['granted']=delta
+    elif support and body.get('configuredProfile')==3:
+        db.execute('INSERT INTO activity_totals(pet,claimed,last_day,enabled_seen,profile,earned) VALUES(?,0,?,0,?,?) ON CONFLICT(pet) DO UPDATE SET last_day=excluded.last_day,profile=excluded.profile,earned=excluded.earned',(pet,body.get('day',0),body.get('profile',0),body.get('earnedToday',0)))
+        state['activitySync']['clockBootstrap']=True

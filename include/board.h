@@ -10,6 +10,7 @@ typedef enum { BOARD_FEED, BOARD_PET, BOARD_SLEEP, BOARD_PLAY,
 void board_init(void);
 bool board_action_pressed(BoardAction action);
 uint32_t board_millis(void);
+uint32_t board_clock_millis(void);
 void board_led_write(bool on);
 bool board_button_pressed(void);
 void board_idle(void);

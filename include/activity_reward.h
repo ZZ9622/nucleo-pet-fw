@@ -18,6 +18,16 @@
  * 2=legacy 600s/3, 3=08:00 incremental six-box cycle. */
 uint32_t pet_activity_limit(uint32_t profile);
 uint32_t pet_activity_target(uint32_t profile, uint32_t earned);
+enum { ACTIVITY_CLOCK_EXCEPTIONS=24 };
+typedef struct {
+    uint32_t epoch, day, next_epoch, valid_until;
+    uint32_t ack_day, ack_earned, ack_profile, baseline;
+    uint32_t exception_count, days[ACTIVITY_CLOCK_EXCEPTIONS], durations[ACTIVITY_CLOCK_EXCEPTIONS];
+} ActivityClockPlan;
+void pet_activity_clock_tick(PetHandoff *h, uint32_t now_ms);
+bool pet_activity_clock_ready(void);
+uint32_t pet_activity_clock_next(void);
+const char *pet_activity_set_clock(PetHandoff *h,const ActivityClockPlan *plan,uint32_t now_ms);
 void pet_activity_reset_runtime(void);
 void pet_activity_add(PetHandoff *h, uint32_t elapsed_ms);
 const char *pet_activity_sync(PetHandoff *h, uint32_t day, uint32_t ack_day, uint32_t ack_earned);

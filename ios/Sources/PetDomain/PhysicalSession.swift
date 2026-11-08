@@ -24,6 +24,7 @@ public struct BoardRecord: Codable, Equatable {
         guard v == 2, ok, phase < 4, revision < UInt32.max else {
             let message: String
             switch error {
+            case "invalid_clock": message = "校时未通过，请检查手机日期、时区和挂件固件。"
             case "activity_unsettled": message = "还有活动奖励等待入库，稍后会自动重试。"
             case "activity_profile_conflict": message = "活动进度与测试周期不兼容，请保留存档并检查固件配置。"
             case "low_energy": message = "精力不足 10，请在挂件上休息后再开盒。"

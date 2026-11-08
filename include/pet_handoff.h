@@ -8,6 +8,7 @@ typedef struct {
     uint32_t phase, revision, transaction[4], payload_hash;
     uint32_t item_id[4], item_status, item_kind, item_level;
     uint32_t activity_day, activity_progress, activity_earned, activity_profile;
+    uint32_t activity_total, activity_lifetime_enabled;
     PetState pet;
     bool fault;
 } PetHandoff;

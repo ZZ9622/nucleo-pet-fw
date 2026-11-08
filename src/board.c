@@ -38,6 +38,17 @@ void board_init(void)
                                  (1UL << shift); /* pull-up */
     }
 
+    /* TIM2 is free running at 1 kHz; unlike the interrupt counter, it continues
+     * during flash program/erase stalls. APB1 is the reset 16 MHz HSI clock. */
+    (*(volatile uint32_t *)0x40023840UL)|=1UL;
+    (void)(*(volatile uint32_t *)0x40023840UL);
+    (*(volatile uint32_t *)0x40000000UL)=0;
+    (*(volatile uint32_t *)0x40000028UL)=15999U;
+    (*(volatile uint32_t *)0x4000002CUL)=0xffffffffU;
+    (*(volatile uint32_t *)0x40000014UL)=1U;
+    (*(volatile uint32_t *)0x40000024UL)=0;
+    (*(volatile uint32_t *)0x40000000UL)=1U;
+
     SysTick->LOAD = (BOARD_HSI_HZ / BOARD_TICK_HZ) - 1UL;
     SysTick->VAL = 0UL;
     SysTick->CTRL = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
@@ -78,3 +89,5 @@ bool board_action_pressed(BoardAction action)
     if ((unsigned)action >= BOARD_ACTION_COUNT) { return false; }
     return (action_ports[action]->IDR & (1UL << action_pins[action])) == 0U;
 }
+
+uint32_t board_clock_millis(void) { return *(volatile uint32_t *)0x40000024UL; }

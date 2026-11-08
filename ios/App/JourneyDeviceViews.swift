@@ -185,7 +185,13 @@ struct ActivityRewardPanel: View {
                 }
                 if store.physicalMode && !store.bluetooth.ready { Text("蓝牙未连接 · 上次保存的进度").font(.caption) }
                 Text(store.activityMessage).font(.caption).foregroundStyle(Palette.muted)
-                Text("离线保留进度；没有断电走时时钟，跨日以小屋服务确认为准。").font(.caption2).foregroundStyle(Palette.muted)
+                if reward.offlineClockSupported==true && reward.isDailySix {
+                    Text("离线奖励将在小屋服务恢复后自动入库。").font(.caption2).foregroundStyle(Palette.muted)
+                    if reward.clockReady==true {
+                        Text("已校时 · 有电离线自动08:00刷新").font(.caption)
+                        if let next=reward.nextRefreshEpoch,next>0 { Text("下次刷新：\(Date(timeIntervalSince1970:Double(next)).formatted(date:.abbreviated,time:.shortened))").font(.caption2) }
+                    } else { Text(reward.lifetimeEnabled==true ? "断电后请连接手机校时，已保存进度保留" : "首次启用请先同步小屋服务并校时").font(.caption) }
+                } else { Text(reward.isTest ? "30秒测试版保留原三盒规则，跨日由服务确认。" : "旧固件：离线保留进度，跨日仍需服务确认。").font(.caption2).foregroundStyle(Palette.muted) }
             } else { Text("当前固件尚未提供活动奖励进度，请更新挂件固件。").font(.caption) }
         }.padding(18).frame(maxWidth:.infinity,alignment:.leading).background(Palette.sage,in:PixelFrame())
     }

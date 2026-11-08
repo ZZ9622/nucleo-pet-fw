@@ -22,6 +22,57 @@ static const char *sync_activity(PetHandoff *h,uint32_t day,uint32_t ack_day,uin
     const uint32_t carry=h->activity_earned<cap?h->activity_earned:cap;
     return pet_activity_sync_profile(h,day,ack_day,ack_earned,POMI_ACTIVITY_PROFILE_ID,h->activity_profile,carry);
 }
+static ActivityClockPlan plan_for(const PetHandoff *h,uint32_t day) {
+    ActivityClockPlan p={.epoch=1800000000U,.day=day,.next_epoch=1800000001U,
+        .valid_until=1800000000U+86400U*20U,.ack_day=h->activity_day,
+        .ack_earned=h->activity_earned,.ack_profile=h->activity_profile};return p;
+}
+static void test_offline_clock(void) {
+    if(POMI_ACTIVITY_PROFILE_ID!=3U) { return; }
+    memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);assert(!sync_activity(&h,739928U,0,0));
+    h.activity_earned=2;h.activity_progress=299;assert(pet_handoff_checkpoint(&h));
+    ActivityClockPlan p=plan_for(&h,h.activity_day);p.exception_count=1;p.days[0]=739929U;p.durations[0]=82800U;
+    p.ack_earned=1;assert(pet_activity_set_clock(&h,&p,0));assert(!h.activity_lifetime_enabled);
+    p.ack_earned=2;assert(!pet_activity_set_clock(&h,&p,0));assert(h.activity_lifetime_enabled && pet_activity_clock_ready());
+    pet_activity_clock_tick(&h,999);assert(h.activity_day==739928U);
+    pet_activity_clock_tick(&h,1000);assert(h.activity_day==739929U && h.activity_earned==2 && h.activity_progress==59 && h.activity_total==2);
+    pet_activity_clock_tick(&h,1000);assert(h.activity_total==2);
+    pet_activity_clock_tick(&h,82800999U);assert(h.activity_day==739929U);
+    pet_activity_clock_tick(&h,82801000U);assert(h.activity_day==739930U && h.activity_total==2);
+    reboot(&h);assert(!pet_activity_clock_ready() && h.activity_total==2);
+    add_seconds(&h,10);assert(h.activity_progress==59); /* Power loss invalidates time, never the save. */
+    p=plan_for(&h,h.activity_day+4U);assert(!pet_activity_set_clock(&h,&p,0));
+    assert(h.activity_total==2 && h.activity_progress==59); /* No fake activity during four days without power. */
+    add_seconds(&h,1);assert(h.activity_total==3 && h.activity_earned==1);
+    p=plan_for(&h,h.activity_day-1U);assert(pet_activity_set_clock(&h,&p,0));
+    p=plan_for(&h,h.activity_day);assert(!pet_activity_set_clock(&h,&p,0xfffffff0U));
+    const uint32_t before=h.activity_day;pet_activity_clock_tick(&h,984U);assert(h.activity_day==before+1U);
+    /* A service-driven rollover must invalidate the old boundary so the
+     * hardware timer cannot apply the same local day twice. */
+    const uint32_t oldday=h.activity_day;
+    assert(!sync_activity(&h,oldday+1U,oldday,h.activity_earned));
+    assert(!pet_activity_clock_ready());pet_activity_clock_tick(&h,1984U);
+    assert(h.activity_day==oldday+1U);
+    for(int cut=0;cut<46;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);assert(!sync_activity(&h,739928U,0,0));
+        h.activity_earned=1;h.activity_progress=60;assert(pet_handoff_checkpoint(&h));
+        p=plan_for(&h,h.activity_day);assert(!pet_activity_set_clock(&h,&p,0));
+        fail_after=cut;pet_activity_clock_tick(&h,1000);reboot(&h);
+        assert(h.activity_total==0 || h.activity_total==1);
+        p=plan_for(&h,739929U);assert(!pet_activity_set_clock(&h,&p,0));
+        assert(h.activity_total==1 && h.activity_day==739929U && h.activity_progress==0);
+        assert(!pet_activity_set_clock(&h,&p,0));assert(h.activity_total==1);
+    }
+    for(int cut=0;cut<46;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);assert(!sync_activity(&h,739928U,0,0));
+        add_seconds(&h,7);p=plan_for(&h,h.activity_day);fail_after=cut;
+        (void)pet_activity_set_clock(&h,&p,0);reboot(&h);
+        assert(h.activity_progress==7 && h.activity_total==0 && !pet_activity_clock_ready());
+        p=plan_for(&h,h.activity_day);assert(!pet_activity_set_clock(&h,&p,0));
+        assert(h.activity_lifetime_enabled && h.activity_progress==7 && h.activity_total==0);
+    }
+    puts("offline clock: exact boundary, 23h DST, timer wrap, cold-boot re-time, cumulative total and 46 torn rollovers passed");
+}
 static void test_activity(void) {
     memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);
     add_seconds(&h,2);assert(h.activity_day==0 && h.activity_progress==0);
@@ -82,6 +133,7 @@ static void test_activity(void) {
 }
 int main(void) {
     test_activity();
+    test_offline_clock();
     assert(pet_crc32("123456789",9)==0xcbf43926);
     memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);
     assert(pet_handoff_active(&h));

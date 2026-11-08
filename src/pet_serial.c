@@ -86,6 +86,11 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append(",\"intervalSeconds\":");number(pet_activity_target(h->activity_profile,h->activity_earned));
     append(",\"profile\":");number(h->activity_profile);
     append(",\"configuredProfile\":");number(POMI_ACTIVITY_PROFILE_ID);
+    append(",\"issuedTotal\":");number(h->activity_total);
+    append(",\"lifetimeEnabled\":");append(h->activity_lifetime_enabled?"true":"false");
+    append(",\"offlineClockSupported\":");append(POMI_ACTIVITY_PROFILE_ID==3U?"true":"false");
+    append(",\"clockReady\":");append(pet_activity_clock_ready()?"true":"false");
+    append(",\"nextRefreshEpoch\":");number(pet_activity_clock_next());
     append(",\"dailyLimit\":");number(pet_activity_limit(h->activity_profile));append("}");
     const MotionState *motion = lis3dh_state();
     append(",\"motion\":{\"connected\":");append(motion->connected?"true":"false");
@@ -122,6 +127,25 @@ static void process(PetHandoff *h) {
                 bool more=*end==',';*end=0;
                 if(!parse(p,&w[i],10,0)||more!=(i<PET_STATE_WORDS-1)){error="invalid_state";break;}p=end+1;}
             if(!error){if(!pet_state_decode(&incoming,w)){error="invalid_state";}else{candidate=&incoming;}}
+        } else if(equal(fields[1],"CLOCK_SET")) {
+            uint32_t w[9U+ACTIVITY_CLOCK_EXCEPTIONS*2U];unsigned length=0;char *p=fields[5];
+            while(length<9U+ACTIVITY_CLOCK_EXCEPTIONS*2U) {
+                char *end=p;while(*end && *end!=',') { ++end; }
+                bool more=*end==',';*end=0;
+                if(!parse(p,&w[length++],10,0)) { error="invalid_clock";break; }
+                if(!more) { break; }p=end+1;
+                if(length==9U+ACTIVITY_CLOCK_EXCEPTIONS*2U) { error="invalid_clock"; }
+            }
+            if(!error) {
+                if(length<9U || w[8]>ACTIVITY_CLOCK_EXCEPTIONS || length!=9U+w[8]*2U) { error="invalid_clock"; }
+                else {
+                    ActivityClockPlan plan={.epoch=w[0],.day=w[1],.next_epoch=w[2],.valid_until=w[3],
+                        .ack_day=w[4],.ack_earned=w[5],.ack_profile=w[6],.baseline=w[7],.exception_count=w[8]};
+                    for(unsigned i=0;i<plan.exception_count;++i) { plan.days[i]=w[9+i*2];plan.durations[i]=w[10+i*2]; }
+                    error=pet_activity_set_clock(h,&plan,board_clock_millis());
+                }
+            }
+            response(h,fields[0]+1,error);return;
         } else if(equal(fields[1],"ACTIVITY_SYNC")) {
             uint32_t values[6];unsigned length=0;char *p=fields[5];
             while(length<6U) {

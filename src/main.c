@@ -112,6 +112,7 @@ int main(void)
         const uint32_t now_ms = board_millis();
         const uint32_t previous_phase = handoff.phase;
         const uint32_t previous_item_status=handoff.item_status;
+        pet_activity_clock_tick(&handoff,board_clock_millis());
         const MotionState *motion=lis3dh_state();
         const uint32_t previous_sample=motion->last_sample_ms, previous_samples=motion->samples;
         lis3dh_poll(now_ms);

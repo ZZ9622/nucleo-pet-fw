@@ -26,12 +26,20 @@ public enum BoardWire {
             else { guard (1...3).contains(parsed[3]),parsed[4]<=3,parsed[5]<=(parsed[3]==3 ? 6:3) else { throw CompanionError.invalidState } }
             activityValues=parsed
         }
-        guard let command = activityValues != nil ? "ACTIVITY_SYNC" : commands[path] else { throw CompanionError.invalidState }
+        var clockPayload: String?
+        if path.hasPrefix("/activity/clock/") {
+            let payload=String(path.dropFirst("/activity/clock/".count))
+            let values=payload.split(separator:",",omittingEmptySubsequences:false).compactMap{UInt32($0)}
+            guard values.count>=9,values.count<=57,values[8]<=24,values.count==9+Int(values[8])*2,
+                  payload.split(separator:",",omittingEmptySubsequences:false).count==values.count else { throw CompanionError.invalidState }
+            clockPayload=payload
+        }
+        guard let command = clockPayload != nil ? "CLOCK_SET" : activityValues != nil ? "ACTIVITY_SYNC" : commands[path] else { throw CompanionError.invalidState }
         if command != "STATUS" {
             guard let intent, petID != nil, intent.baseRevision < UInt32.max,
                   intent.id != UUID(uuidString: "00000000-0000-0000-0000-000000000000") else { throw CompanionError.invalidState }
         }
-        var state = activityValues?.map(String.init).joined(separator:",") ?? ""
+        var state = clockPayload ?? activityValues?.map(String.init).joined(separator:",") ?? ""
         if command == "RETURN_STAGE" {
             guard let snapshot = intent?.snapshot else { throw CompanionError.invalidState }
             try snapshot.validate()
