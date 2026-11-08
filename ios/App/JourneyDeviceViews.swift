@@ -166,12 +166,19 @@ struct ActivityRewardPanel: View {
         VStack(alignment:.leading,spacing:10) {
             Text("活动盒子").font(.headline)
             if let reward=store.activityReward {
+                if reward.configuredProfile==3 && !reward.isDailySix {
+                    Text("六盒版等待启用：请连接匹配的小屋服务").font(.caption.bold()).foregroundStyle(Palette.coral)
+                }
                 if reward.isTest { Text("短周期测试 · 30 秒 / 盒").font(.caption.bold()).foregroundStyle(Palette.coral) }
-                else { Text("累计 10 分钟 / 盒").font(.caption) }
+                else if reward.isDailySix {
+                    Text("每天 08:00 刷新 · 最多 6 盒").font(.caption.bold())
+                    Text("每盒再累计 1、3、5、8、12、15 分钟").font(.caption2)
+                    Text("当前阶段：再累计 \(reward.intervalSeconds/60) 分钟").font(.caption)
+                } else { Text("原版 · 累计 10 分钟 / 盒").font(.caption) }
                 if reward.day==0 { Text("先同步小屋服务以确认日期，再开始累计活动").font(.caption) }
                 else {
-                    Text("今日已获得 \(reward.earnedToday) / 3").accessibilityIdentifier("activity.earned")
-                    if reward.earnedToday<3 {
+                    Text("今日已获得 \(reward.earnedToday) / \(reward.limit)").accessibilityIdentifier("activity.earned")
+                    if reward.earnedToday<reward.limit {
                         ProgressView(value:Double(reward.progressSeconds),total:Double(reward.intervalSeconds))
                         Text("已保存 \(reward.progressSeconds) / \(reward.intervalSeconds) 秒").font(.caption).monospacedDigit().accessibilityIdentifier("activity.progress")
                     } else { Text("今日已达上限，联网确认新日期后继续").font(.caption) }

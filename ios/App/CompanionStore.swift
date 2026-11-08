@@ -185,17 +185,18 @@ final class CompanionStore: ObservableObject {
     private func syncActivity(_ record: BoardRecord) async {
         guard connectionKind == .bluetooth,let receipt=record.activity,world.isConnected,!world.busy,
               physical?.intent==nil,Date().timeIntervalSince(lastActivitySync)>=5 else { return }
-        if let previous=lastActivityReceipt,previous.day==receipt.day,previous.earnedToday==receipt.earnedToday,
+        if let previous=lastActivityReceipt,previous.day==receipt.day,previous.earnedToday==receipt.earnedToday,previous.profileID==receipt.profileID,previous.configuredProfile==receipt.configuredProfile,
            Date().timeIntervalSince(lastActivitySuccess)<60 { return }
         lastActivitySync=Date()
         do {
             try await world.recoverActivityRequest()
             let result=try await world.perform("/activity/sync",[
                 "petID":record.petID.uuidString,"day":receipt.day,"earnedToday":receipt.earnedToday,
-                "progressSeconds":receipt.progressSeconds,"intervalSeconds":receipt.intervalSeconds])
+                "progressSeconds":receipt.progressSeconds,"intervalSeconds":receipt.intervalSeconds,
+                "profile":receipt.profileID,"configuredProfile":receipt.configuredProfile ?? receipt.profileID])
             guard let ack=result.activitySync else { throw CompanionError.invalidState }
             let path=try ack.path(for:record.petID,receipt:receipt)
-            if ack.day != receipt.day {
+            if ack.day != receipt.day || (ack.profile ?? receipt.profileID) != receipt.profileID {
                 let intent=PhysicalIntent(id:UUID(),destination:.device,baseRevision:record.revision,snapshot:nil,released:false)
                 let confirmed=try await bluetooth.request(path,intent:intent,petID:record.petID)
                 activityReward=confirmed.activity

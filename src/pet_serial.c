@@ -83,7 +83,10 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append(",\"activity\":{\"day\":");number(h->activity_day);
     append(",\"progressSeconds\":");number(h->activity_progress);
     append(",\"earnedToday\":");number(h->activity_earned);
-    append(",\"intervalSeconds\":");number(POMI_ACTIVITY_SECONDS);append("}");
+    append(",\"intervalSeconds\":");number(pet_activity_target(h->activity_profile,h->activity_earned));
+    append(",\"profile\":");number(h->activity_profile);
+    append(",\"configuredProfile\":");number(POMI_ACTIVITY_PROFILE_ID);
+    append(",\"dailyLimit\":");number(pet_activity_limit(h->activity_profile));append("}");
     const MotionState *motion = lis3dh_state();
     append(",\"motion\":{\"connected\":");append(motion->connected?"true":"false");
     append(",\"xMg\":");signed_number(motion->x_mg);
@@ -120,14 +123,20 @@ static void process(PetHandoff *h) {
                 if(!parse(p,&w[i],10,0)||more!=(i<PET_STATE_WORDS-1)){error="invalid_state";break;}p=end+1;}
             if(!error){if(!pet_state_decode(&incoming,w)){error="invalid_state";}else{candidate=&incoming;}}
         } else if(equal(fields[1],"ACTIVITY_SYNC")) {
-            uint32_t values[3];char *p=fields[5];
-            for(unsigned i=0;i<3;++i) {
+            uint32_t values[6];unsigned length=0;char *p=fields[5];
+            while(length<6U) {
                 char *end=p;while(*end && *end!=',') { ++end; }
                 bool more=*end==',';*end=0;
-                if(!parse(p,&values[i],10,0) || more!=(i<2)) { error="invalid_request";break; }
+                if(!parse(p,&values[length++],10,0)) { error="invalid_request";break; }
+                if(!more) { break; }
                 p=end+1;
+                if(length==6U) { error="invalid_request"; }
             }
-            if(!error) { error=pet_activity_sync(h,values[0],values[1],values[2]); }
+            if(!error) {
+                if(length==3U) { error=pet_activity_sync(h,values[0],values[1],values[2]); }
+                else if(length==6U) { error=pet_activity_sync_profile(h,values[0],values[1],values[2],values[3],values[4],values[5]); }
+                else { error="invalid_request"; }
+            }
             response(h,fields[0]+1,error);return;
         } else if(*fields[5]) {error="invalid_request";}
         if(!error){

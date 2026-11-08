@@ -254,7 +254,43 @@ HELP 为疲惫眼睛、下弯嘴与闪烁感叹号；SLEEP 为闭眼细嘴与飘
 
 ## 活动自动获得盒子
 
-已接入挂件持久活动进度、服务端去重领取与App自动同步。正式规则为累计10分钟1盒、每日最多3盒；另提供30秒测试配置。断电保留已保存的整秒，跨日由小屋服务确认。构建、局限与实物验收见 [活动盒子说明](docs/ACTIVITY_BOXES_zh.md)。
+新版 `daily6` 每天上午8点刷新，六个盒子分别再累计1、3、5、8、12、15分钟活动（总计44分钟），最多6盒。断电保留整秒进度，未使用的活动进度跨期结转，重复同步不重复发放。原30秒/三盒测试版保留，命令不变；旧600秒/三盒方案可显式选择 `fixed`。构建、计时限制与验收见 [活动盒子说明](docs/ACTIVITY_BOXES_zh.md)。
+
+### 朋友拉取并烧录：六盒新版（每天上午8点刷新）
+
+在朋友的 Mac 终端进入仓库根目录，按顺序执行。使用独立的 `build/daily6` 目录，不覆盖原30秒测试版的构建目录：
+
+```sh
+git pull --ff-only origin main
+
+cmake -S . -B build/daily6 \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake \
+  -DPOMI_ACTIVITY_PROFILE=daily6 \
+  -DPOMI_ACTIVITY_SECONDS=600
+
+cmake --build build/daily6
+
+openocd -f openocd/nucleo-f401re.cfg \
+  -c "program build/daily6/pet.hex verify reset exit"
+```
+
+`600` 是兼容旧构建参数，六盒版的实际门槛由 `daily6` 决定，分别为再活动1、3、5、8、12、15分钟，不是固定10分钟一盒。
+
+烧录前先同步完旧测试奖励，让宠物回到挂件，完成待确认的开盒/食物操作。**不要mass erase或删除存档**。ESP32蓝牙桥无需重刷。升级为v5日志后不要降级到不识别v5的旧固件。
+
+运行小屋服务的 Mac 也需更新代码，先备份原数据库、停止旧服务，再沿用原地址和原数据库启动六盒配置：
+
+```sh
+python3 server/pomi_server.py \
+  --db /你的原数据库路径/pomi.sqlite \
+  --host 0.0.0.0 --port 8787 \
+  --activity-profile daily6 \
+  --timezone Europe/Stockholm
+```
+
+数据库路径是占位示例，请换成原文件路径，不要新建空库代替升级，也不要同时运行不同服务写同一数据库。时区可按使用地配置，8点以服务时区为准。iPhone需通过Xcode安装本次新版App，再重新连接蓝牙、同步真实仓库；应显示“每天08:00刷新 · 最多6盒”和当前阶段分钟数。
+
+切换不会重送旧奖励：如果旧测试版当期已领取3盒，六盒版继承这3盒额度，从第4阶段继续；下次8点才重置为完整新周期。未消费活动秒数结转，可能在刷新后立即换出盒子。完整验收见 [六盒版本说明](docs/ACTIVITY_BOXES_zh.md#实物验收)。原30秒/三盒版本仍按下面命令构建和运行。
 
 ### 朋友拉取并烧录：30 秒活动盒子测试版
 
@@ -284,4 +320,4 @@ python3 server/pomi_server.py \
   --development --activity-seconds 30
 ```
 
-不要把数据库路径示例原样复制，也不要为升级删除原数据库。烧录后在 iPhone 重新连接 Pomi 并同步真实仓库，确认显示“短周期测试 · 30 秒 / 盒”，再按 [活动盒子实物验收](docs/ACTIVITY_BOXES_zh.md#iphone-实物验收) 测试。正式版使用 `-DPOMI_ACTIVITY_SECONDS=600`，服务默认600秒；切换前先同步完测试奖励，原每日已领数量不会清零。
+不要把数据库路径示例原样复制，也不要为升级删除原数据库。烧录后在 iPhone 重新连接 Pomi 并同步真实仓库，确认显示“短周期测试 · 30 秒 / 盒”，再按 [活动盒子实物验收](docs/ACTIVITY_BOXES_zh.md#iphone-实物验收) 测试。新版六盒固件使用 `-DPOMI_ACTIVITY_PROFILE=daily6 -DPOMI_ACTIVITY_SECONDS=600`，服务使用 `--activity-profile daily6`；切换前先同步完测试奖励，原已领数量不会清零。

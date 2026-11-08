@@ -19,9 +19,11 @@ public enum BoardWire {
                         "/handoff/return/stage":"RETURN_STAGE", "/handoff/return/commit":"RETURN_COMMIT"]
         let components=path.split(separator:"/")
         var activityValues: [UInt32]?
-        if components.count==5,components[0]=="activity",components[1]=="sync" {
+        if [5,8].contains(components.count),components[0]=="activity",components[1]=="sync" {
             let parsed=components.dropFirst(2).compactMap { UInt32($0) }
-            guard parsed.count==3,parsed[0]>0,parsed[0]<=3652059,parsed[1]<=parsed[0],parsed[2]<=3 else { throw CompanionError.invalidState }
+            guard parsed.count==components.count-2,parsed[0]>0,parsed[0]<=3652059,parsed[1]<=3652059,parsed[2]<=6 else { throw CompanionError.invalidState }
+            if parsed.count==3 { guard parsed[1]<=parsed[0],parsed[2]<=3 else { throw CompanionError.invalidState } }
+            else { guard (1...3).contains(parsed[3]),parsed[4]<=3,parsed[5]<=(parsed[3]==3 ? 6:3) else { throw CompanionError.invalidState } }
             activityValues=parsed
         }
         guard let command = activityValues != nil ? "ACTIVITY_SYNC" : commands[path] else { throw CompanionError.invalidState }

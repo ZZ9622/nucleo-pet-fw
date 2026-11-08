@@ -26,10 +26,12 @@ test:
 	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/motion_test.c src/motion.c -o build/host-tests/motion_test
 	build/host-tests/motion_test
 	mkdir -p build/host-tests
-	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/handoff_test.c src/activity_reward.c src/pet_handoff.c src/pet_storage.c src/pet.c -o build/host-tests/handoff_test
+	$(CC) -DPOMI_ACTIVITY_PROFILE_ID=2 -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/handoff_test.c src/activity_reward.c src/pet_handoff.c src/pet_storage.c src/pet.c -o build/host-tests/handoff_test
 	build/host-tests/handoff_test
 	$(CC) -DPOMI_ACTIVITY_SECONDS=30 -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/handoff_test.c src/activity_reward.c src/pet_handoff.c src/pet_storage.c src/pet.c -o build/host-tests/handoff_test_short
 	build/host-tests/handoff_test_short
+	$(CC) -DPOMI_ACTIVITY_PROFILE_ID=3 -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/handoff_test.c src/activity_reward.c src/pet_handoff.c src/pet_storage.c src/pet.c -o build/host-tests/handoff_test_daily6
+	build/host-tests/handoff_test_daily6
 	mkdir -p build/host-tests
 	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes \
 		-Iinclude tests/pet_test.c src/pet.c -o build/host-tests/pet_test

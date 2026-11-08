@@ -69,7 +69,7 @@ class ActivityTests(unittest.TestCase):
         day=self.report(0,0,intervalSeconds=30)['activitySync']['day']
         self.report(day,3,intervalSeconds=30)
         self.world=World(self.world.path,lambda:self.now,activity_seconds=600)
-        self.assertEqual(len(self.report(day,3)['boxes']),3)
+        self.assertEqual(len(self.report(day,3,intervalSeconds=30,profile=1,configuredProfile=2)['boxes']),3)
         self.assertEqual(len(self.report(day,3)['boxes']),3)
 
     def test_retry_after_box_was_opened_does_not_restore_it(self):

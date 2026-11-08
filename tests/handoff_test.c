@@ -17,35 +17,68 @@ static void reboot(PetHandoff *h) { fail_after=-1;pet_handoff_init(h);assert(!h-
 static void add_seconds(PetHandoff *h,unsigned seconds) {
     for(unsigned i=0;i<seconds*10U;++i) { pet_activity_add(h,100U); }
 }
+static const char *sync_activity(PetHandoff *h,uint32_t day,uint32_t ack_day,uint32_t ack_earned) {
+    const uint32_t cap=pet_activity_limit(POMI_ACTIVITY_PROFILE_ID);
+    const uint32_t carry=h->activity_earned<cap?h->activity_earned:cap;
+    return pet_activity_sync_profile(h,day,ack_day,ack_earned,POMI_ACTIVITY_PROFILE_ID,h->activity_profile,carry);
+}
 static void test_activity(void) {
     memset(flash,255,sizeof flash);PetHandoff h;reboot(&h);
     add_seconds(&h,2);assert(h.activity_day==0 && h.activity_progress==0);
-    assert(!pet_activity_sync(&h,739928U,0,0));
+    assert(!sync_activity(&h,739928U,0,0));
+    const uint32_t interval=pet_activity_target(h.activity_profile,0);
+    const uint32_t cap=pet_activity_limit(h.activity_profile);
     add_seconds(&h,7);reboot(&h);assert(h.activity_progress==7);
     pet_activity_add(&h,9999);assert(h.activity_progress==7);
-    add_seconds(&h,POMI_ACTIVITY_SECONDS-7U);assert(h.activity_earned==1 && h.activity_progress==0);
+    add_seconds(&h,interval-7U);assert(h.activity_earned==1 && h.activity_progress==0);
     reboot(&h);assert(h.activity_earned==1);
-    add_seconds(&h,POMI_ACTIVITY_SECONDS*3U);assert(h.activity_earned==3 && h.activity_progress==0);
-    assert(pet_activity_sync(&h,739929U,739928U,2));
-    assert(!pet_activity_sync(&h,739929U,739928U,3));
+    for(uint32_t i=1;i<cap;++i) {
+        const uint32_t step=pet_activity_target(h.activity_profile,i);
+        add_seconds(&h,step-1U);assert(h.activity_earned==i);
+        add_seconds(&h,1);assert(h.activity_earned==i+1U && h.activity_progress==0);
+    }
+    add_seconds(&h,interval*3U);assert(h.activity_earned==cap && h.activity_progress==0);
+    assert(sync_activity(&h,739929U,739928U,cap-1U));
+    assert(!sync_activity(&h,739929U,739928U,cap));
     assert(h.activity_earned==0);add_seconds(&h,8);reboot(&h);assert(h.activity_progress==8);
-    assert(pet_activity_sync(&h,739928U,739928U,3));
-    assert(!pet_activity_sync(&h,739929U,0,0));assert(h.activity_progress==8);
+    assert(sync_activity(&h,739928U,739928U,cap));
+    assert(!sync_activity(&h,739929U,0,0));assert(h.activity_progress==8);
     const uint32_t travel[4]={101,102,103,104};
     assert(!pet_handoff_command(&h,"TAKE_PREPARE",travel,h.revision,0));
     add_seconds(&h,5);assert(h.activity_progress==8);
-    /* Every interrupted flash write leaves either the last saved second or
-     * a fully committed entitlement. Never expose or repeat a half-written box. */
-    for(int cut=0;cut<40;++cut) {
-        memset(flash,255,sizeof flash);reboot(&h);assert(!pet_activity_sync(&h,739928U,0,0));
-        h.activity_progress=POMI_ACTIVITY_SECONDS-1;assert(pet_handoff_checkpoint(&h));
+    for(int cut=0;cut<44;++cut) {
+        memset(flash,255,sizeof flash);reboot(&h);assert(!sync_activity(&h,739928U,0,0));
+        h.activity_progress=interval-1;assert(pet_handoff_checkpoint(&h));
         fail_after=cut;add_seconds(&h,1);reboot(&h);
-        assert((h.activity_earned==0 && h.activity_progress==POMI_ACTIVITY_SECONDS-1) ||
+        assert((h.activity_earned==0 && h.activity_progress==interval-1) ||
                (h.activity_earned==1 && h.activity_progress==0));
         if(h.activity_earned==0) { add_seconds(&h,1); }
         assert(h.activity_earned==1 && h.activity_progress==0);
     }
-    puts("activity rewards: persisted seconds, daily cap, rollover ACK, offline recovery, 40 torn writes passed");
+    if(POMI_ACTIVITY_PROFILE_ID==3U) {
+        memset(flash,255,sizeof flash);reboot(&h);assert(!sync_activity(&h,739928U,0,0));
+        add_seconds(&h,60+179);assert(h.activity_earned==1 && h.activity_progress==179);
+        assert(!sync_activity(&h,739929U,739928U,1));
+        assert(h.activity_earned==1 && h.activity_progress==119); /* 60 carried seconds -> one new-day box. */
+        reboot(&h);assert(h.activity_progress==119);
+        assert(!sync_activity(&h,739929U,739928U,1));assert(h.activity_progress==119);
+        /* Legacy upgrade keeps already received boxes; even a backwards ordinal
+         * at 07:00 is legitimate only during acknowledged profile migration. */
+        h.activity_profile=1;h.activity_earned=3;h.activity_progress=0;assert(pet_handoff_checkpoint(&h));
+        assert(pet_activity_sync_profile(&h,739928U,739929U,2,3,1,3));
+        assert(!pet_activity_sync_profile(&h,739928U,739929U,3,3,1,3));
+        assert(h.activity_earned==3 && h.activity_progress==0);
+        add_seconds(&h,480);assert(h.activity_earned==4);
+        h.activity_profile=2;h.activity_earned=2;h.activity_progress=123;
+        assert(pet_handoff_checkpoint(&h));
+        unsigned newest=0;uint32_t seq=0;
+        for(unsigned i=0;i<65536;i+=64) { if(flash[i+63]==0x434f4d32U && flash[i+2]>seq) { seq=flash[i+2];newest=i; } }
+        flash[newest+1]=4;flash[newest+34]=0xffffffffU;flash[newest+62]=pet_crc32(&flash[newest],62U*4U);
+        reboot(&h);assert(h.activity_profile==0 && h.activity_progress==123 && h.activity_earned==2);
+        assert(!pet_activity_sync_profile(&h,h.activity_day,h.activity_day,2,3,0,2));
+        reboot(&h);assert(h.activity_profile==3 && h.activity_earned==2 && h.activity_progress==123);
+    }
+    puts("activity rewards: all stage boundaries, cap, persistent seconds, rollover carry, ACK migration, 44 torn writes passed");
 }
 int main(void) {
     test_activity();

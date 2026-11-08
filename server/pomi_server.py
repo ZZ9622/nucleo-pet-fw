@@ -22,10 +22,13 @@ class RuleError(Exception):
     pass
 
 class World:
-    def __init__(self, path, clock=time.time, activity_seconds=600, timezone="Europe/Stockholm"):
+    def __init__(self, path, clock=time.time, activity_seconds=600, timezone="Europe/Stockholm", activity_profile=None):
         self.path, self.clock = path, clock
         if activity_seconds not in (30,600):raise ValueError("activity_seconds must be 30 or 600")
         self.activity_seconds,self.timezone=activity_seconds,timezone
+        self.activity_profile=activity_profile or ('test30' if activity_seconds==30 else 'fixed600')
+        if self.activity_profile not in activity_rewards.PROFILE_IDS:raise ValueError('Unknown activity profile')
+        if self.activity_profile=='test30':self.activity_seconds=30
         with self.db() as db:
             db.executescript('''
             CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY, token TEXT UNIQUE, data TEXT);
@@ -35,6 +38,7 @@ class World:
             CREATE TABLE IF NOT EXISTS requests(user TEXT, id TEXT, path TEXT, body TEXT, result TEXT,
               PRIMARY KEY(user,id));
             ''')
+            activity_rewards.migrate(db)
     @contextmanager
     def db(self):
         db = sqlite3.connect(self.path, timeout=10, isolation_level=None)
@@ -191,7 +195,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/identity': result=self.server.world.create()
             else:
                 if self.path=='/activity' and not self.server.development: raise RuleError('活动奖励等待传感器接入，当前服务未开放模拟发放')
-                if self.path=='/activity/sync' and self.server.world.activity_seconds==30 and not self.server.development: raise RuleError('30秒活动测试需显式启用开发模式')
+                if self.path=='/activity/sync' and self.server.world.activity_profile=='test30' and not self.server.development: raise RuleError('30秒活动测试需显式启用开发模式')
                 auth=self.headers.get('Authorization','')
                 if not auth.startswith('Bearer '): raise RuleError('请先创建身份')
                 result=self.server.world.run(auth[7:],self.path,b)
@@ -203,9 +207,11 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--activity-seconds',type=int,choices=[30,600],default=600);p.add_argument('--timezone',default='Europe/Stockholm');a=p.parse_args()
-    if a.activity_seconds==30 and not a.development:p.error('30-second test requires --development')
-    world=World(a.db,activity_seconds=a.activity_seconds,timezone=a.timezone)
+    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--activity-seconds',type=int,choices=[30,600],default=None);p.add_argument('--activity-profile',choices=['daily6','fixed600','test30']);p.add_argument('--timezone',default='Europe/Stockholm');a=p.parse_args()
+    if a.activity_profile and a.activity_seconds is not None and a.activity_profile!=('test30' if a.activity_seconds==30 else 'fixed600'):p.error('Choose either --activity-profile or a matching legacy --activity-seconds value')
+    profile=a.activity_profile or ('test30' if a.activity_seconds==30 else 'fixed600' if a.activity_seconds==600 else 'daily6')
+    if profile=='test30' and not a.development:p.error('30-second test requires --development')
+    world=World(a.db,activity_seconds=30 if profile=='test30' else 600,timezone=a.timezone,activity_profile=profile)
     if a.seed: world.seed(a.seed)
     server=ThreadingHTTPServer((a.host,a.port),Handler);server.world=world;server.development=a.development
     print(f'Pomi service listening on {a.host}:{a.port}',flush=True);server.serve_forever()

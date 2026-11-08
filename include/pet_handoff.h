@@ -7,7 +7,7 @@ enum { PET_STATE_WORDS=14 };
 typedef struct {
     uint32_t phase, revision, transaction[4], payload_hash;
     uint32_t item_id[4], item_status, item_kind, item_level;
-    uint32_t activity_day, activity_progress, activity_earned;
+    uint32_t activity_day, activity_progress, activity_earned, activity_profile;
     PetState pet;
     bool fault;
 } PetHandoff;
