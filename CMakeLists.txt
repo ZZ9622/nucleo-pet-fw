@@ -17,6 +17,9 @@ set(FIRMWARE_SOURCES
     src/pet_handoff.c
     src/pet_storage.c
     src/pet_flash.c
+    src/board_i2c.c
+    src/motion.c
+    src/lis3dh.c
     src/board.c
     src/button.c
     src/screen_idle.c

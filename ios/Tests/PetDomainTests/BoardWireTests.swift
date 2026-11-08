@@ -3,11 +3,12 @@ import XCTest
 
 final class BoardWireTests: XCTestCase {
     let id = UUID(uuidString:"00112233-4455-6677-8899-aabbccddeeff")!
-    func response(id: UUID? = nil, words: [UInt32]? = nil) throws -> Data {
+    func response(id: UUID? = nil, words: [UInt32]? = nil, motion: [String: Any]? = nil) throws -> Data {
         let state: [UInt32] = words ?? [80,75,12,3,1,0,0,0,123,12,0,456,12345678,0]
-        let value: [String:Any] = ["v":2,"requestID":BoardWire.hex(id ?? self.id),"ok":true,"error":"",
+        var value: [String:Any] = ["v":2,"requestID":BoardWire.hex(id ?? self.id),"ok":true,"error":"",
             "petID":"0069002a323551033434383100000001","phase":0,"revision":4,
             "transferID":String(repeating:"0",count:32),"payloadHash":0,"state":state]
+        if let motion { value["motion"] = motion }
         let data=try JSONSerialization.data(withJSONObject:value,options:[.sortedKeys])
         return data + Data(String(format:"|%08x\n",BoardWire.crc32(data)).utf8)
     }
@@ -36,6 +37,26 @@ final class BoardWireTests: XCTestCase {
         XCTAssertThrowsError(try BoardWire.decode(response(words:[101,75,0,0,1,0,0,0,0,0,0,0,0,0]),requestID:id))
         XCTAssertThrowsError(try BoardWire.decode(Data("H=100 E=86".utf8),requestID:id))
     }
+    func testOptionalMotionTelemetryAndRangeValidation() throws {
+        XCTAssertNil(try BoardWire.decode(response(), requestID: id).motion)
+        var motion: [String: Any] = [
+            "connected": true, "xMg": 250, "yMg": -970, "zMg": 320,
+            "behavior": 1, "samples": 25, "ageMs": 20, "activeMs": 1000
+        ]
+        let record = try BoardWire.decode(response(motion: motion), requestID: id)
+        XCTAssertEqual(record.motion?.yMg, -970)
+        XCTAssertEqual(record.motion?.title, "活动")
+        XCTAssertTrue(record.motion?.isFresh == true)
+        motion["connected"] = false
+        let disconnected = try BoardWire.decode(response(motion: motion), requestID: id)
+        XCTAssertFalse(disconnected.motion!.isFresh)
+        motion["xMg"] = 30000
+        XCTAssertThrowsError(try BoardWire.decode(response(motion: motion), requestID: id))
+        motion["xMg"] = 0
+        motion["behavior"] = 3
+        XCTAssertThrowsError(try BoardWire.decode(response(motion: motion), requestID: id))
+    }
+
     func testReturnFrameCarriesFullSnapshotAndStableIdentity() throws {
         let state=FirmwareState()
         let intent=PhysicalIntent(id:id,destination:.device,baseRevision:4,snapshot:state,released:true)

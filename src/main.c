@@ -6,6 +6,7 @@
 #include "led.h"
 #include "pet.h"
 #include "pet_serial.h"
+#include "motion.h"
 #include "screen_idle.h"
 
 enum {
@@ -104,11 +105,13 @@ int main(void)
     pet_handoff_init(&handoff);
     display_init();
     pet_serial_init();
+    lis3dh_init();
 
     while (1) {
         const uint32_t now_ms = board_millis();
         const uint32_t previous_phase = handoff.phase;
         const uint32_t previous_item_status=handoff.item_status;
+        lis3dh_poll(now_ms);
         pet_serial_poll(&handoff);
         if(handoff.item_kind==1 && handoff.item_status==1 && !item_animation) {
             item_animation=true;item_animation_ms=now_ms;screen_idle_init(&screen,now_ms);

@@ -1,4 +1,6 @@
 #include "pet_serial.h"
+#include "board.h"
+#include "motion.h"
 #include "stm32f401xe_minimal.h"
 #include <stddef.h>
 typedef struct { volatile uint32_t SR,DR,BRR,CR1,CR2,CR3,GTPR; } Uart;
@@ -50,6 +52,10 @@ static void number(uint32_t n) {
     char d[10]; unsigned k=0; do {d[k++]=(char)('0'+n%10);n/=10;}while(n);
     while(k && count<sizeof tx-1) {tx[count++]=d[--k];}
 }
+static void signed_number(int32_t n) {
+    if(n < 0) { append("-");number((uint32_t)(-n)); }
+    else { number((uint32_t)n); }
+}
 static void hex(uint32_t n) { for(int i=7;i>=0;--i) { char s[2]={"0123456789abcdef"[(n>>(i*4))&15U],0};append(s); } }
 static void id(const uint32_t w[4]) {for(unsigned i=0;i<4;++i) {hex(w[i]);}}
 static bool equal(const char *a,const char *b) {while(*a && *a==*b){++a;++b;}return *a==*b;}
@@ -72,7 +78,16 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append(",\"itemOperationID\":\"");id(h->item_id);append("\",\"itemStatus\":");number(h->item_status);
     append(",\"itemKind\":");number(h->item_kind);append(",\"itemLevel\":");number(h->item_level);
     append(",\"state\":[");uint32_t w[PET_STATE_WORDS];pet_state_encode(&h->pet,w);
-    for(unsigned i=0;i<PET_STATE_WORDS;++i){if(i){append(",");}number(w[i]);}append("]}");
+    for(unsigned i=0;i<PET_STATE_WORDS;++i){if(i){append(",");}number(w[i]);}append("]");
+    const MotionState *motion = lis3dh_state();
+    append(",\"motion\":{\"connected\":");append(motion->connected?"true":"false");
+    append(",\"xMg\":");signed_number(motion->x_mg);
+    append(",\"yMg\":");signed_number(motion->y_mg);
+    append(",\"zMg\":");signed_number(motion->z_mg);
+    append(",\"behavior\":");number((uint32_t)motion->behavior);
+    append(",\"samples\":");number(motion->samples);
+    append(",\"ageMs\":");number(motion->samples?board_millis()-motion->last_sample_ms:0xffffffffU);
+    append(",\"activeMs\":");number(motion->active_ms);append("}}");
     uint32_t crc=pet_crc32(tx,count);append("|");hex(crc);append("\n");
     tx_sent=0;tx_count=count;active->uart->CR1|=1U<<7;
 }

@@ -23,6 +23,9 @@ probe:
 
 test:
 	mkdir -p build/host-tests
+	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/motion_test.c src/motion.c -o build/host-tests/motion_test
+	build/host-tests/motion_test
+	mkdir -p build/host-tests
 	$(CC) -std=c11 -Wall -Wextra -Werror -Wshadow -Wstrict-prototypes -Iinclude tests/handoff_test.c src/pet_handoff.c src/pet_storage.c src/pet.c -o build/host-tests/handoff_test
 	build/host-tests/handoff_test
 	mkdir -p build/host-tests

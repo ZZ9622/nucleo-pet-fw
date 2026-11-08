@@ -26,6 +26,8 @@ final class CompanionStore: ObservableObject {
     @Published var connectionKind: ConnectionKind = .bluetooth
     let bluetooth = BluetoothTransport()
     let world = PomiWorldStore()
+    @Published private(set) var liveMotion: MotionTelemetry?
+    @Published private(set) var motionReceivedAt: Date?
     @Published private(set) var lastHardwareRead: Date?
     @Published private(set) var liveMessage = "等待挂件同步"
     private var pollTask: Task<Void,Never>?
@@ -166,6 +168,8 @@ final class CompanionStore: ObservableObject {
             let record=try await transport.request("/device",intent:nil,petID:nil)
             guard var next=physical else { return }
             try next.observe(record);try savePhysical(next)
+            liveMotion = record.motion
+            motionReceivedAt = Date()
             lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
             try await settleItemReceipt(record)
         } catch { liveMessage=error.localizedDescription }
@@ -245,6 +249,8 @@ final class CompanionStore: ObservableObject {
             session = demo
             physical = nil
             physicalMode = false
+            liveMotion = nil
+            motionReceivedAt = nil
             physicalBlocked = false
             hasEnteredHome = true
             world.configure(preview:true)
@@ -271,6 +277,8 @@ final class CompanionStore: ObservableObject {
         try savePhysical(next)
         physicalBlocked = false
         hasEnteredHome = true
+        liveMotion = record.motion
+        motionReceivedAt = Date()
         lastHardwareRead=Date();liveMessage="属性已同步"
         world.configure(preview:false)
         if !world.serviceURL.isEmpty { Task { await world.connect() } }

@@ -10,6 +10,7 @@ public struct BoardRecord: Codable, Equatable {
     public let transferID: UUID
     public let payloadHash: UInt32
     public let state: FirmwareState
+    public var motion: MotionTelemetry? = nil
     public var itemOperationID: UUID? = nil
     public var itemStatus: UInt32? = nil
     public var itemKind: UInt32? = nil
@@ -17,6 +18,7 @@ public struct BoardRecord: Codable, Equatable {
 
     public func validate() throws {
         try state.validate()
+        try motion?.validate()
         guard v == 2, ok, phase < 4, revision < UInt32.max else {
             let message: String
             switch error {

@@ -31,6 +31,8 @@ struct DeviceView: View {
                         .font(.system(size: 13, weight: .semibold)).padding(.top, 5)
                 }
 
+                if store.physicalMode { LiveMotionPanel() }
+
                 PetNameEditor()
 
                 Button("连接设置") { store.showConnectionSettings() }
@@ -108,5 +110,52 @@ private struct PetNameEditor: View {
             draft = store.session.name
             message = "名字已保存"
         } catch { message = error.localizedDescription }
+    }
+}
+
+
+private struct LiveMotionPanel: View {
+    @EnvironmentObject private var store: CompanionStore
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            VStack(alignment: .leading, spacing: 12) {
+                Eyebrow(text: "LIS3DH / LIVE")
+                Text("挂件活动").font(.system(size: 17, weight: .semibold))
+                if let motion = store.liveMotion {
+                    if !connectionAvailable || !recent(at: context.date) {
+                        Text("数据已过期，请重新连接挂件")
+                    } else if !motion.isFresh {
+                        Text("未收到传感器新数据，请检查四根连接线")
+                    } else {
+                        Text(motion.title).font(.title2.bold())
+                            .accessibilityIdentifier("motion.live.status")
+                        Text("X \(motion.xMg) · Y \(motion.yMg) · Z \(motion.zMg) mg")
+                            .font(.system(size: 12, design: .monospaced))
+                            .accessibilityIdentifier("motion.live.axes")
+                        Text("本次通电活动累计 \(motion.activeMs / 1000) 秒")
+                            .font(.caption)
+                        Text("轻晃提示保留约 3 秒，静置后会恢复静止。")
+                            .font(.caption).foregroundStyle(Palette.muted)
+                    }
+                } else {
+                    Text("等待传感器数据；请确认已安装支持 LIS3DH 的固件。")
+                        .font(.caption)
+                }
+                Text("活动判断处于校准阶段，累计时间随挂件重启归零。")
+                    .font(.caption).foregroundStyle(Palette.muted)
+            }
+            .padding(18).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.sage, in: PixelFrame())
+        }
+    }
+
+    private var connectionAvailable: Bool {
+        store.connectionKind != .bluetooth || store.bluetooth.ready
+    }
+
+    private func recent(at now: Date) -> Bool {
+        guard let received = store.motionReceivedAt else { return false }
+        return (0...6).contains(now.timeIntervalSince(received))
     }
 }

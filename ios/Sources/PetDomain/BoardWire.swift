@@ -45,6 +45,7 @@ public enum BoardWire {
             let v: Int; let requestID: String; let ok: Bool; let error: String
             let petID: String; let phase: UInt32; let revision: UInt32; let transferID: String
             let payloadHash: UInt32; let state: [UInt32]
+            let motion: MotionTelemetry?
             let itemOperationID: String?; let itemStatus: UInt32?; let itemKind: UInt32?; let itemLevel: UInt32?
         }
         let raw = try JSONDecoder().decode(Raw.self, from: payload)
@@ -52,6 +53,7 @@ public enum BoardWire {
         let state = try state(raw.state)
         var value = BoardRecord(v: raw.v, ok: raw.ok, error: raw.error, petID: try uuid(raw.petID),
             phase: raw.phase, revision: raw.revision, transferID: try uuid(raw.transferID), payloadHash: raw.payloadHash, state: state)
+        value.motion = raw.motion
         if let op=raw.itemOperationID { value.itemOperationID=try uuid(op) }
         value.itemStatus=raw.itemStatus;value.itemKind=raw.itemKind;value.itemLevel=raw.itemLevel
         try value.validate()
