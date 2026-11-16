@@ -444,6 +444,7 @@ private struct CatTowerGame: View {
     @State private var liftProgress: CGFloat = 0
     @State private var returning = false
     @State private var liftStatus = ""
+    private var panelIsOpen: Bool { showConstruction || showWarehouse || showResidents || selectedFloor != nil }
     private var liftBusy: Bool { pendingRide != nil || ride != nil }
     private var travellingCatID: UUID? { returning ? nil : (ride ?? pendingRide)?.cat.id }
     private let timer = Timer.publish(every: 15, on: .main, in: .common).autoconnect()
@@ -518,6 +519,10 @@ private struct CatTowerGame: View {
         }
         .foregroundStyle(TowerColors.ink)
         .background(TowerColors.sky)
+        .allowsHitTesting(!panelIsOpen)
+        .accessibilityHidden(panelIsOpen)
+        .overlay { towerPopup }
+        .onChange(of: panelIsOpen) { _, open in if !open { beginPendingRide() } }
         .alert("和\(departingCat?.name ?? "猫猫")告别？", isPresented: Binding(get: { departingCat != nil && !showResidents }, set: { if !$0 { departingCat = nil } }), presenting: departingCat) { cat in
             Button("留下它", role: .cancel) { departingCat = nil }
             Button("花 \(CatTower.releaseCost) 喵币请它离开", role: .destructive) { releaseResident(cat) }
@@ -527,18 +532,47 @@ private struct CatTowerGame: View {
                 ? "送别需要 \(CatTower.releaseCost) 喵币，当前余额 \(local.tower.coins)，余额不足。"
                 : "将花费 \(CatTower.releaseCost) 喵币为它准备路费。离开后无法找回这只猫；如有工作岗位，岗位将空出。")
         }
-        .sheet(isPresented: $showConstruction) { constructionPanel }
-        .sheet(isPresented: $showWarehouse) { warehousePanel }
-        .sheet(isPresented: $showResidents, onDismiss: beginPendingRide) { residentsPanel }
-        .sheet(isPresented: Binding(get: { selectedFloor != nil }, set: { if !$0 { selectedFloor = nil } }), onDismiss: beginPendingRide) {
-            if let floor = selectedFloor { assignmentPanel(floor) }
-        }
         .onReceive(timer) { _ in if scenePhase == .active { local.change { $0.refresh() } } }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { local.change { $0.refresh() } }
             else { finishInterruptedRide() }
         }
         .onDisappear { finishInterruptedRide() }
+    }
+
+    private func closePopup() {
+        showConstruction = false
+        showWarehouse = false
+        showResidents = false
+        selectedFloor = nil
+    }
+
+    @ViewBuilder private var towerPopup: some View {
+        if panelIsOpen {
+            GeometryReader { geometry in
+                let side = max(1, min(520, min(geometry.size.width - 28, geometry.size.height - 28)))
+                ZStack {
+                    Palette.ink.opacity(0.38)
+                        .contentShape(Rectangle())
+                        .onTapGesture { closePopup() }
+                        .accessibilityLabel("关闭弹窗")
+                        .accessibilityAddTraits(.isButton)
+                    Group {
+                        if showConstruction { constructionPanel }
+                        else if showWarehouse { warehousePanel }
+                        else if showResidents { residentsPanel }
+                        else if let floor = selectedFloor { assignmentPanel(floor) }
+                    }
+                    .frame(width: side, height: side)
+                    .background(Palette.paper)
+                    .clipShape(PixelFrame())
+                    .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
+                    .shadow(color: Palette.ink.opacity(0.2), radius: 16, y: 8)
+                    .accessibilityAddTraits(.isModal)
+                    .accessibilityIdentifier("tower.popup")
+                }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
     }
 
     private func releaseResident(_ cat: CatTower.Resident) {
@@ -741,7 +775,7 @@ private struct CatTowerGame: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(local.tower.visitor.map { "\($0.name)在门口等候" } ?? "门前的小路，静悄悄的")
                         .font(.system(size: 15, weight: .bold))
-                    Text(local.tower.visitor.map { "\($0.specialty.title)专长 · \($0.skillTitle) · \($0.personality.title)" } ?? "过一会儿，也许会有新的小伙伴来访。")
+                    Text(local.tower.visitor.map { "\($0.specialty.title)专长 · \($0.skillTitle) · \($0.personality.title)" } ?? "每 10 分钟来访一只，来客会在门口等你。")
                         .font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)

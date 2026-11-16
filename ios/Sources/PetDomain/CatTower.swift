@@ -51,9 +51,9 @@ public struct CatTower: Codable, Equatable {
         public var personality: Personality = .diligent
         public var experience: Int = 0
         public var skillTitle: String { experience >= 300 ? "精通" : experience >= 60 ? "熟练" : "生疏" }
-        public init(id: UUID = UUID(), name: String, coat: Int, floor: Int? = nil, specialty: Industry = .food, personality: Personality = .diligent) {
+        public init(id: UUID = UUID(), name: String, coat: Int, floor: Int? = nil, specialty: Industry = .food, personality: Personality = .diligent, experience: Int = 0) {
             self.id = id; self.name = name; self.coat = coat; self.floor = floor
-            self.specialty = specialty; self.personality = personality
+            self.specialty = specialty; self.personality = personality; self.experience = experience
         }
         private enum CodingKeys: String, CodingKey { case id, name, coat, floor, specialty, personality, experience }
         public init(from decoder: Decoder) throws {
@@ -77,13 +77,19 @@ public struct CatTower: Codable, Equatable {
     private var lastProduction: Date
     private var arrivals = 0
     public var lobbyResidents: [Resident] { residents.filter { $0.floor == nil } }
+    public static let visitInterval: TimeInterval = 10 * 60
+    /// A uniform integer in 0..<100 yields exactly 70/25/5 initial skill weights.
+    public static func initialExperience(skillRoll: Int) -> Int {
+        precondition((0..<100).contains(skillRoll))
+        return skillRoll < 70 ? 0 : skillRoll < 95 ? 60 : 300
+    }
     public static let capacity = 1
     public static let maximumFloors = 12
     public static let storageCapacity = 200
     public var expansionCost: Int { Int((100 * pow(1.35, Double(floors - 1))).rounded()) }
     public init(now: Date = Date()) {
         residents = [Resident(name: "麦麦", coat: 0, floor: 1)]
-        visitor = Resident(name: "芝麻", coat: 1)
+        visitor = Resident(name: "芝麻", coat: 1, experience: Self.initialExperience(skillRoll: Int.random(in: 0..<100)))
         nextVisit = now; lastProduction = now
     }
     public func canBuild(_ facility: Facility) -> Bool {
@@ -109,7 +115,7 @@ public struct CatTower: Codable, Equatable {
         }
         guard visitor == nil, now >= nextVisit else { return }
         let names = ["芝麻", "奶糖", "栗子", "小雨", "豆包", "麦麦", "云朵", "橘子"]
-        visitor = Resident(name: names.randomElement()!, coat: Int.random(in: 0..<4), specialty: Industry.allCases.randomElement()!, personality: Personality.allCases.randomElement()!)
+        visitor = Resident(name: names.randomElement()!, coat: Int.random(in: 0..<4), specialty: Industry.allCases.randomElement()!, personality: Personality.allCases.randomElement()!, experience: Self.initialExperience(skillRoll: Int.random(in: 0..<100)))
     }
     private mutating func produceMinute() {
         // Sales and processing first: newly produced materials are available the following minute.
@@ -138,7 +144,7 @@ public struct CatTower: Codable, Equatable {
         refresh(now: now)
         guard var cat = visitor, residents.count < Self.maximumFloors * 3 else { return false }
         cat.floor = nil; residents.append(cat); visitor = nil; arrivals += 1
-        nextVisit = now.addingTimeInterval(TimeInterval([90, 150, 120, 210][arrivals % 4]))
+        nextVisit = now.addingTimeInterval(Self.visitInterval)
         return true
     }
     @discardableResult public mutating func assign(_ id: UUID, to floor: Int, now: Date = Date()) -> Bool {

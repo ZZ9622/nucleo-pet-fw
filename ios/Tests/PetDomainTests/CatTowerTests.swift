@@ -27,7 +27,7 @@ final class CatTowerTests: XCTestCase {
         XCTAssertEqual(restored, tower)
         restored.unassign(cat.id, now: start)
         XCTAssertEqual(restored.lobbyResidents.map(\.id), [cat.id])
-        restored.refresh(now: start.addingTimeInterval(300))
+        restored.refresh(now: start.addingTimeInterval(600))
         XCTAssertNotNil(restored.visitor)
     }
     func testNoWorkerNoOutputAndSupplyFeedsRestaurant() throws {
@@ -158,6 +158,26 @@ final class CatTowerTests: XCTestCase {
         XCTAssertFalse(poor.release(waiting.id, now: start))
         XCTAssertEqual(poor.coins, 0)
         XCTAssertEqual(poor.lobbyResidents.map(\.id), [waiting.id])
+    }
+    func testVisitorSkillWeightsAndTenMinuteSchedule() throws {
+        let experiences = (0..<100).map { CatTower.initialExperience(skillRoll: $0) }
+        XCTAssertEqual(experiences.filter { $0 == 0 }.count, 70)
+        XCTAssertEqual(experiences.filter { $0 == 60 }.count, 25)
+        XCTAssertEqual(experiences.filter { $0 == 300 }.count, 5)
+        var tower = CatTower(now: start)
+        XCTAssertTrue(tower.welcome(now: start))
+        XCTAssertEqual(tower.nextVisit, start.addingTimeInterval(600))
+        tower.refresh(now: start.addingTimeInterval(599))
+        XCTAssertNil(tower.visitor)
+        tower = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(tower))
+        tower.refresh(now: start.addingTimeInterval(600))
+        let visitor = try XCTUnwrap(tower.visitor)
+        XCTAssertTrue([0, 60, 300].contains(visitor.experience))
+        tower.refresh(now: start.addingTimeInterval(1200))
+        XCTAssertEqual(tower.visitor, visitor, "A waiting cat must not be replaced or rerolled")
+        XCTAssertTrue(tower.welcome(now: start.addingTimeInterval(1200)))
+        XCTAssertEqual(tower.residents.last?.experience, visitor.experience)
+        XCTAssertEqual(tower.nextVisit, start.addingTimeInterval(1800))
     }
     private func fixture(facilities: [Int: CatTower.Facility], inventory: [CatTower.Material: Int]) throws -> CatTower {
         let data = try JSONEncoder().encode(CatTower(now: start))
