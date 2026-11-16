@@ -72,7 +72,8 @@ public struct CatTower: Codable, Equatable {
     public private(set) var coins = 100
     public private(set) var facilities: [Int: Facility] = [1: .restaurant]
     public private(set) var inventory: [Material: Int] = [.crops: 20]
-    private var progress: [Int: Double] = [:]
+    private var progress: [Int: Double] = [:] // Legacy floor progress, migrated when loading.
+    private var workerProgress: [UUID: Double] = [:]
     private var constructionCosts: [Int: Int] = [:]
     private var lastProduction: Date
     private var arrivals = 0
@@ -83,7 +84,7 @@ public struct CatTower: Codable, Equatable {
         precondition((0..<100).contains(skillRoll))
         return skillRoll < 70 ? 0 : skillRoll < 95 ? 60 : 300
     }
-    public static let capacity = 1
+    public static let capacity = 3
     public static let maximumFloors = 12
     public static let storageCapacity = 200
     public var expansionCost: Int { Int((100 * pow(1.35, Double(floors - 1))).rounded()) }
@@ -97,8 +98,11 @@ public struct CatTower: Codable, Equatable {
     }
     public func status(at floor: Int) -> String {
         guard let facility = facilities[floor] else { return "空楼层 · 请选择设施" }
-        guard let cat = residents.first(where: { $0.floor == floor }) else { return "等待安排猫猫" }
-        let batchSize = 2 + (cat.personality == .careful && (cat.experience + 1) % 10 == 0 ? 1 : 0)
+        let cats = residents.filter { $0.floor == floor }
+        guard !cats.isEmpty else { return "等待安排猫猫" }
+        let batchSize = cats.map { cat in
+            2 + (cat.personality == .careful && (cat.experience + 1) % 10 == 0 ? 1 : 0)
+        }.min() ?? 2
         if let output = facility.output, inventory[output, default: 0] + batchSize > Self.storageCapacity { return "仓库已满" }
         if facility == .restaurant, inventory[.flour, default: 0] > 0 { return "正在制作面粉餐点" }
         if let input = facility.input, inventory[input, default: 0] == 0 { return "等待" + input.title }
@@ -120,23 +124,25 @@ public struct CatTower: Codable, Equatable {
     private mutating func produceMinute() {
         // Sales and processing first: newly produced materials are available the following minute.
         for floor in facilities.keys.sorted(by: { (facilities[$0]!.output == nil ? 0 : 1, $0) < (facilities[$1]!.output == nil ? 0 : 1, $1) }) {
-            guard let f = facilities[floor], let catIndex = residents.firstIndex(where: { $0.floor == floor }) else { continue }
-            let cat = residents[catIndex]
-            var rate = cat.specialty == f.industry ? (cat.experience >= 300 ? 1.4 : cat.experience >= 60 ? 1.25 : 1.1) : 1
-            if cat.personality == .diligent { rate += 0.1 }
-            if cat.personality == .social && residents.contains(where: { $0.id != cat.id && $0.floor.flatMap { facilities[$0]?.industry } == f.industry }) { rate += 0.1 }
-            // Keep at most one ready batch while blocked; no work accumulates without supplies.
-            progress[floor] = min(2, progress[floor, default: 0] + rate)
-            while progress[floor, default: 0] >= 1 {
-                let input: Material? = f == .restaurant && inventory[.flour, default: 0] > 0 ? .flour : f.input
-                let bonus = cat.personality == .careful && (residents[catIndex].experience + 1) % 10 == 0 ? 1 : 0
-                if let input, inventory[input, default: 0] < 1 { progress[floor] = min(1, progress[floor, default: 0]); break }
-                if let output = f.output, inventory[output, default: 0] + 2 + bonus > Self.storageCapacity { progress[floor] = min(1, progress[floor, default: 0]); break }
-                if let input { inventory[input, default: 0] -= 1 }
-                if let output = f.output { inventory[output, default: 0] += 2 + bonus }
-                else { coins += (f == .restaurant ? (input == .flour ? 16 : 8) : 24) * (1 + bonus) }
-                residents[catIndex].experience += 1
-                progress[floor, default: 0] -= 1
+            guard let f = facilities[floor] else { continue }
+            for catIndex in residents.indices.filter({ residents[$0].floor == floor }) {
+                let cat = residents[catIndex]
+                var rate = cat.specialty == f.industry ? (cat.experience >= 300 ? 1.4 : cat.experience >= 60 ? 1.25 : 1.1) : 1
+                if cat.personality == .diligent { rate += 0.1 }
+                if cat.personality == .social && residents.contains(where: { $0.id != cat.id && $0.floor.flatMap { facilities[$0]?.industry } == f.industry }) { rate += 0.1 }
+                // Keep at most one ready batch while blocked; no work accumulates without supplies.
+                workerProgress[cat.id] = min(2, workerProgress[cat.id, default: 0] + rate)
+                while workerProgress[cat.id, default: 0] >= 1 {
+                    let input: Material? = f == .restaurant && inventory[.flour, default: 0] > 0 ? .flour : f.input
+                    let bonus = cat.personality == .careful && (residents[catIndex].experience + 1) % 10 == 0 ? 1 : 0
+                    if let input, inventory[input, default: 0] < 1 { workerProgress[cat.id] = min(1, workerProgress[cat.id, default: 0]); break }
+                    if let output = f.output, inventory[output, default: 0] + 2 + bonus > Self.storageCapacity { workerProgress[cat.id] = min(1, workerProgress[cat.id, default: 0]); break }
+                    if let input { inventory[input, default: 0] -= 1 }
+                    if let output = f.output { inventory[output, default: 0] += 2 + bonus }
+                    else { coins += (f == .restaurant ? (input == .flour ? 16 : 8) : 24) * (1 + bonus) }
+                    residents[catIndex].experience += 1
+                    workerProgress[cat.id, default: 0] -= 1
+                }
             }
         }
     }
@@ -150,14 +156,15 @@ public struct CatTower: Codable, Equatable {
     @discardableResult public mutating func assign(_ id: UUID, to floor: Int, now: Date = Date()) -> Bool {
         refresh(now: now)
         guard facilities[floor] != nil, let index = residents.firstIndex(where: { $0.id == id }),
-              !residents.contains(where: { $0.floor == floor && $0.id != id }) else { return false }
-        residents[index].floor = floor; progress[floor] = 0
+              residents.filter({ $0.floor == floor && $0.id != id }).count < Self.capacity else { return false }
+        if residents[index].floor == floor { return true }
+        residents[index].floor = floor; workerProgress.removeValue(forKey: id)
         return true
     }
     public mutating func unassign(_ id: UUID, now: Date = Date()) {
         refresh(now: now)
         guard let index = residents.firstIndex(where: { $0.id == id }) else { return }
-        if let floor = residents[index].floor { progress[floor] = 0 }
+        workerProgress.removeValue(forKey: id)
         residents[index].floor = nil
     }
     @discardableResult public mutating func expand(facility: Facility = .garden, now: Date = Date()) -> Bool {
@@ -172,7 +179,8 @@ public struct CatTower: Codable, Equatable {
         guard floor > 1, floor <= floors, facilities[floor] != facility, canBuild(facility), coins >= 40 + facility.fee else { return false }
         // A prerequisite may not be removed while a dependent building still uses it.
         if let old = facilities[floor], facilities.values.contains(where: { $0.prerequisite == old }), facilities.values.filter({ $0 == old }).count == 1 { return false }
-        coins -= 40 + facility.fee; facilities[floor] = facility; progress[floor] = 0
+        coins -= 40 + facility.fee; facilities[floor] = facility
+        for cat in residents where cat.floor == floor { workerProgress.removeValue(forKey: cat.id) }
         return true
     }
     public static let releaseCost = 5
@@ -182,7 +190,7 @@ public struct CatTower: Codable, Equatable {
         refresh(now: now)
         guard coins >= Self.releaseCost else { return false }
         coins -= Self.releaseCost
-        if let floor = residents[index].floor { progress[floor] = 0 }
+        workerProgress.removeValue(forKey: id)
         residents.remove(at: index)
         return true
     }
@@ -201,14 +209,17 @@ public struct CatTower: Codable, Equatable {
         guard demolitionBlockReason(floor) == nil else { return false }
         refresh(now: now)
         coins += demolitionRefund
-        for index in residents.indices where residents[index].floor == floor { residents[index].floor = nil }
+        for index in residents.indices where residents[index].floor == floor {
+            workerProgress.removeValue(forKey: residents[index].id)
+            residents[index].floor = nil
+        }
         facilities.removeValue(forKey: floor)
         progress.removeValue(forKey: floor)
         constructionCosts.removeValue(forKey: floor)
         floors -= 1
         return true
     }
-    private enum CodingKeys: String, CodingKey { case floors, residents, visitor, nextVisit, arrivals, coins, facilities, inventory, progress, lastProduction, constructionCosts }
+    private enum CodingKeys: String, CodingKey { case floors, residents, visitor, nextVisit, arrivals, coins, facilities, inventory, progress, lastProduction, constructionCosts, workerProgress }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         floors = try c.decode(Int.self, forKey: .floors)
@@ -223,9 +234,22 @@ public struct CatTower: Codable, Equatable {
         lastProduction = try c.decodeIfPresent(Date.self, forKey: .lastProduction) ?? Date()
         constructionCosts = try c.decodeIfPresent([Int: Int].self, forKey: .constructionCosts) ?? [:]
         // Preserve old cats and floors, moving excess occupants into the lobby.
-        var occupied = Set<Int>()
+        var occupied: [Int: Int] = [:]
         for i in residents.indices {
-            if let floor = residents[i].floor, facilities[floor] == nil || !occupied.insert(floor).inserted { residents[i].floor = nil }
+            if let floor = residents[i].floor {
+                if facilities[floor] == nil || occupied[floor, default: 0] >= Self.capacity { residents[i].floor = nil }
+                else { occupied[floor, default: 0] += 1 }
+            }
         }
+        if let saved = try c.decodeIfPresent([UUID: Double].self, forKey: .workerProgress) {
+            let workingIDs = Set(residents.filter { $0.floor != nil }.map(\.id))
+            workerProgress = saved.filter { workingIDs.contains($0.key) }
+        } else {
+            // Credit each legacy floor's partial batch only once, to its first worker.
+            for (floor, value) in progress {
+                if let cat = residents.first(where: { $0.floor == floor }) { workerProgress[cat.id] = value }
+            }
+        }
+        progress.removeAll()
     }
 }

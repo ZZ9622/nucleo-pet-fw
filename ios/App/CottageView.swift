@@ -867,7 +867,7 @@ private struct CatTowerGame: View {
                         }.disabled(local.loadFailed)
                     }
                 }
-                Section { Text("每层一个岗位。专长匹配提高效率，工作积累熟练度；没有猫或原料时暂停。") .font(.footnote) }
+                Section { Text("每层最多 3 只猫共同工作，各自按专长和熟练度生产；共享原料，没有猫或原料时暂停。") .font(.footnote) }
             }.navigationTitle("猫塔居民")
         .alert("和\(departingCat?.name ?? "猫猫")告别？", isPresented: Binding(get: { departingCat != nil && showResidents }, set: { if !$0 { departingCat = nil } }), presenting: departingCat) { cat in
             Button("留下它", role: .cancel) { departingCat = nil }

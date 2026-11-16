@@ -21,7 +21,7 @@ final class CatTowerTests: XCTestCase {
         XCTAssertTrue(tower.welcome(now: start))
         XCTAssertFalse(tower.welcome(now: start))
         let cat = try XCTUnwrap(tower.lobbyResidents.first)
-        XCTAssertFalse(tower.assign(cat.id, to: 1, now: start))
+        XCTAssertFalse(tower.assign(cat.id, to: 0, now: start))
         XCTAssertTrue(tower.assign(cat.id, to: 2, now: start))
         var restored = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(tower))
         XCTAssertEqual(restored, tower)
@@ -81,12 +81,12 @@ final class CatTowerTests: XCTestCase {
         tower.refresh(now: now)
         XCTAssertEqual(tower, settled)
     }
-    func testLegacySaveKeepsCatsAndMovesExcessToLobby() throws {
+    func testLegacySaveKeepsUpToThreeCatsPerFloor() throws {
         let ids = [UUID(), UUID()]
         let old: [String: Any] = ["floors": 2, "residents": ids.map { ["id": $0.uuidString, "name": "旧居民", "coat": 0, "floor": 1] }, "nextVisit": 0, "arrivals": 2]
         let tower = try JSONDecoder().decode(CatTower.self, from: JSONSerialization.data(withJSONObject: old))
         XCTAssertEqual(tower.residents.map(\.id), ids)
-        XCTAssertEqual(tower.lobbyResidents.count, 1)
+        XCTAssertEqual(tower.lobbyResidents.count, 0)
         XCTAssertEqual(tower.facilities[1], .restaurant)
         XCTAssertNil(tower.facilities[2])
     }
@@ -179,9 +179,46 @@ final class CatTowerTests: XCTestCase {
         XCTAssertEqual(tower.residents.last?.experience, visitor.experience)
         XCTAssertEqual(tower.nextVisit, start.addingTimeInterval(1800))
     }
-    private func fixture(facilities: [Int: CatTower.Facility], inventory: [CatTower.Material: Int]) throws -> CatTower {
+    func testThreeWorkersProduceAndFourthAssignmentIsRejected() throws {
+        let cats = (0..<4).map { CatTower.Resident(name: "工友\($0)", coat: $0, floor: $0 < 3 ? 1 : nil, specialty: .craft, personality: .careful) }
+        var tower = try fixture(facilities: [1: .restaurant], inventory: [.crops: 20], residents: cats)
+        XCTAssertFalse(tower.assign(cats[3].id, to: 1, now: start))
+        XCTAssertTrue(tower.assign(cats[0].id, to: 1, now: start))
+        tower.refresh(now: start.addingTimeInterval(60))
+        XCTAssertEqual(tower.coins, 124)
+        XCTAssertEqual(tower.inventory[.crops], 17)
+        XCTAssertEqual(tower.residents.prefix(3).map(\.experience), [1, 1, 1])
+        tower = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(tower))
+        XCTAssertEqual(tower.residents.filter { $0.floor == 1 }.count, 3)
+        tower.unassign(cats[0].id, now: start.addingTimeInterval(60))
+        XCTAssertTrue(tower.assign(cats[3].id, to: 1, now: start.addingTimeInterval(60)))
+    }
+    func testSharedMaterialsAreNotConsumedMoreThanAvailable() throws {
+        let cats = (0..<3).map { CatTower.Resident(name: "工友\($0)", coat: $0, floor: 1, specialty: .craft, personality: .careful) }
+        var tower = try fixture(facilities: [1: .restaurant], inventory: [.crops: 1], residents: cats)
+        tower.refresh(now: start.addingTimeInterval(60))
+        XCTAssertEqual(tower.coins, 108)
+        XCTAssertEqual(tower.inventory[.crops], 0)
+        XCTAssertEqual(tower.residents.map(\.experience).reduce(0, +), 1)
+    }
+    func testWorkersKeepIndividualPartialProgressAcrossReloadAndDeparture() throws {
+        let cats = (0..<3).map { CatTower.Resident(name: "工友\($0)", coat: $0, floor: 2, specialty: .food, personality: .diligent) }
+        var uninterrupted = try fixture(facilities: [1: .restaurant, 2: .garden], inventory: [:], residents: cats)
+        uninterrupted.refresh(now: start.addingTimeInterval(120))
+        var restored = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(uninterrupted))
+        uninterrupted.refresh(now: start.addingTimeInterval(240))
+        restored.refresh(now: start.addingTimeInterval(240))
+        XCTAssertEqual(restored, uninterrupted)
+        XCTAssertTrue(restored.release(cats[0].id, now: start.addingTimeInterval(240)))
+        restored.refresh(now: start.addingTimeInterval(300))
+        XCTAssertEqual(restored.residents.map(\.experience), [6, 6])
+        XCTAssertEqual(restored.residents.count, 2)
+        XCTAssertEqual(restored.residents.filter { $0.floor == 2 }.count, 2)
+    }
+    private func fixture(facilities: [Int: CatTower.Facility], inventory: [CatTower.Material: Int], residents: [CatTower.Resident]? = nil) throws -> CatTower {
         let data = try JSONEncoder().encode(CatTower(now: start))
         var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        if let residents { object["residents"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(residents)) }
         object["floors"] = facilities.count
         object["facilities"] = Dictionary(uniqueKeysWithValues: facilities.map { (String($0.key), $0.value.rawValue) })
         // Non-string enum dictionaries use alternating key/value arrays in Codable.
