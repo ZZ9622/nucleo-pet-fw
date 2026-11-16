@@ -24,7 +24,7 @@ struct AdventureScene: View {
         TimelineView(.animation(minimumInterval: 0.18, paused: paused)) { timeline in
             let beat = paused ? 0 : Int(timeline.date.timeIntervalSinceReferenceDate * 5.5) % 360
             VStack(spacing: 0) {
-                Text(waking ? "伸个懒腰" : captions[stage - 1])
+                Text(LocalizedStringKey(waking ? "伸个懒腰" : captions[stage - 1]))
                     .font(.system(size: 17, weight: .bold, design: .monospaced))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: captionAlignment)

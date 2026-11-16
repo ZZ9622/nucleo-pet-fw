@@ -10,7 +10,11 @@ struct JourneySection: View {
                 HStack(alignment:.top,spacing:12) {
                     Image(systemName:entry.symbol).frame(width:24)
                     VStack(alignment:.leading,spacing:4) {
-                        Text(entry.title).font(.subheadline)
+                        if entry.title.hasPrefix("遇见") {
+                            Text("遇见\(String(entry.title.dropFirst(2)))").font(.subheadline)
+                        } else {
+                            Text(LocalizedStringKey(entry.title)).font(.subheadline)
+                        }
                         Text(entry.date,format:.dateTime.month().day().hour().minute()).font(.caption2).foregroundStyle(Palette.muted)
                     }
                 }
@@ -26,14 +30,29 @@ private struct WorldMoments: View {
             HStack(alignment:.top,spacing:12) {
                 Image(systemName:"sparkles").frame(width:24)
                 VStack(alignment:.leading,spacing:4) {
-                    Text(moment.text).font(.subheadline)
+                    momentLabel(moment.text).font(.subheadline)
                     Text(Date(timeIntervalSince1970:moment.date),format:.dateTime.month().day().hour().minute()).font(.caption2).foregroundStyle(Palette.muted)
                 }
             }
         }
     }
+    private func momentLabel(_ message: String) -> Text {
+        // Older servers store activity history as rendered strings.
+        if let match = message.wholeMatch(of: #/(短周期测试：)?活动获得 ([0-9]+) 个盒子（([^）]+)）/#),
+           let count = Int(match.2) {
+            if match.3 == "含离线累计" {
+                return Text("活动获得 \(count) 个盒子（含离线累计）")
+            }
+            let day = String(match.3)
+            return match.1 == nil
+                ? Text("活动获得 \(count) 个盒子（\(day)）")
+                : Text("短周期测试：活动获得 \(count) 个盒子（\(day)）")
+        }
+        return Text(LocalizedStringKey(message))
+    }
 }
 struct CottageView: View {
+    @Environment(\.locale) private var locale
     @EnvironmentObject private var store: CompanionStore
     @EnvironmentObject private var world: PomiWorldStore
     @State private var section=0
@@ -55,7 +74,7 @@ struct CottageView: View {
                     Text("仓库").tag(0);Text("放生海").tag(1)
                 }.pickerStyle(.segmented).accessibilityIdentifier("cottage.section")
                 if section==0 { warehouse } else { sea }
-                if !world.message.isEmpty && !(showService && !world.preview && world.accountID == nil) { Text(world.message).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
+                if !world.message.isEmpty && !(showService && !world.preview && world.accountID == nil) { Text(LocalizedStringKey(world.message)).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
                 if !world.preview {
                     Button(world.accountID == nil ? "同步真实仓库" : "同步账号仓库") { Task { await world.connect() } }.buttonStyle(QuietButtonStyle()).disabled(world.busy)
                     if world.accountID == nil {
@@ -73,7 +92,7 @@ struct CottageView: View {
                                     .font(.footnote)
                             }
                             if !world.message.isEmpty {
-                                Text(world.message)
+                                Text(LocalizedStringKey(world.message))
                                     .font(.footnote)
                                     .foregroundStyle(Palette.muted)
                             }
@@ -115,10 +134,12 @@ struct CottageView: View {
         return VStack(spacing:7) {
             if let item { ItemGlyph(item:item,entry:world.inventory.entry(item)).frame(width:60,height:44) }
             else { Image(systemName:"plus").font(.title2).foregroundStyle(Palette.line).frame(width:60,height:44) }
-            Text(item.map{world.inventory.entry($0).name} ?? title).font(.caption2)
+            Text(LocalizedStringKey(item.map{world.inventory.entry($0).name} ?? title)).font(.caption2)
         }.frame(width:105).contextMenu {
             if item != nil { Button("收回仓库") { act("/decorate",["slot":key]) } }
-        }.accessibilityLabel(item.map{"\(title)：\(world.inventory.entry($0).name)"} ?? "\(title)，空位")
+        }.accessibilityLabel(item.map {
+            Text("\(pomiLocalized(title, locale: locale))：\(pomiLocalized(world.inventory.entry($0).name, locale: locale))")
+        } ?? Text("\(pomiLocalized(title, locale: locale))，空位"))
     }
     private var warehouse: some View {
         VStack(alignment:.leading,spacing:16) {
@@ -146,8 +167,8 @@ struct CottageView: View {
                     Button { selected=item } label: {
                         VStack(spacing:6) {
                             ItemGlyph(item:item,entry:world.inventory.entry(item)).frame(height:38)
-                            Text(world.inventory.entry(item).name).font(.system(size:10))
-                            Text("Lv\(item.level)\(world.inventory.room.values.contains(item.id) ? " · 已摆放":"")").font(.system(size:9)).foregroundStyle(Palette.muted)
+                            Text(LocalizedStringKey(world.inventory.entry(item).name)).font(.system(size:10))
+                            (world.inventory.room.values.contains(item.id) ? Text("Lv\(item.level) · 已摆放") : Text("Lv\(item.level)")).font(.system(size:9)).foregroundStyle(Palette.muted)
                         }.frame(maxWidth:.infinity).frame(height:94).background(.white,in:PixelFrame()).overlay(PixelFrame().stroke(Palette.line,lineWidth:1))
                     }.buttonStyle(.plain).accessibilityIdentifier("world.item.\(item.kind)")
                 }
@@ -181,7 +202,7 @@ struct CottageView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 ItemGlyph(item:item,entry:entry).frame(height:70).frame(maxWidth:.infinity)
-                Text("\(entry.name) · Lv\(item.level)").font(.title2.bold())
+                Text("\(pomiLocalized(entry.name, locale: locale)) · Lv\(item.level)").font(.title2.bold())
                 if let slot=entry.slot {
                     Button(placed ? "收回仓库":"摆进小屋") { act("/decorate",placed ? ["slot":slot]:["slot":slot,"itemID":item.id]);selected=nil }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.decorate")
                 }
@@ -207,7 +228,7 @@ struct CottageView: View {
                                 }
                             } label: {
                                 HStack {
-                                    Text(entry.name)
+                                    Text(LocalizedStringKey(entry.name))
                                     Spacer()
                                     Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
                                 }
@@ -225,7 +246,7 @@ struct CottageView: View {
                             .buttonStyle(.plain)
                             .disabled(world.busy)
                         if !listingError.isEmpty {
-                            Text(listingError).font(.footnote).foregroundStyle(Palette.muted)
+                            Text(LocalizedStringKey(listingError)).font(.footnote).foregroundStyle(Palette.muted)
                         }
                     } else {
                         Button("上架到小卖部") { listingItemID = item.id }
@@ -278,6 +299,7 @@ struct CottageView: View {
 }
 /// Small code-native pixel objects, crisp at every scale.
 struct ItemGlyph: View {
+    @Environment(\.locale) private var locale
     let item:PomiItem
     let entry:PomiCatalogEntry
     private var rows:[String] {
@@ -296,7 +318,7 @@ struct ItemGlyph: View {
                 for (y,row) in rows.enumerated() { for (x,c) in row.enumerated() where c=="1" { p.addRect(CGRect(x:Double(x)*unit,y:Double(y)*unit,width:unit,height:unit)) } }
             }.fill(item.level==2 ? Color(red:0.1,green:0.55,blue:0.9):Palette.ink)
                 .frame(width:unit*7,height:unit*7).frame(maxWidth:.infinity,maxHeight:.infinity)
-        }.accessibilityLabel("\(entry.name)，等级\(item.level)")
+        }.accessibilityLabel("\(pomiLocalized(entry.name, locale: locale))，等级\(item.level)")
     }
 }
 

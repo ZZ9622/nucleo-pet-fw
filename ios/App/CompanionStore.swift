@@ -27,7 +27,7 @@ final class CompanionStore: ObservableObject {
     let bluetooth = BluetoothTransport()
     let world = PomiWorldStore()
     @Published private(set) var activityReward: ActivityReward?
-    @Published private(set) var activityMessage = "连接小屋服务后启用活动奖励"
+    @Published private(set) var activityMessage: LocalizedStringKey = "连接小屋服务后启用活动奖励"
     private var lastActivitySync = Date.distantPast
     private var lastActivityReceipt: ActivityReward?
     private var lastActivitySuccess = Date.distantPast
@@ -200,7 +200,7 @@ final class CompanionStore: ObservableObject {
             activityReward=confirmed.activity;lastClockSync=Date()
             activityMessage="手机已校时 · 有电离线也会在08:00刷新"
             return confirmed
-        } catch { activityMessage=error.localizedDescription;return record }
+        } catch { activityMessage=LocalizedStringKey(error.localizedDescription);return record }
     }
 
     private func syncActivity(_ record: BoardRecord) async {
@@ -236,7 +236,7 @@ final class CompanionStore: ObservableObject {
             }
             lastActivityReceipt=receipt;lastActivitySuccess=Date()
             activityMessage=ack.granted>0 ? "活动获得 \(ack.granted) 个盒子，已放入仓库" : "奖励已同步 · \(ack.dayLabel)"
-        } catch { activityMessage=error.localizedDescription;lastActivitySync=Date().addingTimeInterval(55) }
+        } catch { activityMessage=LocalizedStringKey(error.localizedDescription);lastActivitySync=Date().addingTimeInterval(55) }
     }
 
     func startItem(kind: String, id: String) async {

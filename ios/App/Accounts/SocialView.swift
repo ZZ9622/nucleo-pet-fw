@@ -3,6 +3,7 @@ import PetDomain
 
 #if os(iOS)
 struct SocialView: View {
+    @Environment(\.locale) private var locale
     let token: String
     let serviceURL: URL
     @EnvironmentObject private var world: PomiWorldStore
@@ -42,8 +43,7 @@ struct SocialView: View {
                     Button("刷新") { run { try await refresh() } }
                 }
                 VStack(alignment: .leading, spacing: 10) {
-                    Label("我的小卖部", systemImage: "storefront").font(.headline)
-                    shelf(ownListings, empty: "货架空着。去仓库选一件物品上架吧。") {
+                    shelf(ownListings, title: "我的小卖部", empty: "货架空着。去仓库选一件物品上架吧。") {
                         listingToRemove = $0
                     }
                     Button("领取测试物品") { mutate("/shop/starter", [:]) }
@@ -51,7 +51,7 @@ struct SocialView: View {
                 }
                 if let profile { friends(profile) }
                 if busy { ProgressView() }
-                if !message.isEmpty { Text(message).font(.footnote) }
+                if !message.isEmpty { Text(LocalizedStringKey(message)).font(.footnote) }
             }
             .padding(24)
             .disabled(busy)
@@ -127,7 +127,7 @@ struct SocialView: View {
                 Text(page.id).font(.caption).foregroundStyle(Palette.muted)
                 friendShop(page.id)
                 if busy { ProgressView() }
-                if !message.isEmpty { Text(message).font(.footnote) }
+                if !message.isEmpty { Text(LocalizedStringKey(message)).font(.footnote) }
             }.padding(24)
         }
         .background(Palette.paper)
@@ -177,124 +177,187 @@ struct SocialView: View {
         }
     }
 
-    private func shelf(_ listings: [Listing], empty: String, select: @escaping (Listing) -> Void) -> some View {
+    private func shelf(_ listings: [Listing], title: LocalizedStringKey? = nil, empty: String, select: @escaping (Listing) -> Void) -> some View {
         VStack(spacing: 0) {
-            shopRoof
-            shelfDisplay(listings, empty: empty, select: select)
-                .padding(.horizontal, 10)
-            shopGarden
-        }
-    }
-
-    private func shelfDisplay(_ listings: [Listing], empty: String, select: @escaping (Listing) -> Void) -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                ForEach(0..<9) { stripe in
-                    Rectangle().fill(stripe.isMultiple(of: 2) ? Palette.blush : Palette.paper)
-                }
+            if let title {
+                Text(title)
+                    .font(.headline.bold())
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 7)
+                    .background(Palette.paper, in: PixelFrame())
+                    .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 1.5))
+                    .padding(.bottom, -6)
+                    .zIndex(2)
+                    .accessibilityAddTraits(.isHeader)
             }
-            .frame(height: 18)
-            .accessibilityHidden(true)
-
-            if listings.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "basket").font(.title2)
-                    Text(empty).font(.footnote).multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, minHeight: 90)
+            shopAwning.zIndex(1)
+            shelfDisplay(listings, select: select)
                 .padding(.horizontal, 12)
-                shelfBoard
-            } else {
-                ForEach(Array(stride(from: 0, to: listings.count, by: 3)), id: \.self) { start in
-                    HStack(alignment: .bottom, spacing: 4) {
-                        ForEach(listings[start..<min(start + 3, listings.count)]) { listing in
-                            Button { select(listing) } label: {
-                                VStack(spacing: 3) {
-                                    ItemGlyph(item: listing.item, entry: world.inventory.entry(listing.item))
-                                        .frame(height: 42)
-                                        .accessibilityHidden(true)
-                                    Text(world.inventory.entry(listing.item).name)
-                                        .font(.caption2.bold())
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Text("Lv\(listing.item.level)")
-                                        .font(.caption2)
-                                        .foregroundStyle(Palette.muted)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(busy || world.busy)
-                            .accessibilityLabel(itemTitle(listing.item))
-                            .accessibilityHint(destination == nil ? "查看下架选项" : "查看交换选项")
-                        }
-                        ForEach(0..<max(0, 3 - (listings.count - start)), id: \.self) { _ in
-                            Color.clear.frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    shelfBoard
-                }
+            stallCounter
+            if listings.isEmpty {
+                Text(LocalizedStringKey(empty))
+                    .font(.footnote)
+                    .foregroundStyle(Palette.muted)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 10)
             }
         }
-        .background(Color(red: 1, green: 0.95, blue: 0.86))
-        .overlay(Rectangle().stroke(Color(red: 0.67, green: 0.45, blue: 0.31), lineWidth: 2))
+        .frame(maxWidth: 380)
+        .frame(maxWidth: .infinity)
     }
 
-    private var shopRoof: some View {
+    private func shelfDisplay(_ listings: [Listing], select: @escaping (Listing) -> Void) -> some View {
         VStack(spacing: 0) {
-            Canvas { context, size in
-                let step = size.width / 16
-                let rose = Color(red: 0.83, green: 0.43, blue: 0.48)
-                let tile = Color(red: 0.92, green: 0.59, blue: 0.60)
-                for row in 0..<4 {
-                    let inset = CGFloat(3 - row) * step
-                    let y = CGFloat(row) * 7
-                    context.fill(Path(CGRect(x: inset, y: y, width: size.width - 2 * inset, height: 7)),
-                                 with: .color(row.isMultiple(of: 2) ? tile : rose))
+            let upperRows = max(1, (listings.count + 2) / 3)
+            ForEach(0..<upperRows, id: \.self) { row in
+                HStack(alignment: .bottom, spacing: 4) {
+                    let start = row * 3
+                    ForEach(listings.dropFirst(start).prefix(3)) { listing in
+                        Button { select(listing) } label: {
+                            VStack(spacing: 3) {
+                                ItemGlyph(item: listing.item, entry: world.inventory.entry(listing.item))
+                                    .frame(height: 42)
+                                    .accessibilityHidden(true)
+                                Text(LocalizedStringKey(world.inventory.entry(listing.item).name))
+                                    .font(.caption2.bold())
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                                Text("Lv\(listing.item.level)")
+                                    .font(.caption2)
+                                    .foregroundStyle(Palette.muted)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(busy || world.busy)
+                        .accessibilityLabel(itemTitle(listing.item))
+                        .accessibilityHint(destination == nil ? "查看下架选项" : "查看交换选项")
+                    }
+                    ForEach(0..<max(0, 3 - (listings.count - start)), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 62)
+                    }
                 }
-            }.frame(height: 28)
-            Rectangle().fill(Color(red: 0.63, green: 0.29, blue: 0.35)).frame(height: 5)
+                .padding(.horizontal, 8)
+                shelfBoard
+            }
+
+            HStack(alignment: .bottom) {
+                emptyShelfSlot
+                    .padding(.leading, 24)
+                    .padding(.bottom, 5)
+                Spacer()
+                stallCat
+                    .frame(width: 72, height: 47)
+                    .padding(.trailing, 15)
+                    .offset(y: 4)
+            }
+            .frame(minHeight: 56, alignment: .bottom)
+            .accessibilityHidden(true)
         }
+        .background(Palette.blush)
+        .overlay {
+            HStack {
+                Rectangle().fill(Palette.sage).frame(width: 5)
+                Spacer(minLength: 0)
+                Rectangle().fill(Palette.sage).frame(width: 5)
+            }
+            .overlay(Rectangle().strokeBorder(Palette.ink, lineWidth: 1.5))
+            .allowsHitTesting(false)
+        }
+    }
+
+    private var stallCat: some View {
+        Canvas { context, size in
+            let unit = min(size.width / 24, size.height / 16)
+            let face = [
+                "   ##       ##   ",
+                "   #.##   ##.#   ",
+                "  #...#####...#  ",
+                "  #...........#  ",
+                " #.............# ",
+                " #...#.....#...# ",
+                " #......#......# ",
+                " ##...........## ",
+                "#..###########..#",
+                "#..#         #..#",
+                "####         ####"
+            ]
+            for (y, row) in face.enumerated() {
+                for (x, pixel) in row.enumerated() where pixel != " " {
+                    let rect = CGRect(x: CGFloat(x + 1) * unit, y: CGFloat(y + 5) * unit, width: unit, height: unit)
+                    context.fill(Path(rect), with: .color(pixel == "#" ? Palette.ink : Palette.room))
+                }
+            }
+            let mint = Color(red: 0.43, green: 0.76, blue: 0.53)
+            for (x, y) in [(19, 1), (19, 2), (21, 4), (22, 3), (22, 6), (23, 6)] {
+                let rect = CGRect(x: CGFloat(x) * unit, y: CGFloat(y) * unit, width: unit, height: unit)
+                context.fill(Path(rect), with: .color(mint))
+            }
+        }
+    }
+
+    private var stallCounter: some View {
+        VStack(spacing: 0) {
+            PixelFrame(cornerRadius: 2)
+                .fill(Palette.sage)
+                .overlay(PixelFrame(cornerRadius: 2).stroke(Palette.ink, lineWidth: 1.5))
+                .frame(height: 10)
+            HStack {
+                Rectangle().fill(Palette.ink).frame(width: 3, height: 7)
+                Spacer()
+                Rectangle().fill(Palette.ink).frame(width: 3, height: 7)
+            }
+            .padding(.horizontal, 14)
+        }
+        .padding(.horizontal, 4)
         .accessibilityHidden(true)
     }
 
-    private var shopGarden: some View {
+    private var emptyShelfSlot: some View {
+        PixelFrame(cornerRadius: 4)
+            .stroke(Palette.muted.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            .frame(width: 34, height: 32)
+            .accessibilityHidden(true)
+    }
+
+    private var shopAwning: some View {
         Canvas { context, size in
-            let grass = Color(red: 0.62, green: 0.76, blue: 0.45)
-            let wood = Color(red: 0.78, green: 0.58, blue: 0.40)
-            func pixel(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, _ color: Color) {
-                context.fill(Path(CGRect(x: x, y: y, width: width, height: height)), with: .color(color))
+            let mint = Color(red: 0.68, green: 0.89, blue: 0.79)
+            let mintShadow = Color(red: 0.52, green: 0.80, blue: 0.69)
+            let shadeHeight: CGFloat = 24
+            let stripeCount = 9
+
+            for band in 0..<6 {
+                let inset = CGFloat(5 - band) * 4
+                let y = CGFloat(band) * 4
+                let stripeWidth = (size.width - 2 * inset) / CGFloat(stripeCount)
+                for stripe in 0..<stripeCount {
+                    let x = inset + CGFloat(stripe) * stripeWidth
+                    let rect = CGRect(x: x, y: y, width: stripeWidth + 0.5, height: 4)
+                    context.fill(Path(rect), with: .color(stripe.isMultiple(of: 2) ? mint : Palette.room))
+                }
             }
-            pixel(0, 25, size.width, 6, grass)
-            pixel(8, 15, size.width - 16, 3, wood)
-            pixel(8, 21, size.width - 16, 3, wood)
-            for x in stride(from: CGFloat(8), to: size.width - 8, by: 18) {
-                pixel(x, 12, 5, 16, wood)
-                pixel(x + 1, 10, 3, 2, wood)
-            }
-            let pink = Color(red: 0.89, green: 0.45, blue: 0.59)
-            let yellow = Color(red: 0.98, green: 0.77, blue: 0.34)
-            for (index, position) in [0.13, 0.25, 0.74, 0.87].enumerated() {
-                let x = size.width * position
-                let y: CGFloat = index.isMultiple(of: 2) ? 6 : 10
-                let petal = index.isMultiple(of: 2) ? pink : yellow
-                pixel(x, y + 7, 3, 20 - y, grass)
-                pixel(x - 4, y + 12, 5, 3, grass)
-                pixel(x - 3, y + 2, 9, 4, petal)
-                pixel(x, y - 1, 3, 10, petal)
-                pixel(x, y + 2, 3, 4, Palette.paper)
+
+            let hemWidth = size.width / CGFloat(stripeCount)
+            for stripe in 0..<stripeCount {
+                let x = CGFloat(stripe) * hemWidth
+                let hem = CGRect(x: x + 0.5, y: shadeHeight, width: hemWidth - 1, height: 11)
+                let edge = PixelFrame(cornerRadius: 3).path(in: hem)
+                context.fill(edge, with: .color(stripe.isMultiple(of: 2) ? mintShadow : Palette.sage))
+                context.stroke(edge, with: .color(Palette.ink.opacity(0.45)), lineWidth: 1)
             }
         }
-        .frame(height: 31)
+        .frame(height: 35)
         .accessibilityHidden(true)
     }
 
     private var shelfBoard: some View {
         Rectangle()
-            .fill(Color(red: 0.72, green: 0.48, blue: 0.33))
+            .fill(Palette.sage)
+            .overlay(alignment: .top) { Rectangle().fill(Palette.ink.opacity(0.7)).frame(height: 1) }
+            .overlay(alignment: .bottom) { Rectangle().fill(Palette.line).frame(height: 2) }
             .frame(height: 7)
             .accessibilityHidden(true)
     }
@@ -311,12 +374,12 @@ struct SocialView: View {
 
     private func wantedTitles(_ listing: Listing) -> String {
         listing.acceptedKinds.map { kind in
-            world.inventory.catalog.first { $0.id == kind }?.name ?? kind
-        }.joined(separator: "、")
+            pomiLocalized(world.inventory.catalog.first { $0.id == kind }?.name ?? kind, locale: locale)
+        }.joined(separator: pomiLocalized("、", locale: locale))
     }
 
     private func itemTitle(_ item: PomiItem) -> String {
-        "\(world.inventory.entry(item).name) · Lv\(item.level)"
+        "\(pomiLocalized(world.inventory.entry(item).name, locale: locale)) · Lv\(item.level)"
     }
 
     private func open(_ page: Destination) {

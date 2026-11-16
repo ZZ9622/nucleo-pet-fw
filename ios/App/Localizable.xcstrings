@@ -1,0 +1,4856 @@
+{
+  "sourceLanguage" : "zh-Hans",
+  "strings" : {
+    " · " : {
+
+    },
+    "、" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ", "
+          }
+        }
+      }
+    },
+    "%@ · Lv%lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Lv%2$lld"
+          }
+        }
+      }
+    },
+    "%@ · 等待确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Pending"
+          }
+        }
+      }
+    },
+    "%@ 会回到你的仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ will return to your inventory."
+          }
+        }
+      }
+    },
+    "%@，%u，满值100" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$u out of 100"
+          }
+        }
+      }
+    },
+    "%@，空位" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: empty"
+          }
+        }
+      }
+    },
+    "%@，等级%lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, level %2$lld"
+          }
+        }
+      }
+    },
+    "%@：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@去手机小屋玩了" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ went to play in the cottage."
+          }
+        }
+      }
+    },
+    "%@在这里看风景" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is enjoying the view here."
+          }
+        }
+      }
+    },
+    "%@的体验挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’s Preview Device"
+          }
+        }
+      }
+    },
+    "%@的小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’s Cottage"
+          }
+        }
+      }
+    },
+    "%@的真实挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’s Device"
+          }
+        }
+      }
+    },
+    "%lld dBm" : {
+
+    },
+    "%u" : {
+
+    },
+    "＋ 添加好友" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "＋ Add Friend"
+          }
+        }
+      }
+    },
+    "～  ～  ～  ～  ～" : {
+
+    },
+    "01 / CONNECT" : {
+
+    },
+    "30秒测试版保留原三盒规则，跨日由服务确认。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The 30-second test keeps the three-box limit. The server confirms each new day."
+          }
+        }
+      }
+    },
+    "English" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        }
+      }
+    },
+    "Find Pomi" : {
+
+    },
+    "HELLO, LITTLE FRIEND" : {
+
+    },
+    "http://你的Mac名称.local:8788" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "http://your-Mac-name.local:8788"
+          }
+        }
+      }
+    },
+    "https://你的服务地址" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://your-server-address"
+          }
+        }
+      }
+    },
+    "iPhone 和运行服务的 Mac 需要连接同一个 Wi-Fi。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect your iPhone and the Mac running the server to the same Wi-Fi network."
+          }
+        }
+      }
+    },
+    "Lv%lld" : {
+
+    },
+    "Lv%lld · 已摆放" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lv%lld · Placed"
+          }
+        }
+      }
+    },
+    "Mac 地址" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac Address"
+          }
+        }
+      }
+    },
+    "Pomi" : {
+
+    },
+    "Pomi · %@" : {
+
+    },
+    "Pomi / 01" : {
+
+    },
+    "Pomi 正在等你喵。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is waiting for you."
+          }
+        }
+      }
+    },
+    "Poyage" : {
+
+    },
+    "USB / MAC BRIDGE" : {
+
+    },
+    "USB 经 Mac" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USB via Mac"
+          }
+        }
+      }
+    },
+    "VISITING PHONE" : {
+
+    },
+    "WANTED，寻 Pomi 启事" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WANTED: Find Pomi"
+          }
+        }
+      }
+    },
+    "X %lld · Y %lld · Z %lld mg" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "X %1$lld · Y %2$lld · Z %3$lld mg"
+          }
+        }
+      }
+    },
+    "一起玩了一会儿" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Played together"
+          }
+        }
+      }
+    },
+    "一起走过的足迹" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Our Footprints"
+          }
+        }
+      }
+    },
+    "三个小收藏合成了 Lv2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three collectibles merged into a Lv2 item."
+          }
+        }
+      }
+    },
+    "三个相同 Lv1 合成 Lv2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge Three Matching Lv1 Items"
+          }
+        }
+      }
+    },
+    "上一次联网操作待确认，请点连接并同步仓库恢复" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The last online action is pending. Tap Connect and Sync Inventory to resume."
+          }
+        }
+      }
+    },
+    "上架到小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List in Shop"
+          }
+        }
+      }
+    },
+    "上次更新 %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Updated: %@"
+          }
+        }
+      }
+    },
+    "下架并收回" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return to Inventory"
+          }
+        }
+      }
+    },
+    "下架这件物品？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take this item off the shelf?"
+          }
+        }
+      }
+    },
+    "下次传送时模拟中断" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrupt the Next Transfer"
+          }
+        }
+      }
+    },
+    "下次再来玩" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See You Next Time"
+          }
+        }
+      }
+    },
+    "下次刷新：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Reset: %@"
+          }
+        }
+      }
+    },
+    "下次恢复：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Pick: %@"
+          }
+        }
+      }
+    },
+    "不登录，连接挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect without signing in"
+          }
+        }
+      }
+    },
+    "串门" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visit"
+          }
+        }
+      }
+    },
+    "为小屋换了一点风景" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gave the cottage a new look."
+          }
+        }
+      }
+    },
+    "主页" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "了解实物连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Connecting Your Pomi"
+          }
+        }
+      }
+    },
+    "云朵坐垫" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud Cushion"
+          }
+        }
+      }
+    },
+    "交换成功，物品已放入仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trade complete. The item is in your inventory."
+          }
+        }
+      }
+    },
+    "交接记录已保留。请恢复连接后继续，\n完成前双方暂停互动。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transfer is saved. Reconnect to resume.\nCare is paused until it’s complete."
+          }
+        }
+      }
+    },
+    "交接记录已找回，请在小屋继续旅程" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer record recovered. Resume the journey in the cottage."
+          }
+        }
+      }
+    },
+    "今天，也想靠近你一点。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let’s spend a little time together today."
+          }
+        }
+      }
+    },
+    "今天很开心" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feeling happy today"
+          }
+        }
+      }
+    },
+    "今日已获得 %lld / %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned Today: %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "今日已获得 %u / %u" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned Today: %1$u / %2$u"
+          }
+        }
+      }
+    },
+    "今日已达上限，联网确认新日期后继续" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s limit is reached. Go online to confirm the next day."
+          }
+        }
+      }
+    },
+    "从小卖部收回了一件物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Returned a shop item to the inventory."
+          }
+        }
+      }
+    },
+    "从放生海捞到了一份惊喜" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found a surprise in the Bottle Sea."
+          }
+        }
+      }
+    },
+    "从模拟放生海捞到一份惊喜" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found a surprise in the preview sea."
+          }
+        }
+      }
+    },
+    "仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory"
+          }
+        }
+      }
+    },
+    "仓库中选择闲置物品即可放生。真实海域需要连接小屋服务；不会捞到自己放生的物品。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send unused inventory items out to sea. Connect to the cottage server to pick bottles from other players."
+          }
+        }
+      }
+    },
+    "仓库同步失败怎么办？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What if my inventory won’t sync?"
+          }
+        }
+      }
+    },
+    "仓库已同步" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory synced"
+          }
+        }
+      }
+    },
+    "仓库还空着。带着挂件去走走，等待下一份惊喜。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your inventory is empty. Take Pomi for a walk to find a surprise."
+          }
+        }
+      }
+    },
+    "仓库里没有对方想要的闲置 Lv1 物品。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have no unused Lv1 items that they want."
+          }
+        }
+      }
+    },
+    "伸个懒腰" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Little Stretch"
+          }
+        }
+      }
+    },
+    "伸了个懒腰" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Had a good stretch"
+          }
+        }
+      }
+    },
+    "体验模式" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview Mode"
+          }
+        }
+      }
+    },
+    "体验模式，尚未连接真实挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview mode, no physical device connected"
+          }
+        }
+      }
+    },
+    "体验编号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview ID"
+          }
+        }
+      }
+    },
+    "你收到 · %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You Get · %@"
+          }
+        }
+      }
+    },
+    "你给出" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You Give"
+          }
+        }
+      }
+    },
+    "例如 your-mac.local" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. your-mac.local"
+          }
+        }
+      }
+    },
+    "保存名字" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Name"
+          }
+        }
+      }
+    },
+    "停止搜索" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop Searching"
+          }
+        }
+      }
+    },
+    "先保管好它的记录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Pomi’s Record Safe"
+          }
+        }
+      }
+    },
+    "先同步小屋服务以确认日期，再开始累计活动" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with the cottage server to confirm the date before tracking activity."
+          }
+        }
+      }
+    },
+    "六盒版等待启用：请连接匹配的小屋服务" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect to a compatible cottage server to enable the six-box mode."
+          }
+        }
+      }
+    },
+    "关闭" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "关闭旅程" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close Journey"
+          }
+        }
+      }
+    },
+    "最多 24 个字符。名字保存在这台手机，板子仍使用同一只宠物的身份。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 24 characters. The name is saved on this phone and the device keeps the same pet identity."
+          }
+        }
+      }
+    },
+    "出发吧" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let’s Go"
+          }
+        }
+      }
+    },
+    "出发喵！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off We Go!"
+          }
+        }
+      }
+    },
+    "出门遇见惊喜，回家留下一点风景。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find surprises outside and bring a little of the world home."
+          }
+        }
+      }
+    },
+    "创建账号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Account"
+          }
+        }
+      }
+    },
+    "删除后，你和好友码为 %@ 的用户将解除好友关系。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This removes the friend with code %@ from your friends list."
+          }
+        }
+      }
+    },
+    "删除好友" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Friend"
+          }
+        }
+      }
+    },
+    "刷新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        }
+      }
+    },
+    "动作调试台" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motion Debugger"
+          }
+        }
+      }
+    },
+    "动作调试台 →" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motion Debugger →"
+          }
+        }
+      }
+    },
+    "原版 · 累计 10 分钟 / 盒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original Mode · 10 Minutes per Box"
+          }
+        }
+      }
+    },
+    "原记录暂时无法读取，已保留。可以重试；也可以先备份原文件，再创建新的体验宠物。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your original record is safe but could not be read. Retry or back it up before creating a new preview pet."
+          }
+        }
+      }
+    },
+    "去小屋看看" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visit the Cottage"
+          }
+        }
+      }
+    },
+    "去连接挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Pomi"
+          }
+        }
+      }
+    },
+    "发送申请" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Request"
+          }
+        }
+      }
+    },
+    "取消" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "取消上架" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Listing"
+          }
+        }
+      }
+    },
+    "取消交换" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Trade"
+          }
+        }
+      }
+    },
+    "口袋里的另一个家" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Home in Your Pocket"
+          }
+        }
+      }
+    },
+    "吃了一口小点心" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Had a little treat"
+          }
+        }
+      }
+    },
+    "同一 Wi-Fi 测试请使用 Mac 的 .local 地址，其他服务请使用 HTTPS。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use your Mac’s .local address for Wi-Fi testing, or HTTPS for other servers."
+          }
+        }
+      }
+    },
+    "同一个%@，带着原来的心情和精力。\n换个地方，继续陪着你。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same %@, same Happiness and Energy.\nTogether in a new place."
+          }
+        }
+      }
+    },
+    "同一只小伙伴，两个小世界。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One little companion, two little worlds."
+          }
+        }
+      }
+    },
+    "同步真实仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Device Inventory"
+          }
+        }
+      }
+    },
+    "同步账号仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync Account Inventory"
+          }
+        }
+      }
+    },
+    "名字已保存" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name saved"
+          }
+        }
+      }
+    },
+    "喂食、摸摸、玩耍和睡眠请在挂件上操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use your device to feed, pet, play with, or put Pomi to sleep."
+          }
+        }
+      }
+    },
+    "喵爪到此！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi Was Here!"
+          }
+        }
+      }
+    },
+    "回到随身挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Returned to the device"
+          }
+        }
+      }
+    },
+    "在好友的小卖部换到了一件物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traded for an item in a friend’s shop."
+          }
+        }
+      }
+    },
+    "在小卖部换到了一件物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traded for an item in the shop."
+          }
+        }
+      }
+    },
+    "在挂件上确认使用了点心" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmed a treat on the device."
+          }
+        }
+      }
+    },
+    "在这里陪它看看小屋；照顾互动请在挂件上进行。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spend time with Pomi here. Use the device for care."
+          }
+        }
+      }
+    },
+    "地面" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Floor"
+          }
+        }
+      }
+    },
+    "填写 Mac 桥接口令" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the Mac Bridge Passcode"
+          }
+        }
+      }
+    },
+    "墙面" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wall"
+          }
+        }
+      }
+    },
+    "备份后重新开始" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back Up and Start Over"
+          }
+        }
+      }
+    },
+    "复制" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
+    "复制好友码" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Friend Code"
+          }
+        }
+      }
+    },
+    "奖励已同步 · %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rewards synced · %@"
+          }
+        }
+      }
+    },
+    "好友 · %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friends · %lld"
+          }
+        }
+      }
+    },
+    "好友暂未上架物品。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your friend hasn’t listed any items yet."
+          }
+        }
+      }
+    },
+    "好友的小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend’s Shop"
+          }
+        }
+      }
+    },
+    "好友码" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend Code"
+          }
+        }
+      }
+    },
+    "好友码 %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend Code: %@"
+          }
+        }
+      }
+    },
+    "好友给出其中一种即可交换。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friends can offer any one of these items."
+          }
+        }
+      }
+    },
+    "如何连接挂件？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How do I connect my Pomi?"
+          }
+        }
+      }
+    },
+    "它在挂件里，等你叫它。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is waiting for you on the device."
+          }
+        }
+      }
+    },
+    "安静待一会儿" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taking a quiet break"
+          }
+        }
+      }
+    },
+    "完成" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "实际活动奖励等待加速度模块接入；预览按钮不会发放真实物品。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity rewards require the motion sensor. A preview walk gives no real items."
+          }
+        }
+      }
+    },
+    "宠物名字" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pet Name"
+          }
+        }
+      }
+    },
+    "宠物回到挂件后才能操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return Pomi to the device first."
+          }
+        }
+      }
+    },
+    "宠物在挂件上、精力 ≥ 10 时可开盒，每次消耗 10 精力。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open a box when Pomi is on the device and has at least 10 Energy. Each box costs 10 Energy."
+          }
+        }
+      }
+    },
+    "宠物已带着新状态回到板子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is back on the device with its updated state."
+          }
+        }
+      }
+    },
+    "宠物已离开板子，进入手机小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi moved from the device to the cottage."
+          }
+        }
+      }
+    },
+    "密码（至少 8 个字符）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password (at least 8 characters)"
+          }
+        }
+      }
+    },
+    "对方想换 · %@（任选一种 Lv1）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They Want · %@ (choose one Lv1 item)"
+          }
+        }
+      }
+    },
+    "小屋内容" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cottage Section"
+          }
+        }
+      }
+    },
+    "小屋和挂件，正在交接它的记录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cottage and device are transferring Pomi’s record."
+          }
+        }
+      }
+    },
+    "小屋服务暂时无法连接，请稍后重试" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cannot reach the cottage server. Try again later."
+          }
+        }
+      }
+    },
+    "小屋服务设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cottage Server Settings"
+          }
+        }
+      }
+    },
+    "小屋留着一盏灯，等它来玩。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cottage light is on for Pomi."
+          }
+        }
+      }
+    },
+    "小旅程，暂停了一下" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journey Paused"
+          }
+        }
+      }
+    },
+    "属性已同步" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stats synced"
+          }
+        }
+      }
+    },
+    "已上架，可在「串门」查看。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listed in your shop. View it in Visit."
+          }
+        }
+      }
+    },
+    "已保存 %lld / %lld 秒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved: %1$lld / %2$lld Seconds"
+          }
+        }
+      }
+    },
+    "已保存 %u / %u 秒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved: %1$u / %2$u Seconds"
+          }
+        }
+      }
+    },
+    "已切换为真实挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Physical Pomi enabled"
+          }
+        }
+      }
+    },
+    "已复制" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
+          }
+        }
+      }
+    },
+    "已复制好友码" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend Code Copied"
+          }
+        }
+      }
+    },
+    "已校时 · 有电离线自动08:00刷新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock Synced · Resets at 08:00 Offline While Powered"
+          }
+        }
+      }
+    },
+    "已经回到挂件啦" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back on the Device"
+          }
+        }
+      }
+    },
+    "已连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
+          }
+        }
+      }
+    },
+    "已送达挂件，请按 B1 确认使用食物；若睡着，先长按 B1 叫醒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press B1 on the device to confirm the treat. If Pomi is asleep, hold B1 to wake it first."
+          }
+        }
+      }
+    },
+    "带它出门，也带它回家。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Pomi out and bring it home again."
+          }
+        }
+      }
+    },
+    "带着心情，出发啦" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off We Go"
+          }
+        }
+      }
+    },
+    "帮助与关于" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help & About"
+          }
+        }
+      }
+    },
+    "开发板通过 USB 连到 Mac，手机与 Mac 连接同一 Wi-Fi。连接成功后自动进入小屋。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect the board to your Mac over USB and put your iPhone on the same Wi-Fi. The cottage opens when connected."
+          }
+        }
+      }
+    },
+    "开始做一个好梦" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Started a sweet dream"
+          }
+        }
+      }
+    },
+    "当前" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        }
+      }
+    },
+    "当前固件尚未提供活动奖励进度，请更新挂件固件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update the device firmware to see activity reward progress."
+          }
+        }
+      }
+    },
+    "当前测试 Pomi · %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Test Pomi · %@"
+          }
+        }
+      }
+    },
+    "当前设备不支持蓝牙；iPhone 模拟器请使用开发预览，实物连接需实体 iPhone" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth is unavailable here. Use Developer Preview in the simulator or a real iPhone to connect."
+          }
+        }
+      }
+    },
+    "当前阶段：再累计 %lld 分钟" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Stage: %lld More Minutes"
+          }
+        }
+      }
+    },
+    "当前阶段：再累计 %u 分钟" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Stage: %u More Minutes"
+          }
+        }
+      }
+    },
+    "往返中断时保留原手机的 App 存档，恢复连接后继续同一次旅程。不要删除 App 或强制重置板上存档。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If a transfer is interrupted, keep the original app and device records. Reconnect to resume the same journey."
+          }
+        }
+      }
+    },
+    "待开盒子 %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unopened Boxes: %lld"
+          }
+        }
+      }
+    },
+    "心情" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Happiness"
+          }
+        }
+      }
+    },
+    "心情、精力和睡眠状态，都一起到了。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Happiness, Energy, and sleep state came along."
+          }
+        }
+      }
+    },
+    "想换的 Lv1 物品 · %lld/3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wanted Lv1 Items · %lld/3"
+          }
+        }
+      }
+    },
+    "想被照顾一下" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could use some care"
+          }
+        }
+      }
+    },
+    "我来啦！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I’m Here!"
+          }
+        }
+      }
+    },
+    "我的 Pomi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Pomi"
+          }
+        }
+      }
+    },
+    "我的小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Shop"
+          }
+        }
+      }
+    },
+    "我的挂件 · %lld 只" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Devices · %lld"
+          }
+        }
+      }
+    },
+    "我的账号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Account"
+          }
+        }
+      }
+    },
+    "手机小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone Cottage"
+          }
+        }
+      }
+    },
+    "手机小屋和板子共用同一只宠物。接到手机后，板上只显示空门；手机端仅查看和布置，照顾操作在挂件上完成。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cottage and device share one Pomi. While Pomi is in the cottage, the device shows an empty doorway. View and decorate on your phone and use the device for care."
+          }
+        }
+      }
+    },
+    "手机已校时 · 有电离线也会在08:00刷新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock synced · Resets at 08:00 offline while powered."
+          }
+        }
+      }
+    },
+    "手机选择后不立即消耗；请在挂件上按 B1 确认。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press B1 on the device to confirm before using the item."
+          }
+        }
+      }
+    },
+    "打开盒子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Box"
+          }
+        }
+      }
+    },
+    "打开盒子，发现了新物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opened a box and found a new item."
+          }
+        }
+      }
+    },
+    "找不到挂件怎么办？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What if I can’t find my Pomi?"
+          }
+        }
+      }
+    },
+    "把一件物品放到了小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listed an item in the shop."
+          }
+        }
+      }
+    },
+    "把日子装进小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make Yourself at Home"
+          }
+        }
+      }
+    },
+    "挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device"
+          }
+        }
+      }
+    },
+    "挂件回执不匹配" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The device confirmation does not match."
+          }
+        }
+      }
+    },
+    "挂件已断开；如有旅程未完成，请重新连接后继续" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device disconnected. Reconnect to resume any pending journey."
+          }
+        }
+      }
+    },
+    "挂件已确认，食物已使用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The device confirmed the treat."
+          }
+        }
+      }
+    },
+    "挂件未确认操作，请恢复连接后继续原来的旅程。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The device hasn’t confirmed the action. Reconnect to resume."
+          }
+        }
+      }
+    },
+    "挂件正在处理上一次操作，请稍后。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is still processing the last action. Please wait."
+          }
+        }
+      }
+    },
+    "挂件正在把盒子推到门口…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is bringing the box to the door…"
+          }
+        }
+      }
+    },
+    "挂件活动" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device Activity"
+          }
+        }
+      }
+    },
+    "挂件通电后，搜索并选择附近的 Pomi。确认真实宠物记录后自动进入小屋，无需 Mac 桥接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power on Pomi and select it from the nearby Bluetooth devices. The cottage opens after its record is verified."
+          }
+        }
+      }
+    },
+    "捞一个漂流瓶" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find a Message Bottle"
+          }
+        }
+      }
+    },
+    "捞取机会 %lld / 3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bottle Picks: %lld / 3"
+          }
+        }
+      }
+    },
+    "捞取机会还在恢复中" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your bottle picks are still recharging."
+          }
+        }
+      }
+    },
+    "换个地方，继续陪你。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Together, wherever we are."
+          }
+        }
+      }
+    },
+    "探险档位" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adventure Stage"
+          }
+        }
+      }
+    },
+    "探险第 %lld 档，%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adventure Stage %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "接%@来坐坐" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite %@ In"
+          }
+        }
+      }
+    },
+    "接%@来小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring %@ to the Cottage"
+          }
+        }
+      }
+    },
+    "接受申请" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept Request"
+          }
+        }
+      }
+    },
+    "接它来手机小屋，带着同一份心情和精力。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring Pomi into the cottage with its current Happiness and Energy."
+          }
+        }
+      }
+    },
+    "搜索附近挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find Nearby Pomi"
+          }
+        }
+      }
+    },
+    "搜索附近的 Pomi 挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find your nearby Pomi"
+          }
+        }
+      }
+    },
+    "搭顺风车" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitching a Ride"
+          }
+        }
+      }
+    },
+    "摆进小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place in Cottage"
+          }
+        }
+      }
+    },
+    "摸到云！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touch the Clouds!"
+          }
+        }
+      }
+    },
+    "收回仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return to Inventory"
+          }
+        }
+      }
+    },
+    "放入漂流瓶" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send in a Bottle"
+          }
+        }
+      }
+    },
+    "放生后无法撤回，它会成为别人的惊喜。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once sent, the bottle can’t be recalled. It will become someone else’s surprise."
+          }
+        }
+      }
+    },
+    "放生海" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bottle Sea"
+          }
+        }
+      }
+    },
+    "散步带回了一个盒子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A walk brought back a box."
+          }
+        }
+      }
+    },
+    "散步贝壳" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Walkabout Shell"
+          }
+        }
+      }
+    },
+    "数据已过期，请重新连接挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The data is stale. Reconnect your device."
+          }
+        }
+      }
+    },
+    "断开连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnect"
+          }
+        }
+      }
+    },
+    "断电后请连接手机校时，已保存进度保留" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnect your phone to set the clock after power loss. Saved progress is kept."
+          }
+        }
+      }
+    },
+    "断连不会丢失这次操作。请连接原挂件后继续。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This action is saved. Reconnect the original device to continue."
+          }
+        }
+      }
+    },
+    "新大陆！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Land!"
+          }
+        }
+      }
+    },
+    "方块猫%@，%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pixel cat %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "无法安全保存身份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not save your identity securely."
+          }
+        }
+      }
+    },
+    "无法安全保存身份，请勿继续创建仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your identity could not be stored securely. Stop before creating an inventory."
+          }
+        }
+      }
+    },
+    "无法订阅挂件回复，请重新连接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t subscribe to device replies. Reconnect and try again."
+          }
+        }
+      }
+    },
+    "无法读取安全身份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read your saved identity."
+          }
+        }
+      }
+    },
+    "无法连接小屋服务。请确认地址正确、iPhone 与 Mac 在同一 Wi-Fi，并在 iPhone 设置中允许 Pomi 访问本地网络。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cannot reach the cottage server. Check the address, connect your iPhone and Mac to the same Wi-Fi, and allow Local Network access for Pomi in Settings."
+          }
+        }
+      }
+    },
+    "无法连接挂件，请重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t connect to Pomi. Try again."
+          }
+        }
+      }
+    },
+    "无硬件开发预览 →" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer Preview →"
+          }
+        }
+      }
+    },
+    "日常" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Life"
+          }
+        }
+      }
+    },
+    "旧固件：离线保留进度，跨日仍需服务确认。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Older firmware saves progress offline and needs the server to confirm the next day."
+          }
+        }
+      }
+    },
+    "暂时留在原来的家" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stay Where You Are"
+          }
+        }
+      }
+    },
+    "有一段旅程，等你继续" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Journey Is Waiting"
+          }
+        }
+      }
+    },
+    "有待确认的仓库操作，请先同步真实仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An inventory action is pending. Sync the device inventory first."
+          }
+        }
+      }
+    },
+    "有点饿了" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Getting hungry"
+          }
+        }
+      }
+    },
+    "服务地址已改变，请重新同步仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server address changed. Sync the inventory again."
+          }
+        }
+      }
+    },
+    "服务地址无效" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid server address."
+          }
+        }
+      }
+    },
+    "未找到挂件，请确认挂件已通电且未被其他手机连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Pomi found. Make sure it is on and disconnected from other phones."
+          }
+        }
+      }
+    },
+    "未收到传感器新数据，请检查四根连接线" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No new sensor data. Check the four wires."
+          }
+        }
+      }
+    },
+    "未知" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown"
+          }
+        }
+      }
+    },
+    "未连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnected"
+          }
+        }
+      }
+    },
+    "本次为离线体验，真实挂件不会发生变化。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This offline preview leaves your device state intact."
+          }
+        }
+      }
+    },
+    "本次通电活动累计 %lld 秒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active Since Power On: %lld Seconds"
+          }
+        }
+      }
+    },
+    "本次通电活动累计 %u 秒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active Since Power On: %u Seconds"
+          }
+        }
+      }
+    },
+    "来手机小屋做客" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visited the phone cottage"
+          }
+        }
+      }
+    },
+    "查看下架选项" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Removal Options"
+          }
+        }
+      }
+    },
+    "查看交换选项" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Trade Options"
+          }
+        }
+      }
+    },
+    "桌面" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Table"
+          }
+        }
+      }
+    },
+    "检查账号服务地址与网络连接。如果服务运行在 Mac 上，请让 iPhone 和 Mac 连接同一个 Wi-Fi。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the account server address and network connection. If the server runs on a Mac, connect your iPhone and Mac to the same Wi-Fi network."
+          }
+        }
+      }
+    },
+    "模块仍是只读版本，需要升级 Pomi 双向蓝牙固件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The module is read-only. Update it to the two-way Pomi Bluetooth firmware."
+          }
+        }
+      }
+    },
+    "模拟一次有效散步" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate a Walk"
+          }
+        }
+      }
+    },
+    "模拟开盒得到新物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preview box yielded a new item."
+          }
+        }
+      }
+    },
+    "模拟挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated Device"
+          }
+        }
+      }
+    },
+    "模拟挂件按键确认了点心" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The preview device confirmed the treat."
+          }
+        }
+      }
+    },
+    "模拟挂件确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate Device Confirmation"
+          }
+        }
+      }
+    },
+    "模拟探险" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate Adventure"
+          }
+        }
+      }
+    },
+    "模拟散步带回一个盒子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preview walk brought back a box."
+          }
+        }
+      }
+    },
+    "模拟物品漂向了海面" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preview item floated out to sea."
+          }
+        }
+      }
+    },
+    "模拟状态只用于检查画面。断线时档位继续轮播，重连后显示当前档。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview only. Stages keep cycling while disconnected and show the current stage after reconnecting."
+          }
+        }
+      }
+    },
+    "模拟蓝牙未连接 · 显示日常画面" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated Bluetooth Disconnected · Showing Daily View"
+          }
+        }
+      }
+    },
+    "模拟蓝牙连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate Bluetooth Connection"
+          }
+        }
+      }
+    },
+    "模拟连接中断，%@仍在原来的家。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated disconnect. %@ is still at home."
+          }
+        }
+      }
+    },
+    "欢迎回到小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome Back"
+          }
+        }
+      }
+    },
+    "欢迎来到预览小屋，物品与真实仓库独立" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to the preview cottage. It has its own inventory."
+          }
+        }
+      }
+    },
+    "歇一会儿" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taking a Break"
+          }
+        }
+      }
+    },
+    "正在做梦" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreaming"
+          }
+        }
+      }
+    },
+    "正在准备蓝牙…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Getting Bluetooth ready…"
+          }
+        }
+      }
+    },
+    "正在同步，请稍后" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing. Please wait."
+          }
+        }
+      }
+    },
+    "正在同步…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing…"
+          }
+        }
+      }
+    },
+    "正在寻找小伙伴…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for Pomi…"
+          }
+        }
+      }
+    },
+    "正在手机小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the Phone Cottage"
+          }
+        }
+      }
+    },
+    "正在探险" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exploring"
+          }
+        }
+      }
+    },
+    "正在搜索附近的 Pomi…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searching for nearby Pomi…"
+          }
+        }
+      }
+    },
+    "正在收好它的小小行李…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packing Pomi’s Little Bag…"
+          }
+        }
+      }
+    },
+    "正在旅途中" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On a Journey"
+          }
+        }
+      }
+    },
+    "正在注册…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating account…"
+          }
+        }
+      }
+    },
+    "正在确认挂件服务…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the Pomi service…"
+          }
+        }
+      }
+    },
+    "正在联系小屋服务" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contacting the Cottage Server"
+          }
+        }
+      }
+    },
+    "正在读取账号…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading account…"
+          }
+        }
+      }
+    },
+    "正在随身挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Device"
+          }
+        }
+      }
+    },
+    "每 3 小时恢复一次，最多保留 3 次。不消耗宠物精力。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One pick recharges every 3 hours, up to 3. It costs no Energy."
+          }
+        }
+      }
+    },
+    "每 5 秒自动切档" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Stage Every 5 Seconds"
+          }
+        }
+      }
+    },
+    "每一只都有自己的小故事。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every Pomi has a little story."
+          }
+        }
+      }
+    },
+    "每个账号可领取一份测试物品，请查看仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each account can claim one set of test items. Check your inventory."
+          }
+        }
+      }
+    },
+    "每天 08:00 刷新 · 最多 6 盒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resets Daily at 08:00 · Up to 6 Boxes"
+          }
+        }
+      }
+    },
+    "每盒再累计 1、3、5、8、12、15 分钟" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each box takes another 1, 3, 5, 8, 12, or 15 minutes."
+          }
+        }
+      }
+    },
+    "毛坯房也很可爱。从仓库挑一件物品摆上吧。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An empty cottage is cute too. Pick something from your inventory to decorate it."
+          }
+        }
+      }
+    },
+    "没有找到 Pomi 服务，请检查模块固件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi service not found. Check the module firmware."
+          }
+        }
+      }
+    },
+    "注册成功，请登录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account created. Please sign in."
+          }
+        }
+      }
+    },
+    "注册账号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create an Account"
+          }
+        }
+      }
+    },
+    "活动判断处于校准阶段，累计时间随挂件重启归零。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity detection is calibrating. This timer resets when the device restarts."
+          }
+        }
+      }
+    },
+    "活动盒子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity Boxes"
+          }
+        }
+      }
+    },
+    "活动获得 %lld 个盒子，已放入仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned %lld activity boxes. They’re in your inventory."
+          }
+        }
+      }
+    },
+    "活动获得 %lld 个盒子（%@）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned %1$lld activity boxes (%2$@)"
+          }
+        }
+      }
+    },
+    "活动获得 %lld 个盒子（含离线累计）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned %lld activity boxes (including offline progress)"
+          }
+        }
+      }
+    },
+    "活动获得 %u 个盒子，已放入仓库" : {
+
+    },
+    "测试 Pomi 编号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test Pomi ID"
+          }
+        }
+      }
+    },
+    "测试切换只选择编号。实时互动需要连接对应挂件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecting a test ID does not connect its device. Connect the matching Pomi for live interaction."
+          }
+        }
+      }
+    },
+    "海边挂画" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seaside Picture"
+          }
+        }
+      }
+    },
+    "海面暂时没有漂流瓶，机会已保留" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no bottles right now. Your pick was saved."
+          }
+        }
+      }
+    },
+    "添加测试 Pomi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Test Pomi"
+          }
+        }
+      }
+    },
+    "点心等待挂件按键确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treat Awaits Device Confirmation"
+          }
+        }
+      }
+    },
+    "版本 %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
+          }
+        }
+      }
+    },
+    "物品不存在" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item not found."
+          }
+        }
+      }
+    },
+    "物品已收回仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item returned to your inventory."
+          }
+        }
+      }
+    },
+    "物品正在使用中，请先收回" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item is in use. Return it to your inventory first."
+          }
+        }
+      }
+    },
+    "物品正在等待挂件确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The item is waiting for device confirmation."
+          }
+        }
+      }
+    },
+    "状态已保留，点这里接着走。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress is saved. Tap to continue."
+          }
+        }
+      }
+    },
+    "独立体验存档 · 不操作真实挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standalone preview save · No device actions"
+          }
+        }
+      }
+    },
+    "独立预览 · 放生海中的瓶子为模拟内容" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standalone preview · Bottles are simulated"
+          }
+        }
+      }
+    },
+    "独立预览 · 模拟物品与放生海" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standalone Preview · Simulated Items and Bottle Sea"
+          }
+        }
+      }
+    },
+    "独立预览数据" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standalone preview data"
+          }
+        }
+      }
+    },
+    "生成测试编号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate Test ID"
+          }
+        }
+      }
+    },
+    "用好友码添加一位好友。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a friend with their friend code."
+          }
+        }
+      }
+    },
+    "登录小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign In"
+          }
+        }
+      }
+    },
+    "盒子不存在" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Box not found."
+          }
+        }
+      }
+    },
+    "盒子打开了，物品已放入仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Box opened. The item is in your inventory."
+          }
+        }
+      }
+    },
+    "盒子等待确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Box Awaits Confirmation"
+          }
+        }
+      }
+    },
+    "目前是离线体验" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline preview"
+          }
+        }
+      }
+    },
+    "真实 USB 往返 · 交接中请保持 Mac 桥接运行；中断后继续同一次旅程。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USB Transfer · Keep the Mac bridge running. If interrupted, resume the same journey."
+          }
+        }
+      }
+    },
+    "真实挂件已连接 · 可以在小屋手动往返" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi is connected. You can move it between the device and the cottage."
+          }
+        }
+      }
+    },
+    "真实蓝牙往返 · 请保持挂件在附近；中断后继续同一次旅程。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth Transfer · Keep the device nearby. If interrupted, resume the same journey."
+          }
+        }
+      }
+    },
+    "知道了" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got It"
+          }
+        }
+      }
+    },
+    "短周期测试 · 30 秒 / 盒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short Test · 30 Seconds per Box"
+          }
+        }
+      }
+    },
+    "短周期测试：活动获得 %lld 个盒子（%@）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short test: Earned %1$lld activity boxes (%2$@)"
+          }
+        }
+      }
+    },
+    "确认 iPhone 已打开蓝牙并允许 Pomi 使用蓝牙。把挂件靠近手机，并在其他手机上断开此挂件后重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on Bluetooth and allow Pomi to use it. Bring your Pomi closer, disconnect it from any other phone, and try again."
+          }
+        }
+      }
+    },
+    "确认上架" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Listing"
+          }
+        }
+      }
+    },
+    "确认交换" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Trade"
+          }
+        }
+      }
+    },
+    "确认删除好友？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this friend?"
+          }
+        }
+      }
+    },
+    "确认放生" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Bottle"
+          }
+        }
+      }
+    },
+    "离线奖励将在小屋服务恢复后自动入库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline rewards appear in your inventory when the cottage server reconnects."
+          }
+        }
+      }
+    },
+    "稍后" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
+    "窗边小草" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Windowsill Plant"
+          }
+        }
+      }
+    },
+    "第一次来？注册账号" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New here? Create an account"
+          }
+        }
+      }
+    },
+    "等待传感器数据；请确认已安装支持 LIS3DH 的固件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for sensor data. Check that the firmware supports LIS3DH."
+          }
+        }
+      }
+    },
+    "等待挂件同步" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for device sync."
+          }
+        }
+      }
+    },
+    "简体中文" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        }
+      }
+    },
+    "精力" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy"
+          }
+        }
+      }
+    },
+    "精力不足 10，请让宠物在挂件上休息" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi needs 10 Energy. Let it rest on the device."
+          }
+        }
+      }
+    },
+    "线上服务需要 HTTPS；Mac 本地调试可用 .local 地址" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online servers require HTTPS. For Mac testing, use a .local address."
+          }
+        }
+      }
+    },
+    "绑定测试 Pomi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link Test Pomi"
+          }
+        }
+      }
+    },
+    "结束预览" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Preview"
+          }
+        }
+      }
+    },
+    "给小伙伴起个名字" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name Your Pomi"
+          }
+        }
+      }
+    },
+    "给挂件通电，在「我的 Pomi」打开连接设置，然后搜索并选择附近的挂件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Power on your Pomi, open Connection Settings in My Pomi, then find and select your nearby device."
+          }
+        }
+      }
+    },
+    "继续挂件操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume Device Action"
+          }
+        }
+      }
+    },
+    "继续这次旅程" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume Journey"
+          }
+        }
+      }
+    },
+    "翻小山！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over the Hill!"
+          }
+        }
+      }
+    },
+    "自在的小日子" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taking it easy"
+          }
+        }
+      }
+    },
+    "蓝牙不可用，交接记录已保留。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth unavailable. Your transfer record is saved."
+          }
+        }
+      }
+    },
+    "蓝牙不可用，请检查蓝牙权限与开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth unavailable. Check Bluetooth and its permissions."
+          }
+        }
+      }
+    },
+    "蓝牙已断开" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth disconnected"
+          }
+        }
+      }
+    },
+    "蓝牙已断开 · 点此重新连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth disconnected · Tap to reconnect"
+          }
+        }
+      }
+    },
+    "蓝牙已断开，请重新连接后继续同一次旅程。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth disconnected. Reconnect to resume the same journey."
+          }
+        }
+      }
+    },
+    "蓝牙已连接，正在读取真实宠物…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth connected. Reading your Pomi…"
+          }
+        }
+      }
+    },
+    "蓝牙未连接 · 上次保存的进度" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth Disconnected · Last Saved Progress"
+          }
+        }
+      }
+    },
+    "蓝牙未连接 · 显示上次记录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth disconnected · Showing the last saved state"
+          }
+        }
+      }
+    },
+    "蓝牙正在重启，请稍后重新搜索" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth is restarting. Search again in a moment."
+          }
+        }
+      }
+    },
+    "蓝牙连接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth"
+          }
+        }
+      }
+    },
+    "蓝莓点心" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blueberry Treat"
+          }
+        }
+      }
+    },
+    "被温柔地摸摸" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got a gentle pat"
+          }
+        }
+      }
+    },
+    "角落" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner"
+          }
+        }
+      }
+    },
+    "让一件物品乘着漂流瓶出发" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sent an item off in a message bottle."
+          }
+        }
+      }
+    },
+    "让不再需要的收藏，成为别人的惊喜。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn a collectible you no longer need into someone else’s surprise."
+          }
+        }
+      }
+    },
+    "让口袋里的像素，走进手机。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring your pocket-sized friend into your phone."
+          }
+        }
+      }
+    },
+    "让它真的跑过来" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Your Device"
+          }
+        }
+      }
+    },
+    "记录已经保留。继续出发，\n或者让它先待在原来的家。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress is saved. Continue the journey\nor leave Pomi where it is for now."
+          }
+        }
+      }
+    },
+    "记录暂时没有保存" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your record hasn’t been saved yet"
+          }
+        }
+      }
+    },
+    "访问口令" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Access Passcode"
+          }
+        }
+      }
+    },
+    "试试旅程中断后继续，心情和精力仍会被保留。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try resuming an interrupted journey. Pomi keeps its Happiness and Energy."
+          }
+        }
+      }
+    },
+    "语言 / Language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language / 语言"
+          }
+        }
+      }
+    },
+    "请先同步小屋服务" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with the cottage server first."
+          }
+        }
+      }
+    },
+    "请先完成上一次挂件操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish the previous device action first."
+          }
+        }
+      }
+    },
+    "请先完成开盒或食物确认，再让宠物出门" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish confirming the box or treat before moving Pomi."
+          }
+        }
+      }
+    },
+    "请先完成待确认操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete the pending action first."
+          }
+        }
+      }
+    },
+    "请先完成待确认物品操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish the pending item action first."
+          }
+        }
+      }
+    },
+    "请先将物品从小屋收回" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return the item from the cottage first."
+          }
+        }
+      }
+    },
+    "请先连接小屋服务" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect to the cottage server first."
+          }
+        }
+      }
+    },
+    "请先连接挂件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect your Pomi first."
+          }
+        }
+      }
+    },
+    "请先连接蓝牙挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect your Pomi via Bluetooth first."
+          }
+        }
+      }
+    },
+    "请在系统设置中允许 Pomi 使用蓝牙" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Pomi to use Bluetooth in iPhone Settings."
+          }
+        }
+      }
+    },
+    "请填写 Mac 的 .local 地址。127.0.0.1 指向这台 iPhone。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your Mac’s .local address. 127.0.0.1 refers to this iPhone."
+          }
+        }
+      }
+    },
+    "请打开蓝牙后重新搜索" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on Bluetooth and search again"
+          }
+        }
+      }
+    },
+    "请登录账号后使用小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to use the shop."
+          }
+        }
+      }
+    },
+    "请稍等喵…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signing in…"
+          }
+        }
+      }
+    },
+    "请设置小屋服务地址，连接后加载真实仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set the cottage server address and connect to load your inventory."
+          }
+        }
+      }
+    },
+    "请输入完整服务地址，如 https://pomi.example.com" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the full server address, such as https://pomi.example.com."
+          }
+        }
+      }
+    },
+    "请输入账号服务地址，例如 http://你的Mac名称.local:8788。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the account server address, such as http://your-Mac-name.local:8788."
+          }
+        }
+      }
+    },
+    "请连接原挂件后继续" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnect the original device to continue."
+          }
+        }
+      }
+    },
+    "请选择" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose"
+          }
+        }
+      }
+    },
+    "请重新搜索挂件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for your Pomi again."
+          }
+        }
+      }
+    },
+    "账号与好友码" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account and friend code"
+          }
+        }
+      }
+    },
+    "账号服务地址" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account Server Address"
+          }
+        }
+      }
+    },
+    "账号测试" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account Testing"
+          }
+        }
+      }
+    },
+    "账号测试服务暂时不可用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The account server is temporarily unavailable."
+          }
+        }
+      }
+    },
+    "账户" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        }
+      }
+    },
+    "货架空着。去仓库选一件物品上架吧。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your shelves are empty. Choose an item from your inventory to list it."
+          }
+        }
+      }
+    },
+    "跟随系统" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow System"
+          }
+        }
+      }
+    },
+    "身份保存在本机钥匙串。换手机前请先保留身份；当前版本尚无账号找回功能。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your identity is stored in this phone’s Keychain. Keep a backup before changing phones. Account recovery is not yet available."
+          }
+        }
+      }
+    },
+    "轻晃提示保留约 3 秒，静置后会恢复静止。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shake indicator stays on for about 3 seconds and clears when still."
+          }
+        }
+      }
+    },
+    "输入对方的好友码" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a Friend Code"
+          }
+        }
+      }
+    },
+    "输入邮箱和密码，创建你的 Pomi 账号。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your email and password to create a Pomi account."
+          }
+        }
+      }
+    },
+    "过海啦！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Across the Sea!"
+          }
+        }
+      }
+    },
+    "返回" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        }
+      }
+    },
+    "返回登录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Sign In"
+          }
+        }
+      }
+    },
+    "返回设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to Settings"
+          }
+        }
+      }
+    },
+    "还没有小伙伴，先绑定一只 Pomi 吧。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link a Pomi to get started."
+          }
+        }
+      }
+    },
+    "这不是食物" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item is not food."
+          }
+        }
+      }
+    },
+    "这个物品不适合放在这里" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item does not fit there."
+          }
+        }
+      }
+    },
+    "连接下方真实挂件后，小屋将使用板上的宠物。连接前仍可体验离线演示。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect a device to bring its Pomi into the cottage. You can try the offline preview first."
+          }
+        }
+      }
+    },
+    "连接你的小伙伴" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Your Pomi"
+          }
+        }
+      }
+    },
+    "连接小屋服务后启用活动奖励" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with the cottage server to enable activity rewards."
+          }
+        }
+      }
+    },
+    "连接已取消" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection canceled."
+          }
+        }
+      }
+    },
+    "连接并同步仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect and Sync Inventory"
+          }
+        }
+      }
+    },
+    "连接并确认宠物记录…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting and verifying your Pomi…"
+          }
+        }
+      }
+    },
+    "连接并进入小屋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect and Enter Cottage"
+          }
+        }
+      }
+    },
+    "连接设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection Settings"
+          }
+        }
+      }
+    },
+    "连接超时，请靠近挂件后重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection timed out. Move closer and try again."
+          }
+        }
+      }
+    },
+    "退出登录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign Out"
+          }
+        }
+      }
+    },
+    "送%@回口袋" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send %@ Back"
+          }
+        }
+      }
+    },
+    "送到挂件，按键确认使用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to Device and Confirm with Button"
+          }
+        }
+      }
+    },
+    "送它回随身挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Pomi Back to the Device"
+          }
+        }
+      }
+    },
+    "选择蓝牙连接，在 App 搜索并连接附近的 Pomi 挂件。开发调试时也可以使用 USB 经 Mac 桥接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Bluetooth to find and connect nearby Pomi devices. Use USB via Mac for development."
+          }
+        }
+      }
+    },
+    "选择要连接的挂件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Pomi to connect"
+          }
+        }
+      }
+    },
+    "逛小卖部" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visit Shop"
+          }
+        }
+      }
+    },
+    "遇见%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met %@"
+          }
+        }
+      }
+    },
+    "邮箱" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        }
+      }
+    },
+    "重新读取" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reload"
+          }
+        }
+      }
+    },
+    "重试保存" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Saving Again"
+          }
+        }
+      }
+    },
+    "长按摆放位置，可以将装饰收回仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touch and hold a spot to return its decoration to the inventory."
+          }
+        }
+      }
+    },
+    "随机物品 · 格子仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collectibles · Inventory"
+          }
+        }
+      }
+    },
+    "需要三个相同的闲置 Lv1 物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need three identical unused Lv1 items."
+          }
+        }
+      }
+    },
+    "预览：宠物已将盒子推到门口，点击模拟确认完成" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview: Pomi brought the box to the door. Tap Simulate to confirm."
+          }
+        }
+      }
+    },
+    "预览：挂件操作已完成，仓库已更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview: Device action completed and inventory updated."
+          }
+        }
+      }
+    },
+    "预览：捞到的物品已放入仓库" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview: Your find is in the inventory."
+          }
+        }
+      }
+    },
+    "预览：漂流瓶已经出发" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview: The bottle has set sail."
+          }
+        }
+      }
+    },
+    "预览：等待模拟挂件按键确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview: Waiting for simulated device confirmation."
+          }
+        }
+      }
+    },
+    "预览仓库已更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview inventory updated."
+          }
+        }
+      }
+    },
+    "预览仓库无法读取，原文件已保留：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read the preview inventory. The original file was kept: %@"
+          }
+        }
+      }
+    },
+    "领取了小卖部测试物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collected test items for the shop."
+          }
+        }
+      }
+    },
+    "领取测试物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Test Items"
+          }
+        }
+      }
+    },
+    "首次启用请先同步小屋服务并校时" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with the cottage server and set the clock to get started."
+          }
+        }
+      }
+    },
+    "首版最高为 Lv2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lv2 is the maximum level."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

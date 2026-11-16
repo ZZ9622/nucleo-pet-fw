@@ -8,7 +8,7 @@ struct TravelView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var stage: Stage = .ready
     @State private var attempt = 0
-    @State private var failure: String?
+    @State private var failure: LocalizedStringKey?
     private enum Stage { case ready, travelling, interrupted, arrived }
     private var motionPaused: Bool { reduceMotion || AppRuntime.isUITesting }
 
@@ -68,7 +68,7 @@ struct TravelView: View {
         .task(id: attempt) { if attempt > 0 { await travel() } }
     }
 
-    private var title: String {
+    private var title: LocalizedStringKey {
         switch stage {
         case .ready: return destination == .phone ? "接\(store.session.name)来坐坐" : "送\(store.session.name)回口袋"
         case .travelling: return "带着心情，出发啦"
@@ -77,7 +77,7 @@ struct TravelView: View {
         }
     }
 
-    private var subtitle: String {
+    private var subtitle: LocalizedStringKey {
         switch stage {
         case .ready: return "同一个\(store.session.name)，带着原来的心情和精力。\n换个地方，继续陪着你。"
         case .travelling: return "小屋和挂件，正在交接它的记录。"
@@ -89,7 +89,7 @@ struct TravelView: View {
     private func endpoint(_ title: String, symbol: String) -> some View {
         VStack(spacing: 9) {
             Image(systemName: symbol).font(.system(size: 24))
-            Text(title).font(.system(size: 12))
+            Text(LocalizedStringKey(title)).font(.system(size: 12))
         }.frame(width: 90)
     }
 
@@ -117,7 +117,7 @@ struct TravelView: View {
             // Prepared offer is already durable; a later launch can resume it.
         } catch {
             stage = .interrupted
-            failure = error.localizedDescription
+            failure = LocalizedStringKey(error.localizedDescription)
         }
     }
 }

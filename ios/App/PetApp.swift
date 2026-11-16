@@ -4,12 +4,13 @@ import Combine
 @main
 struct NucleoPetApp: App {
     @StateObject private var store = CompanionStore()
+    @AppStorage(PomiLanguage.preferenceKey) private var language = PomiLanguage.system
 
     var body: some Scene {
         WindowGroup {
             entryView
                 .environmentObject(store)
-                .environment(\.locale, Locale(identifier: "zh_CN"))
+                .environment(\.locale, language.locale)
                 .preferredColorScheme(.light)
                 #if os(macOS)
                 .frame(minWidth: 390, idealWidth: 430, maxWidth: 520, minHeight: 780)
@@ -72,7 +73,7 @@ struct RootView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(spacing: 0) {
                     tabButton("主页", symbol: "house", index: 0)
-                    tabButton("poyage", symbol: "house.fill", index: 1)
+                    tabButton("Poyage", symbol: "house.fill", index: 1)
                     if socialPage != nil {
                         tabButton("串门", symbol: "storefront", index: 4)
                     }
@@ -110,7 +111,7 @@ struct RootView: View {
         }
     }
 
-    private func tabButton(_ title: String, symbol: String, index: Int, icon: String? = nil) -> some View {
+    private func tabButton(_ title: LocalizedStringKey, symbol: String, index: Int, icon: String? = nil) -> some View {
         Button { tab = index } label: {
             VStack(spacing: 5) {
                 Group {
