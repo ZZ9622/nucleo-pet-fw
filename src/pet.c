@@ -238,6 +238,11 @@ void pet_make_snapshot(const PetState *pet, PetSnapshot *snapshot)
     snapshot->stage = pet->stage;
     snapshot->feedback = pet->feedback;
     snapshot->feedback_elapsed_ms = 0U;
+    snapshot->adventure_stage=0;
+    snapshot->adventure_riding=false;
+    snapshot->adventure_paused=false;
+    snapshot->adventure_preview=false;
+    snapshot->adventure_waking=false;
     snapshot->item_food_pending=false;
     snapshot->item_box_animation=false;
     snapshot->is_away = false;

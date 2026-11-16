@@ -1,4 +1,6 @@
 #include "activity_reward.h"
+uint8_t pet_adventure_stage;
+bool pet_adventure_riding, pet_adventure_paused, pet_adventure_waking;
 static uint32_t remainder_ms;
 static bool clock_ready;
 static uint32_t clock_epoch,clock_next,clock_until,clock_last_ms,clock_fraction;
@@ -40,6 +42,12 @@ void pet_activity_add(PetHandoff *h,uint32_t elapsed_ms)
     if(remainder_ms<1000U) { return; }
     remainder_ms-=1000U;
     PetHandoff next=*h;next.activity_progress++;normalize(&next);
+    if(next.activity_profile==3U && next.activity_earned>h->activity_earned) {
+        static const uint8_t gains[]={3,2,2,1,1,1};
+        unsigned happiness=next.pet.happiness;
+        for(uint32_t i=h->activity_earned;i<next.activity_earned;++i) { happiness+=gains[i]; }
+        next.pet.happiness=(uint8_t)(happiness>100U?100U:happiness);
+    }
     if(next.fault || !pet_storage_save(&next)) { h->fault=true;return; }
     *h=next;
 }
@@ -56,7 +64,9 @@ const char *pet_activity_sync_profile(PetHandoff *h,uint32_t day,uint32_t ack_da
     if(h->activity_day && (ack_day!=h->activity_day || ack_profile!=h->activity_profile || ack_earned<h->activity_earned)) {
         return "activity_unsettled";
     }
-    PetHandoff next=*h;next.activity_day=day;next.activity_profile=target_profile;
+    PetHandoff next=*h;next.activity_day=day;
+    if(day!=h->activity_day) { next.adventure_energy_spent=0; }
+    next.activity_profile=target_profile;
     next.activity_earned=changing?carry_earned:0U;
     if(changing && carry_earned<(h->activity_earned<pet_activity_limit(target_profile)?h->activity_earned:pet_activity_limit(target_profile))) { return "activity_unsettled"; }
     const uint32_t limit=pet_activity_limit(target_profile);
@@ -90,7 +100,7 @@ const char *pet_activity_set_clock(PetHandoff *h,const ActivityClockPlan *p,uint
     PetHandoff next=*h;
     if(!next.activity_lifetime_enabled) { next.activity_lifetime_enabled=1;next.activity_total=0; }
     if(p->day>next.activity_day) {
-        next.activity_day=p->day;next.activity_earned=0;normalize(&next);
+        next.activity_day=p->day;next.adventure_energy_spent=0;next.activity_earned=0;normalize(&next);
     }
     const bool changed=next.activity_day!=h->activity_day || next.activity_earned!=h->activity_earned ||
         next.activity_lifetime_enabled!=h->activity_lifetime_enabled || next.activity_total!=h->activity_total;
@@ -108,7 +118,7 @@ void pet_activity_clock_tick(PetHandoff *h,uint32_t now_ms)
     clock_epoch+=seconds;
     while(clock_epoch>=clock_next && clock_next<=clock_until) {
         if(h->activity_day>=3652059U) { clock_ready=false;return; }
-        PetHandoff next=*h;next.activity_day++;next.activity_earned=0;normalize(&next);
+        PetHandoff next=*h;next.activity_day++;next.adventure_energy_spent=0;next.activity_earned=0;normalize(&next);
         if(next.fault || !pet_storage_save(&next)) { h->fault=true;clock_ready=false;return; }
         *h=next;
         uint32_t duration=86400U;

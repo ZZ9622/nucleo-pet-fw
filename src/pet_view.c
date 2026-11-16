@@ -1,5 +1,6 @@
 #include "pet_view.h"
 #include "pet_animation.h"
+#include "adventure/adventure_captions.h"
 
 /* Three-column, five-row glyphs. Bit zero is the top pixel. */
 static const uint8_t letters[26][3] = {
@@ -93,6 +94,87 @@ static void stat(uint8_t *f, int y, const char *label, unsigned value)
     rect(f, 62, y, 64, 5, false);
     rect(f, 63, y + 1, (int)(value * 62U / 100U), 3, true);
 }
+static void adventure_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
+{
+    const unsigned stage = pet->adventure_stage;
+    const bool waking = pet->adventure_waking;
+    const bool resting = pet->adventure_riding || pet->adventure_paused;
+    const unsigned beat = pet->adventure_paused ? 0U : time_ms / 180U;
+    const unsigned caption = waking ? 6U : stage - 1U;
+    /* Keep the caption above the motion area, with room for the longest line. */
+    static const int caption_offsets[] = {-24, 24, 0, -24, 24, 0, 0};
+    const int caption_x = 16 + caption_offsets[caption];
+    for (int y = 0; y < 13; ++y) {
+        for (int x = 0; x < 96; ++x) {
+            if (adventure_captions[caption][y * 12 + x / 8] & (1U << (x % 8))) {
+                pixel(frame, caption_x + x, 20 + y);
+            }
+        }
+    }
+
+    if (!waking) {
+        for (int y = 50; y < 64; ++y) {
+            for (int x = -44; x <= 44; ++x) {
+                const int curve = x * x / 145;
+                const int depth = y - 50 - curve;
+                const int longitude = (x + 88 + (int)(beat % 36U) + depth / 2) % 36;
+                if (depth == 0 || (depth > 1 && longitude < 7 + depth % 6)) {
+                    pixel(frame, 64 + x, y);
+                }
+            }
+        }
+        number(frame, 4, 55, stage);
+        if (stage == 1U) {
+            rect(frame, 93, 37, 1, 5, true);
+            rect(frame, 91, 39, 5, 1, true);
+        } else if (stage == 2U) {
+            for (int row = 0; row < 7; ++row) {
+                rect(frame, 93 - row, 44 + row, row * 2 + 1, 1, true);
+            }
+        } else if (stage == 3U) {
+            const int x = 90 + (int)(beat % 6U);
+            rect(frame, x, 39, 13, 3, true);
+            rect(frame, x + 4, 37, 6, 3, true);
+        } else if (stage == 4U) {
+            rect(frame, 88, 48, 8, 2, true);
+            rect(frame, 104, 50, 8, 2, true);
+            pixel(frame, 94 + (int)(beat % 4U), 44);
+        } else if (stage == 5U) {
+            rect(frame, 91, 42, 12, 3, false);
+            rect(frame, 101, 41, 4, 5, true);
+        } else if (stage == 6U) {
+            rect(frame, 89, 35, 1, 16, true);
+            rect(frame, 90, 35, 10, 6, true);
+            pixel(frame, 103 + (int)(beat % 3U), 39);
+        }
+        if (pet->adventure_riding) { text(frame, 103, 55, "RIDE"); }
+    }
+
+    static const int hops[] = {2, 4, 5, 3, 1, 4};
+    const int hop = resting || waking || beat % 4U != 2U ? 0 : hops[stage - 1U];
+    const int x = 53 + (resting ? 0 : (int)(beat % 3U));
+    const int y = 37 - hop;
+    rect(frame, x + 8, y, 3, 4, true);
+    rect(frame, x + 17, y, 3, 4, true);
+    rect(frame, x + 7, y + 3, 14, 8, true);
+    rect(frame, x + 4, y + 8, 13, 5, true);
+    rect(frame, x + 2, y + 6, 5, 5, false);
+    rect(frame, x, y + 6 - (int)(beat % 2U), 3, 2, true);
+    cut_rect(frame, x + 11, y + 5, 2, 1);
+    cut_rect(frame, x + 17, y + 5, 2, 1);
+    if (waking) {
+        cut_rect(frame, x + 12, y + 8, 3, 2 + (int)(beat % 2U));
+        rect(frame, x + 18, y + 6, 4, 2, true);
+    } else if (resting) {
+        rect(frame, x + 10, y + 11, 10, 2, true);
+        if (!pet->adventure_paused && beat % 4U < 2U) { rect(frame,x + 19,y + 7,3,2,true); }
+    } else {
+        const int stride = (int)(beat % 2U);
+        rect(frame, x + 5 + stride, y + 12, 3, 2, true);
+        rect(frame, x + 14 - stride, y + 12, 3, 2, true);
+    }
+}
+
 void pet_view_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
 {
     for (unsigned i = 0U; i < 1024U; ++i) { frame[i] = 0U; }
@@ -108,6 +190,13 @@ void pet_view_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
     stat(frame, 10, "ENERGY", pet->energy);
     rect(frame, 0, 18, 128, 1, true);
 
+    if ((pet->adventure_stage && pet->adventure_stage <= 6U) || pet->adventure_waking) {
+        if (pet->adventure_preview || (!pet->is_away && !pet->is_transferring &&
+            !pet->item_food_pending && !pet->item_box_animation && !pet->is_collapsed)) {
+            adventure_draw(frame, pet, time_ms);
+            return;
+        }
+    }
     if (pet->is_away || pet->is_transferring) {
         rect(frame, 53, 25, 22, 28, false);
         rect(frame, 69, 39, 2, 2, true);

@@ -1,12 +1,13 @@
 """Pomi prototype service. Python 3.10+, SQLite, no third party dependencies."""
 import argparse
-import hashlib
+import ipaddress
 import json
 import secrets
 import sqlite3
 import time
 import uuid
 import activity_rewards
+from accounts import account_auth, shop
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -39,6 +40,7 @@ class World:
               PRIMARY KEY(user,id));
             ''')
             activity_rewards.migrate(db)
+            account_auth.migrate(db)
     @contextmanager
     def db(self):
         db = sqlite3.connect(self.path, timeout=10, isolation_level=None)
@@ -52,12 +54,14 @@ class World:
             raise
         finally:
             db.close()
-    def create(self):
-        token = secrets.token_urlsafe(32)
+    def insert_user(self, db, owner, token_hash):
         data = dict(boxes=[], items=[], room={}, log=[], pending=None, completed=[],
                     chances=3, anchor=int(self.clock()), preferences={}, activities=[], day='', daily=0)
+        db.execute('INSERT INTO users VALUES(?,?,?)', (owner, token_hash, json.dumps(data)))
+    def create(self):
+        token = secrets.token_urlsafe(32)
         with self.db() as db:
-            db.execute('INSERT INTO users VALUES(?,?,?)', (str(uuid.uuid4()), hashlib.sha256(token.encode()).hexdigest(), json.dumps(data)))
+            self.insert_user(db, str(uuid.uuid4()), account_auth.digest(token))
         return dict(token=token)
     def refill(self, s):
         now = int(self.clock())
@@ -76,7 +80,11 @@ class World:
         s['log'] = s['log'][:100]
     def run(self, token, path, b):
         with self.db() as db:
-            row = db.execute('SELECT * FROM users WHERE token=?', (hashlib.sha256(token.encode()).hexdigest(),)).fetchone()
+            key = account_auth.digest(token)
+            row = db.execute(
+                'SELECT * FROM users WHERE token=? OR id IN '
+                '(SELECT owner FROM account_sessions WHERE token_hash=? AND expires>?)',
+                (key, key, int(self.clock()))).fetchone()
             if not row: raise RuleError('身份已失效，请检查服务地址和本机身份备份。')
             user, s = row['id'], json.loads(row['data'])
             rid = b.get('requestID')
@@ -97,7 +105,11 @@ class World:
                 if item['id'] in s['room'].values(): raise RuleError('请先将物品从小屋收回')
                 if s['pending'] and s['pending'].get('itemID')==item['id']: raise RuleError('物品正在等待挂件确认')
                 return item
-            if path == '/state': pass
+            if path.startswith('/shop/'):
+                if row['token'] is not None:
+                    raise RuleError('请登录账号后使用小卖部')
+                shop.mutate(self, db, user, s, path, b, CATALOG, find_item, RuleError)
+            elif path == '/state': pass
             elif path == '/activity/sync':
                 activity_rewards.sync(self,db,user,s,b,RuleError)
             elif path == '/activity':
@@ -185,7 +197,19 @@ class World:
             for _ in range(count):
                 db.execute('INSERT INTO bottles VALUES(?,?,?)',(str(uuid.uuid4()),'official',json.dumps(self.item(secrets.choice(CATALOG)['id']))))
 
+ACCOUNT_TEST_SUBNETS = tuple(map(ipaddress.ip_network, ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")))
+
+
 class Handler(BaseHTTPRequestHandler):
+    def account_tests_allowed(self):
+        if not self.server.development:
+            return False
+        address = ipaddress.ip_address(self.client_address[0])
+        return address.is_loopback or (
+            getattr(self.server, "lan_account_tests", False)
+            and any(address in subnet for subnet in ACCOUNT_TEST_SUBNETS)
+        )
+
     def do_POST(self):
         try:
             length=int(self.headers.get('Content-Length','0'))
@@ -193,7 +217,18 @@ class Handler(BaseHTTPRequestHandler):
             b=json.loads(self.rfile.read(length) or b'{}')
             if not isinstance(b,dict): raise RuleError('请求格式无效')
             if self.path=='/identity': result=self.server.world.create()
+            elif self.path.startswith('/account/'):
+                if not self.account_tests_allowed():
+                    raise RuleError('账号服务需要启用本机或局域网测试模式')
+                if self.path in ('/account/register', '/account/login'):
+                    result = account_auth.authenticate(self.server.world, self.path, b, RuleError)
+                else:
+                    auth = self.headers.get('Authorization', '')
+                    if not auth.startswith('Bearer '): raise RuleError('请先登录')
+                    result = account_auth.account_request(self.server.world, auth[7:], self.path, b, RuleError)
             else:
+                if self.path.startswith('/shop/') and not self.account_tests_allowed():
+                    raise RuleError('小卖部需要启用本机或局域网测试模式')
                 if self.path=='/activity' and not self.server.development: raise RuleError('活动奖励等待传感器接入，当前服务未开放模拟发放')
                 if self.path=='/activity/sync' and self.server.world.activity_profile=='test30' and not self.server.development: raise RuleError('30秒活动测试需显式启用开发模式')
                 auth=self.headers.get('Authorization','')
@@ -207,11 +242,17 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args): pass
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--activity-seconds',type=int,choices=[30,600],default=None);p.add_argument('--activity-profile',choices=['daily6','fixed600','test30']);p.add_argument('--timezone',default='Europe/Stockholm');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--db',default='pomi.sqlite');p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8787);p.add_argument('--development',action='store_true');p.add_argument('--seed',type=int,default=0);p.add_argument('--activity-seconds',type=int,choices=[30,600],default=None);p.add_argument('--activity-profile',choices=['daily6','fixed600','test30']);p.add_argument('--timezone',default='Europe/Stockholm')
+    p.add_argument("--lan-account-tests", action="store_true",
+                   help="allow account and shop requests from private IPv4 addresses in development mode")
+    a = p.parse_args()
+    if a.lan_account_tests and not a.development:
+        p.error("--lan-account-tests requires --development")
     if a.activity_profile and a.activity_seconds is not None and a.activity_profile!=('test30' if a.activity_seconds==30 else 'fixed600'):p.error('Choose either --activity-profile or a matching legacy --activity-seconds value')
     profile=a.activity_profile or ('test30' if a.activity_seconds==30 else 'fixed600' if a.activity_seconds==600 else 'daily6')
     if profile=='test30' and not a.development:p.error('30-second test requires --development')
     world=World(a.db,activity_seconds=30 if profile=='test30' else 600,timezone=a.timezone,activity_profile=profile)
     if a.seed: world.seed(a.seed)
     server=ThreadingHTTPServer((a.host,a.port),Handler);server.world=world;server.development=a.development
+    server.lan_account_tests = a.lan_account_tests
     print(f'Pomi service listening on {a.host}:{a.port}',flush=True);server.serve_forever()

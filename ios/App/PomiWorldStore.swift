@@ -11,13 +11,39 @@ import PetDomain
     @Published var serviceURL = UserDefaults.standard.string(forKey:"pomi.serviceURL") ?? ""
     @Published private(set) var preview = false
     private var token: String?
+    @Published private(set) var accountID: String?
+    private var accountURL: URL?
+
+    func useAccount(token: String, id: String, url: URL) {
+        accountID = id
+        self.token = token
+        accountURL = url
+        identityHost = url.absoluteString
+        preview = false
+        inventory = PomiInventory()
+        message = ""
+    }
+
+    func leaveAccount() {
+        accountID = nil
+        accountURL = nil
+        token = nil
+        identityHost = nil
+        inventory = PomiInventory()
+        configured = false
+    }
+
+    private func outboxKey(_ host: String) -> String {
+        if let accountID { return host + "/accounts/" + accountID + "/outbox" }
+        return host + "/outbox"
+    }
     private let previewURL = FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("NucleoPet/world-preview.json")
     private var identityHost: String?
     private var configured=false
     var isConnected: Bool { !preview && token != nil && identityHost != nil }
 
     func configure(preview: Bool) {
-        guard !configured || self.preview != preview else { return }
+        guard accountID == nil, !configured || self.preview != preview else { return }
         configured=true;self.preview=preview;token=nil;identityHost=nil;inventory=PomiInventory()
         if preview {
             do {
@@ -51,6 +77,7 @@ import PetDomain
         return text
     }
     private func baseURL() throws -> URL {
+        if let accountURL { return accountURL }
         let text=serviceURL.trimmingCharacters(in:.whitespacesAndNewlines)
         guard let u=URL(string:text),let host=u.host,u.user==nil,u.password==nil,u.query==nil,u.fragment==nil,
               u.path.isEmpty || u.path=="/" else { throw PhysicalError.message("请输入完整服务地址，如 https://pomi.example.com") }
@@ -67,11 +94,12 @@ import PetDomain
         request.httpMethod="POST";request.timeoutInterval=15;request.setValue("application/json",forHTTPHeaderField:"Content-Type")
         if auth,let token { request.setValue("Bearer \(token)",forHTTPHeaderField:"Authorization") }
         request.httpBody=try JSONSerialization.data(withJSONObject:body)
+        let key = outboxKey(base.absoluteString)
         let (data,response)=try await URLSession.shared.data(for:request)
         guard (response as? HTTPURLResponse)?.statusCode==200 else {
             let error=(try? JSONSerialization.jsonObject(with:data) as? [String:String])?["error"]
             if let status=(response as? HTTPURLResponse)?.statusCode,status>=400,status<500,auth,path != "/state" {
-                _ = try credential(base.absoluteString+"/outbox",value:"")
+                _ = try credential(key,value:"")
             }
             throw PhysicalError.message(error ?? "小屋服务暂时无法连接，请稍后重试")
         }
@@ -79,6 +107,7 @@ import PetDomain
     }
     func connect() async {
         guard !preview,!busy else { return };busy=true;defer{busy=false}
+        message = ""
         do {
             let host=try baseURL().absoluteString
             if identityHost != host { token=try credential(host);identityHost=host }
@@ -88,22 +117,30 @@ import PetDomain
                 let new=try JSONDecoder().decode(Identity.self,from:data).token
                 token=try credential(host,value:new)
             }
+            let key = outboxKey(host)
+            let activeToken = token
             // Replay an ambiguous network mutation with its original request ID first.
-            if let saved=try credential(host+"/outbox"),!saved.isEmpty,
+            if let saved=try credential(key),!saved.isEmpty,
                let data=saved.data(using:.utf8),let out=try JSONSerialization.jsonObject(with:data) as? [String:Any],
                let path=out["path"] as? String,let body=out["body"] as? [String:Any] {
                 _ = try await send(path,body:body)
-                _ = try credential(host+"/outbox",value:"")
+                _ = try credential(key,value:"")
             }
-            inventory=try JSONDecoder().decode(PomiInventory.self,from:await send("/state",body:[:]))
-            UserDefaults.standard.set(serviceURL,forKey:"pomi.serviceURL");message="真实仓库已同步"
+            guard activeToken == token else { return }
+            let next = try JSONDecoder().decode(PomiInventory.self, from: await send("/state", body: [:]))
+            guard activeToken == token else { return }
+            inventory = next
+            if accountID == nil { UserDefaults.standard.set(serviceURL,forKey:"pomi.serviceURL") }
+            message="仓库已同步"
+        } catch let error as URLError where [.cannotFindHost, .cannotConnectToHost, .notConnectedToInternet, .timedOut].contains(error.code) {
+            message = "无法连接小屋服务。请确认地址正确、iPhone 与 Mac 在同一 Wi-Fi，并在 iPhone 设置中允许 Pomi 访问本地网络。"
         } catch { message=error.localizedDescription }
     }
     func recoverActivityRequest() async throws {
         guard !busy,!preview,token != nil else { throw PhysicalError.message("请先同步小屋服务") }
         let host=try baseURL().absoluteString
         guard host==identityHost else { throw PhysicalError.message("服务地址已改变，请重新同步仓库") }
-        guard let saved=try credential(host+"/outbox"),!saved.isEmpty else { return }
+        guard let saved=try credential(outboxKey(host)),!saved.isEmpty else { return }
         guard let data=saved.data(using:.utf8),let out=try JSONSerialization.jsonObject(with:data) as? [String:Any],
               out["path"] as? String=="/activity/sync",let body=out["body"] as? [String:Any] else {
             throw PhysicalError.message("有待确认的仓库操作，请先同步真实仓库")
@@ -111,7 +148,7 @@ import PetDomain
         busy=true;defer{busy=false}
         let response=try await send("/activity/sync",body:body)
         let next=try JSONDecoder().decode(PomiInventory.self,from:response)
-        _ = try credential(host+"/outbox",value:"")
+        _ = try credential(outboxKey(host),value:"")
         inventory=next
     }
     @discardableResult func perform(_ path: String, _ body: [String:Any] = [:], requestID: String = UUID().uuidString) async throws -> PomiInventory {
@@ -128,13 +165,16 @@ import PetDomain
         }
         guard token != nil,identityHost == (try baseURL().absoluteString) else { throw PhysicalError.message("请先连接小屋服务") }
         let host=try baseURL().absoluteString
-        if let saved=try credential(host+"/outbox"),!saved.isEmpty { throw PhysicalError.message("上一次联网操作待确认，请点连接并同步仓库恢复") }
+        let key = outboxKey(host)
+        let activeToken = token
+        if let saved=try credential(key),!saved.isEmpty { throw PhysicalError.message("上一次联网操作待确认，请点连接并同步仓库恢复") }
         var b=body;b["requestID"]=requestID
         let out=try JSONSerialization.data(withJSONObject:["path":path,"body":b])
-        _ = try credential(host+"/outbox",value:String(decoding:out,as:UTF8.self))
+        _ = try credential(key,value:String(decoding:out,as:UTF8.self))
         let data=try await send(path,body:b)
         let next=try JSONDecoder().decode(PomiInventory.self,from:data)
-        _ = try credential(host+"/outbox",value:"")
+        _ = try credential(key,value:"")
+        guard activeToken == token else { return next }
         inventory=next
         message="仓库已同步";return inventory
     }

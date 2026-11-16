@@ -35,6 +35,21 @@ final class BluetoothTransport: NSObject, ObservableObject, DeviceTransport, @pr
         else { scanWhenReady() }
     }
     func stopScan() { central?.stopScan();scanning=false;scanTimer?.cancel();scanTimer=nil }
+    func disconnect() {
+        stopScan()
+        let target = peripheral
+        peripheral = nil
+        target?.delegate = nil
+        channel = nil
+        incoming = BoardLineBuffer()
+        devices = []
+        peripherals = [:]
+        let reason = "蓝牙已断开"
+        failConnection(reason)
+        failRequest(PhysicalError.message(reason))
+        if let target { central?.cancelPeripheralConnection(target) }
+    }
+
     private func scanWhenReady() {
         guard let central else { return }
         switch central.state {
@@ -113,6 +128,7 @@ final class BluetoothTransport: NSObject, ObservableObject, DeviceTransport, @pr
         scanWhenReady()
     }
     func centralManager(_ central:CBCentralManager,didDiscover peripheral:CBPeripheral,advertisementData:[String:Any],rssi RSSI:NSNumber) {
+        guard scanning else { return }
         peripherals[peripheral.identifier]=peripheral
         let device=Device(id:peripheral.identifier,name:advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? peripheral.name ?? "Pomi",rssi:RSSI.intValue)
         devices.removeAll{$0.id==device.id};devices.append(device);devices.sort{$0.rssi > $1.rssi}

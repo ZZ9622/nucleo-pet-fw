@@ -2,8 +2,14 @@
 #include "board.h"
 #include "motion.h"
 #include "activity_reward.h"
-#include "stm32f401xe_minimal.h"
 #include <stddef.h>
+#ifdef ESP_PLATFORM
+#include "pomi_c3_transport.h"
+static char tx[1536], line[1024];
+static unsigned count;
+static uint32_t identity[4];
+#else
+#include "stm32f401xe_minimal.h"
 typedef struct { volatile uint32_t SR,DR,BRR,CR1,CR2,CR3,GTPR; } Uart;
 #define UART2 ((Uart *)0x40004400UL)
 #define APB1ENR (*(volatile uint32_t *)0x40023840UL)
@@ -48,6 +54,7 @@ static void uart_irq(SerialChannel *c)
 }
 void USART2_IRQHandler(void) { uart_irq(&channels[0]); }
 void USART1_IRQHandler(void) { uart_irq(&channels[1]); }
+#endif
 static void append(const char *s) { while(*s && count<sizeof tx-1) { tx[count++]=*s++; } }
 static void number(uint32_t n) {
     char d[10]; unsigned k=0; do {d[k++]=(char)('0'+n%10);n/=10;}while(n);
@@ -91,7 +98,15 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append(",\"offlineClockSupported\":");append(POMI_ACTIVITY_PROFILE_ID==3U?"true":"false");
     append(",\"clockReady\":");append(pet_activity_clock_ready()?"true":"false");
     append(",\"nextRefreshEpoch\":");number(pet_activity_clock_next());
-    append(",\"dailyLimit\":");number(pet_activity_limit(h->activity_profile));append("}");
+    append(",\"dailyLimit\":");number(pet_activity_limit(h->activity_profile));
+    append(",\"adventureStage\":");number(pet_adventure_stage);
+    append(",\"adventureRiding\":");append(pet_adventure_riding?"true":"false");
+    append(",\"adventurePaused\":");append(pet_adventure_paused?"true":"false");
+    append(",\"adventureWaking\":");append(pet_adventure_waking?"true":"false");
+#if defined(POMI_ADVENTURE_PREVIEW) || defined(POMI_ADVENTURE_MOTION_TEST)
+    append(",\"adventurePreview\":true");
+#endif
+    append("}");
     const MotionState *motion = lis3dh_state();
     append(",\"motion\":{\"connected\":");append(motion->connected?"true":"false");
     append(",\"xMg\":");signed_number(motion->x_mg);
@@ -102,7 +117,11 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append(",\"ageMs\":");number(motion->samples?board_millis()-motion->last_sample_ms:0xffffffffU);
     append(",\"activeMs\":");number(motion->active_ms);append("}}");
     uint32_t crc=pet_crc32(tx,count);append("|");hex(crc);append("\n");
+#ifdef ESP_PLATFORM
+    pomi_transport_send(tx, count);
+#else
     tx_sent=0;tx_count=count;active->uart->CR1|=1U<<7;
+#endif
 }
 static void process(PetHandoff *h) {
     char *fields[7];unsigned n=0;fields[n++]=line;
@@ -171,6 +190,17 @@ static void process(PetHandoff *h) {
     }
     response(h,fields[0]+1,error);
 }
+#ifdef ESP_PLATFORM
+void pet_serial_init(void)
+{
+    pomi_transport_init(identity);
+}
+
+void pet_serial_poll(PetHandoff *h)
+{
+    if (pomi_transport_receive(line, sizeof line)) { process(h); }
+}
+#else
 void pet_serial_init(void) {
     /* USB/ST-LINK: USART2 PA2/PA3. BLE bridge: USART1 PA9/PA10. */
     GPIOA->MODER=(GPIOA->MODER&~(0xF0UL|(0xFUL<<18)))|0xA0UL|(0xAUL<<18);
@@ -201,3 +231,4 @@ static void poll_channel(PetHandoff *h)
 void pet_serial_poll(PetHandoff *h) {
     for(unsigned i=0;i<2;++i) { active=&channels[i];poll_channel(h); }
 }
+#endif

@@ -48,7 +48,7 @@ final class CompanionStore: ObservableObject {
     @Published var bridgeToken = ""
     private var physical: PhysicalSession?
     private var physicalRepository: PhysicalRepository!
-    private var physicalBlocked = false
+    private(set) var physicalBlocked = false
     private let repository: SessionRepository
     private var lastSavedAt = Date.distantPast
     private var responseAt = Date.distantPast
@@ -178,6 +178,7 @@ final class CompanionStore: ObservableObject {
             try next.observe(record);try savePhysical(next)
             activityReward=record.activity;liveMotion=record.motion;motionReceivedAt=Date()
             lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
+            if record.activity?.adventurePreview == true { return }
             record=await syncActivityClock(record,authorize:false)
             try await settleItemReceipt(record)
             await syncActivity(record)
@@ -303,7 +304,7 @@ final class CompanionStore: ObservableObject {
         hasEnteredHome = false
     }
 
-    #if DEBUG
+    #if DEBUG || os(iOS)
     func enterDevelopmentPreview() {
         guard !hardwareBusy else { return }
         // Load the separate demo record; never alter real ownership or its save.
@@ -363,6 +364,12 @@ final class CompanionStore: ObservableObject {
             if physical != nil { physicalBlocked = true }
             hardwareMessage = error.localizedDescription
         }
+    }
+
+    func disconnectBluetooth() {
+        guard !hardwareBusy, bluetooth.ready else { return }
+        bluetooth.disconnect()
+        hardwareMessage = ""
     }
 
     func connectHardware() async {

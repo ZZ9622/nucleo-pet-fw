@@ -29,6 +29,8 @@ bool pet_activity_clock_ready(void);
 uint32_t pet_activity_clock_next(void);
 const char *pet_activity_set_clock(PetHandoff *h,const ActivityClockPlan *plan,uint32_t now_ms);
 void pet_activity_reset_runtime(void);
+extern uint8_t pet_adventure_stage;
+extern bool pet_adventure_riding, pet_adventure_paused, pet_adventure_waking;
 void pet_activity_add(PetHandoff *h, uint32_t elapsed_ms);
 const char *pet_activity_sync(PetHandoff *h, uint32_t day, uint32_t ack_day, uint32_t ack_earned);
 const char *pet_activity_sync_profile(PetHandoff *h, uint32_t day, uint32_t ack_day,

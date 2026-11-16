@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E1AB14EC3E5544E0BD0F1D4C /* AdventureScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5B5B4F605E4F3092678B7A /* AdventureScene.swift */; };
+		22C0D53FB28749798BA2C404 /* AccountTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F781347B036D4924AED79A3A /* AccountTestView.swift */; };
+		7CB26EAFAB5F4B0B908B5931 /* SocialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A7A037E584B808E82B153 /* SocialView.swift */; };
+		6B8229FBEF6F452E91298861 /* AccountTestEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157189D4B76A4A23938BC432 /* AccountTestEntry.swift */; };
 		0CBBF08306D34B0F8AA92440 /* TravelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A4BD6BB9104CBD621754C8 /* TravelView.swift */; };
 		0E252E60059B72D89260E561 /* PetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 993BE81FFA3427B7AFA162A5 /* PetApp.swift */; };
 		1ABD1FE475EBBAD88D506018 /* BluetoothTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B264E39EE4D9196876EB8B3 /* BluetoothTransport.swift */; };
@@ -36,6 +40,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AB5B5B4F605E4F3092678B7A /* AdventureScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Adventure/AdventureScene.swift; sourceTree = "<group>"; };
+		F781347B036D4924AED79A3A /* AccountTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accounts/AccountTestView.swift; sourceTree = "<group>"; };
+		F08A7A037E584B808E82B153 /* SocialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accounts/SocialView.swift; sourceTree = "<group>"; };
+		157189D4B76A4A23938BC432 /* AccountTestEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accounts/AccountTestEntry.swift; sourceTree = "<group>"; };
 		0CC45E6078AF34E95E93B228 /* JourneyDeviceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyDeviceViews.swift; sourceTree = "<group>"; };
 		11236BFAC32761C6493689D9 /* HardwareBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardwareBridge.swift; sourceTree = "<group>"; };
 		11F49EDBF308A47902D18BBF /* NucleoPetUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NucleoPetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -80,6 +88,10 @@
 				3B264E39EE4D9196876EB8B3 /* BluetoothTransport.swift */,
 				BA83E5B3EAA5762C622813D2 /* CompanionStore.swift */,
 				515827EFD08426C3F57D08BF /* ConnectionView.swift */,
+				AB5B5B4F605E4F3092678B7A /* AdventureScene.swift */,
+				F781347B036D4924AED79A3A /* AccountTestView.swift */,
+				F08A7A037E584B808E82B153 /* SocialView.swift */,
+				157189D4B76A4A23938BC432 /* AccountTestEntry.swift */,
 				DF8FE6C8DD79B9339AEFFC45 /* CottageView.swift */,
 				F6A6ABC622C8A615B5E97F17 /* DesignSystem.swift */,
 				91223A109CEFD1EE7E1EDB73 /* DeviceTransport.swift */,
@@ -228,6 +240,10 @@
 				1ABD1FE475EBBAD88D506018 /* BluetoothTransport.swift in Sources */,
 				68A7D34D9B4A369085E9C94D /* CompanionStore.swift in Sources */,
 				B56A9555CB2391B101DA4C54 /* ConnectionView.swift in Sources */,
+				E1AB14EC3E5544E0BD0F1D4C /* AdventureScene.swift in Sources */,
+				22C0D53FB28749798BA2C404 /* AccountTestView.swift in Sources */,
+				7CB26EAFAB5F4B0B908B5931 /* SocialView.swift in Sources */,
+				6B8229FBEF6F452E91298861 /* AccountTestEntry.swift in Sources */,
 				CB1D7D1D45B55C1E6DD30DA1 /* CottageView.swift in Sources */,
 				8C6C64A5FA7FCD1367ADBDCB /* DesignSystem.swift in Sources */,
 				32023D089BFCAF17A31A05A8 /* DeviceTransport.swift in Sources */,
@@ -337,6 +353,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nucleopet.companion;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.nucleopet.companion.lindawifitest;
 				PRODUCT_NAME = NucleoPet;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

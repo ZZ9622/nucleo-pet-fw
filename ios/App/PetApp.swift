@@ -7,7 +7,7 @@ struct NucleoPetApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            entryView
                 .environmentObject(store)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
                 .preferredColorScheme(.light)
@@ -19,9 +19,24 @@ struct NucleoPetApp: App {
         .defaultSize(width: 430, height: 900)
         #endif
     }
+    @ViewBuilder private var entryView: some View {
+        #if os(iOS)
+        if AppRuntime.isUITesting {
+            RootView()
+        } else {
+            AccountTestEntry()
+        }
+        #else
+        RootView()
+        #endif
+    }
+
 }
 
 struct RootView: View {
+    var accountPage: AnyView? = nil
+    var selectedPomi: String? = nil
+    var socialPage: AnyView? = nil
     @EnvironmentObject private var store: CompanionStore
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = 0
@@ -40,15 +55,28 @@ struct RootView: View {
                 Group {
                     switch tab {
                     case 1: CottageView().environmentObject(store.world)
-                    case 2: DeviceView()
-                    default: HomeView()
+                    case 2: PomiSettingsView(accountPage: accountPage)
+                    case 4: socialPage
+                    default:
+                        VStack(spacing: 0) {
+                            if let selectedPomi {
+                                Text("当前测试 Pomi · \(selectedPomi.suffix(8).uppercased())")
+                                    .font(.caption)
+                                    .foregroundStyle(Palette.muted)
+                                    .padding(.top, 8)
+                            }
+                            HomeView(requiresPendant: socialPage != nil, radio: store.bluetooth)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(spacing: 0) {
                     tabButton("主页", symbol: "house", index: 0)
-                    tabButton("家装小屋", symbol: "house.fill", index: 1)
-                    tabButton("挂件", symbol: "lanyardcard", index: 2)
+                    tabButton("poyage", symbol: "house.fill", index: 1)
+                    if socialPage != nil {
+                        tabButton("串门", symbol: "storefront", index: 4)
+                    }
+                    tabButton("Pomi", symbol: "lanyardcard", index: 2, icon: "PomiTabIcon")
                 }
                 .padding(.top, 14).padding(.bottom, 10)
                 .background(Palette.paper)
@@ -82,10 +110,33 @@ struct RootView: View {
         }
     }
 
-    private func tabButton(_ title: String, symbol: String, index: Int) -> some View {
+    private func tabButton(_ title: String, symbol: String, index: Int, icon: String? = nil) -> some View {
         Button { tab = index } label: {
             VStack(spacing: 5) {
-                Image(systemName: symbol).font(.system(size: 20, weight: tab == index ? .semibold : .regular))
+                Group {
+                    if let icon {
+                        Canvas { context, size in
+                            // Map black to blue and the bright cyan cat to white.
+                            var colors = ColorMatrix()
+                            colors.r1 = 0
+                            colors.r3 = 0.89
+                            colors.r5 = 0.11
+                            colors.g2 = 0
+                            colors.g3 = 0.64
+                            colors.g5 = 0.36
+                            colors.b3 = 0.20
+                            colors.b5 = 0.80
+                            context.addFilter(.colorMatrix(colors))
+                            context.draw(Image(icon), in: CGRect(origin: .zero, size: size))
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                        .accessibilityHidden(true)
+                    } else {
+                        Image(systemName: symbol)
+                            .font(.system(size: 20, weight: tab == index ? .semibold : .regular))
+                    }
+                }
+                .frame(width: 23, height: 23)
                 Text(title).font(.system(size: 11, weight: .medium))
                 Rectangle().fill(tab == index ? Palette.ink : .clear).frame(width: 14, height: 3)
             }

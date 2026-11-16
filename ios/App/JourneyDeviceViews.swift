@@ -1,8 +1,84 @@
 import SwiftUI
 import PetDomain
 
+struct PomiSettingsView: View {
+    let accountPage: AnyView?
+    @EnvironmentObject private var store: CompanionStore
+    @State private var page: Page?
+
+    private enum Page {
+        case device
+        case account
+
+        var title: String { self == .device ? "挂件" : "账户" }
+    }
+
+    var body: some View {
+        if let page {
+            VStack(spacing: 0) {
+                HStack {
+                    Button {
+                        self.page = nil
+                    } label: {
+                        Label("返回设置", systemImage: "chevron.left")
+                    }
+                    .accessibilityIdentifier("pomi.settings.back")
+                    Spacer()
+                    Text(page.title).font(.headline)
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(Palette.paper)
+
+                switch page {
+                case .device: DeviceView()
+                case .account: accountPage
+                }
+            }
+            .foregroundStyle(Palette.ink)
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("设置").font(.largeTitle.bold())
+                    row("挂件", detail: store.physicalMode ? "活动进度与连接设置" : "体验挂件与连接设置",
+                        symbol: "lanyardcard", destination: .device)
+                        .accessibilityIdentifier("pomi.settings.device")
+                    if accountPage != nil {
+                        row("账户", detail: "账号与好友码", symbol: "person.crop.circle", destination: .account)
+                            .accessibilityIdentifier("pomi.settings.account")
+                    }
+                }
+                .padding(24)
+            }
+            .foregroundStyle(Palette.ink)
+        }
+    }
+
+    private func row(_ title: String, detail: String, symbol: String, destination: Page) -> some View {
+        Button {
+            page = destination
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: symbol).font(.title3)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).font(.headline)
+                    Text(detail).font(.caption).foregroundStyle(Palette.muted)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Palette.muted)
+            }
+            .padding(16)
+            .background(Palette.room, in: PixelFrame())
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct DeviceView: View {
     @EnvironmentObject private var store: CompanionStore
+    @State private var showPendantConnection = false
     @State private var showConnectionInfo = false
     @State private var showMotionDebug = false
     var body: some View {
@@ -35,7 +111,13 @@ struct DeviceView: View {
 
                 PetNameEditor()
 
-                Button("连接设置") { store.showConnectionSettings() }
+                Button("连接设置") {
+                    if store.connectionKind == .bluetooth && store.bluetooth.ready {
+                        showPendantConnection = true
+                    } else {
+                        store.showConnectionSettings()
+                    }
+                }
                     .buttonStyle(FilledButtonStyle())
                     .accessibilityIdentifier("hardware.settings")
 
@@ -56,6 +138,9 @@ struct DeviceView: View {
         #if DEBUG
         .sheet(isPresented: $showMotionDebug) { MotionDebugView() }
         #endif
+        .sheet(isPresented: $showPendantConnection) {
+            PendantConnectionSheet(radio: store.bluetooth)
+        }
         .sheet(isPresented: $showConnectionInfo) {
             VStack(alignment: .leading, spacing: 23) {
                 Eyebrow(text: "THE NEXT LITTLE STEP")

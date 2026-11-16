@@ -35,6 +35,10 @@ static bool record_read(uint32_t address, PetHandoff *h,uint32_t *sequence)
     if(w[1]>=6) {
         if(w[36]>1U || (!w[36] && w[35])) { return false; }
         h->activity_total=w[35];h->activity_lifetime_enabled=w[36];
+        if(w[37]!=0xFFFFFFFFU) {
+            if(w[37]>6U) { return false; }
+            h->adventure_energy_spent=w[37];
+        }
     }
     *sequence=w[2]; return true;
 }
@@ -75,6 +79,7 @@ bool pet_storage_save(const PetHandoff *h)
     w[28]=h->item_status;w[29]=h->item_kind;w[30]=h->item_level;
     w[31]=h->activity_day;w[32]=h->activity_progress;w[33]=h->activity_earned;w[34]=h->activity_profile;
     w[35]=h->activity_total;w[36]=h->activity_lifetime_enabled;
+    w[37]=h->adventure_energy_spent;
     w[62]=pet_crc32(w,62U*4U); w[63]=COMMIT;
     for(unsigned i=0;i<64;++i) {
         if(w[i]!=0xFFFFFFFFU && !pet_flash_write(address+i*4U,w[i])) { return false; }

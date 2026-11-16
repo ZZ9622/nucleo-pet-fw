@@ -14,6 +14,11 @@ public struct ActivityReward: Codable, Equatable {
     public var profile: UInt32? = nil
     public var dailyLimit: UInt32? = nil
     public var configuredProfile: UInt32? = nil
+    public var adventureStage: UInt32? = nil
+    public var adventureRiding: Bool? = nil
+    public var adventurePaused: Bool? = nil
+    public var adventureWaking: Bool? = nil
+    public var adventurePreview: Bool? = nil
     public var profileID: UInt32 { profile ?? (intervalSeconds==30 ? 1:2) }
     public var limit: UInt32 { profileID==3 ? 6:3 }
     public static func target(profile:UInt32,earned:UInt32) -> UInt32 {

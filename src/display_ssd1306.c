@@ -4,7 +4,6 @@
 #include "board_i2c.h"
 #include "display.h"
 #include "pet_view.h"
-#include "stm32f401xe_minimal.h"
 
 static uint8_t address;
 static uint8_t page;

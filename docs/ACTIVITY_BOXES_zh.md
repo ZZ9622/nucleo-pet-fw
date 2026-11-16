@@ -88,3 +88,27 @@ STATUS可选activity字段包含周期、整秒进度、当前目标、已得数
 - 8点刷新、夏令时和迁移已有自动化覆盖；真实时钟验收按服务配置时间自然经过，不改手机时间。
 
 `make test`测试fixed600、test30、daily6三种固件状态机，每种覆盖44个写入中断点；服务测试覆盖8点边界、午夜不刷新、夏令时、六盒上限、并发领取、迁移丢包和往返切换；Swift测试覆盖阶段、旧协议兼容与迁移回执。实物结果需单独记录，自动化通过不代表新增版本已烧录验收。
+
+## 六档探险动画预览
+
+预览固件开机后每 5 秒切一档，依次播放六档走跳、日常画面、六档顺风车，再回到日常画面。无需晃动或连接小屋服务，预览档位不发活动盒或 Happy，也不扣探险 Energy。安装同一版本的 iOS App 后，蓝牙连接时可在首页现有宠物状态卡核对同一档的画面和中文台词。
+
+```sh
+cmake -S . -B build/adventure-preview -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake -DPOMI_ADVENTURE_PREVIEW=ON
+cmake --build build/adventure-preview
+```
+
+输出文件为 `build/adventure-preview/pet.hex`。试完后，用独立的构建目录将 `POMI_ADVENTURE_PREVIEW` 设为 `OFF`，即可编译恢复真实运动计时的固件。
+
+## 六档实物运动快测
+
+这个版本使用挂件的运动传感器。每累计 5 秒有效运动升一档，共 6 档。停下会暂停，继续运动时接上，连续 2 分钟无活动后回到日常画面。重启挂件从第一档的进度 0 开始。蓝牙已连接的手机会在首页状态卡同步显示。
+
+快测只在内存累计进度，不发活动盒或 Happy，也不扣探险 Energy。
+
+```sh
+cmake -S . -B build/adventure-motion-test -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake -DPOMI_ADVENTURE_MOTION_TEST=ON
+cmake --build build/adventure-motion-test
+```
+
+输出为 `build/adventure-motion-test/pet.hex`。完成实物验证后，使用正常版固件恢复正式运动档位。

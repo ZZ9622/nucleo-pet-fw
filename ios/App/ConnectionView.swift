@@ -115,6 +115,30 @@ struct ConnectionFields: View {
     }
 }
 
+struct PendantConnectionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: CompanionStore
+    @ObservedObject var radio: BluetoothTransport
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("连接你的小伙伴").font(.title2.bold())
+                    Spacer()
+                    Button("关闭") { dismiss() }
+                }
+                BluetoothConnectionFields(radio: radio)
+            }
+            .padding(24)
+        }
+        .foregroundStyle(Palette.ink)
+        .background(Palette.paper)
+        .interactiveDismissDisabled(store.hardwareBusy)
+        .onDisappear { radio.stopScan() }
+    }
+}
+
 struct BluetoothConnectionFields: View {
     @EnvironmentObject private var store: CompanionStore
     @ObservedObject var radio: BluetoothTransport
@@ -125,6 +149,16 @@ struct BluetoothConnectionFields: View {
                 if radio.scanning { radio.stopScan() } else { radio.startScan() }
             }.buttonStyle(FilledButtonStyle()).disabled(store.hardwareBusy)
                 .accessibilityIdentifier("bluetooth.scan")
+            if radio.ready {
+                Button {
+                    store.disconnectBluetooth()
+                } label: {
+                    Label("断开连接", systemImage: "link.badge.minus")
+                }
+                .buttonStyle(QuietButtonStyle())
+                .disabled(store.hardwareBusy)
+                .accessibilityIdentifier("bluetooth.disconnect")
+            }
             if radio.scanning { ProgressView().tint(Palette.ink) }
             Text(radio.message).font(.system(size: 12)).foregroundStyle(Palette.muted)
                 .accessibilityIdentifier("bluetooth.status")

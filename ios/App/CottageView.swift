@@ -40,6 +40,9 @@ struct CottageView: View {
     @State private var selected: PomiItem?
     @State private var releasing: PomiItem?
     @State private var showService=false
+    @State private var listingItemID: String?
+    @State private var wantedKinds: [String] = []
+    @State private var listingError = ""
     private let columns=[GridItem(.adaptive(minimum:86),spacing:10)]
     var body: some View {
         ScrollView {
@@ -52,14 +55,29 @@ struct CottageView: View {
                     Text("仓库").tag(0);Text("放生海").tag(1)
                 }.pickerStyle(.segmented).accessibilityIdentifier("cottage.section")
                 if section==0 { warehouse } else { sea }
-                if !world.message.isEmpty { Text(world.message).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
+                if !world.message.isEmpty && !(showService && !world.preview && world.accountID == nil) { Text(world.message).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
                 if !world.preview {
-                    Button("同步真实仓库") { Task { await world.connect() } }.buttonStyle(QuietButtonStyle()).disabled(world.busy)
-                    Button("小屋服务设置") { showService.toggle() }.buttonStyle(QuietButtonStyle())
-                    if showService {
-                        TextField("https://你的服务地址",text:$world.serviceURL).textFieldStyle(.roundedBorder).autocorrectionDisabled()
-                        Text("身份保存在本机钥匙串。换手机前请先保留身份；当前版本尚无账号找回功能。").font(.caption).foregroundStyle(Palette.muted)
-                        Button("连接并同步仓库") { Task { await world.connect() } }.buttonStyle(FilledButtonStyle()).disabled(world.busy)
+                    Button(world.accountID == nil ? "同步真实仓库" : "同步账号仓库") { Task { await world.connect() } }.buttonStyle(QuietButtonStyle()).disabled(world.busy)
+                    if world.accountID == nil {
+                        Button("小屋服务设置") { showService.toggle() }.buttonStyle(QuietButtonStyle())
+                        if showService {
+                            TextField("https://你的服务地址",text:$world.serviceURL).textFieldStyle(.roundedBorder).autocorrectionDisabled()
+                            Text("身份保存在本机钥匙串。换手机前请先保留身份；当前版本尚无账号找回功能。").font(.caption).foregroundStyle(Palette.muted)
+                            Button(world.busy ? "正在同步…" : "连接并同步仓库") {
+                                Task { await world.connect() }
+                            }
+                            .buttonStyle(FilledButtonStyle())
+                            .disabled(world.busy)
+                            if world.busy {
+                                ProgressView("正在联系小屋服务")
+                                    .font(.footnote)
+                            }
+                            if !world.message.isEmpty {
+                                Text(world.message)
+                                    .font(.footnote)
+                                    .foregroundStyle(Palette.muted)
+                            }
+                        }
                     }
                 }
                 #if DEBUG
@@ -70,7 +88,10 @@ struct CottageView: View {
                 #endif
             }.padding(24).foregroundStyle(Palette.ink)
         }
-        .sheet(item:$selected) { item in itemSheet(item) }
+        .sheet(item:$selected, onDismiss: resetListing) { item in
+            itemSheet(item)
+                .interactiveDismissDisabled(world.busy)
+        }
 
     }
     private var room: some View {
@@ -157,30 +178,100 @@ struct CottageView: View {
     private func itemSheet(_ item:PomiItem) -> some View {
         let entry=world.inventory.entry(item)
         let placed=world.inventory.room.values.contains(item.id)
-        return VStack(alignment:.leading,spacing:20) {
-            ItemGlyph(item:item,entry:entry).frame(height:70).frame(maxWidth:.infinity)
-            Text("\(entry.name) · Lv\(item.level)").font(.title2.bold())
-            if let slot=entry.slot {
-                Button(placed ? "收回仓库":"摆进小屋") { act("/decorate",placed ? ["slot":slot]:["slot":slot,"itemID":item.id]);selected=nil }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.decorate")
-            }
-            if entry.category=="food" {
-                Button("送到挂件，按键确认使用") { selected=nil;Task { await store.startItem(kind:"food",id:item.id) } }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.food").disabled(store.session.residence != .device || world.inventory.pending != nil)
-                Text("手机选择后不立即消耗；请在挂件上按 B1 确认。").font(.caption)
-            }
-            if item.level==1 { Button("三个相同 Lv1 合成 Lv2") { act("/merge",["itemID":item.id]);selected=nil }.buttonStyle(QuietButtonStyle()).disabled(placed) }
-            if releasing?.id==item.id {
-                Text("放生后无法撤回，它会成为别人的惊喜。").font(.caption)
-                HStack {
-                    Button("确认放生") { act("/release",["itemID":item.id]);releasing=nil;selected=nil }.buttonStyle(FilledButtonStyle())
-                    Button("取消") { releasing=nil }.buttonStyle(QuietButtonStyle())
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                ItemGlyph(item:item,entry:entry).frame(height:70).frame(maxWidth:.infinity)
+                Text("\(entry.name) · Lv\(item.level)").font(.title2.bold())
+                if let slot=entry.slot {
+                    Button(placed ? "收回仓库":"摆进小屋") { act("/decorate",placed ? ["slot":slot]:["slot":slot,"itemID":item.id]);selected=nil }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.decorate")
                 }
-            } else {
-                Button("放入漂流瓶") { releasing=item }.buttonStyle(QuietButtonStyle()).accessibilityIdentifier("world.release").disabled(placed || world.inventory.pending?.itemID==item.id)
+                if entry.category=="food" {
+                    Button("送到挂件，按键确认使用") { selected=nil;Task { await store.startItem(kind:"food",id:item.id) } }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.food").disabled(store.session.residence != .device || world.inventory.pending != nil)
+                    Text("手机选择后不立即消耗；请在挂件上按 B1 确认。").font(.caption)
+                }
+                if item.level==1 { Button("三个相同 Lv1 合成 Lv2") { act("/merge",["itemID":item.id]);selected=nil }.buttonStyle(QuietButtonStyle()).disabled(placed) }
+                if world.accountID != nil && !placed && world.inventory.pending?.itemID != item.id {
+                    if listingItemID == item.id {
+                        Text("想换的 Lv1 物品 · \(wantedKinds.count)/3")
+                            .font(.subheadline.bold())
+                        Text("好友给出其中一种即可交换。")
+                            .font(.caption)
+                            .foregroundStyle(Palette.muted)
+                        ForEach(world.inventory.catalog) { entry in
+                            let chosen = wantedKinds.contains(entry.id)
+                            Button {
+                                if chosen {
+                                    wantedKinds.removeAll { $0 == entry.id }
+                                } else {
+                                    wantedKinds.append(entry.id)
+                                }
+                            } label: {
+                                HStack {
+                                    Text(entry.name)
+                                    Spacer()
+                                    Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
+                                }
+                                .padding(.vertical, 9)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!chosen && wantedKinds.count >= 3)
+                            .accessibilityAddTraits(chosen ? .isSelected : [])
+                        }
+                        Button("确认上架") { listItem(item) }
+                            .buttonStyle(FilledButtonStyle())
+                            .disabled(wantedKinds.isEmpty || world.busy)
+                        Button("取消上架", action: resetListing)
+                            .buttonStyle(.plain)
+                            .disabled(world.busy)
+                        if !listingError.isEmpty {
+                            Text(listingError).font(.footnote).foregroundStyle(Palette.muted)
+                        }
+                    } else {
+                        Button("上架到小卖部") { listingItemID = item.id }
+                            .buttonStyle(QuietButtonStyle())
+                            .disabled(world.busy)
+                    }
+                }
+                if releasing?.id==item.id {
+                    Text("放生后无法撤回，它会成为别人的惊喜。").font(.caption)
+                    HStack {
+                        Button("确认放生") { act("/release",["itemID":item.id]);releasing=nil;selected=nil }.buttonStyle(FilledButtonStyle())
+                        Button("取消") { releasing=nil }.buttonStyle(QuietButtonStyle())
+                    }
+                } else {
+                    Button("放入漂流瓶") { releasing=item }.buttonStyle(QuietButtonStyle()).accessibilityIdentifier("world.release").disabled(placed || world.inventory.pending?.itemID==item.id)
+                }
+                Button("返回") { selected=nil }.buttonStyle(.plain).disabled(world.busy)
             }
-            Button("返回") { selected=nil }.buttonStyle(.plain)
-        }.padding(28).foregroundStyle(Palette.ink).presentationDetents([.large])
+            .padding(28)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .foregroundStyle(Palette.ink)
+        .presentationDetents([.large])
+        .disabled(world.busy)
 
     }
+    private func resetListing() {
+        listingItemID = nil
+        wantedKinds = []
+        listingError = ""
+    }
+
+    private func listItem(_ item: PomiItem) {
+        let kinds = wantedKinds
+        listingError = ""
+        Task {
+            do {
+                try await world.perform("/shop/list", ["itemID": item.id, "wantedKinds": kinds])
+                world.message = "已上架，可在「串门」查看。"
+                selected = nil
+            } catch {
+                listingError = error.localizedDescription
+            }
+        }
+    }
+
     private func act(_ path:String,_ body:[String:Any]=[:]) {
         Task { do { _ = try await world.perform(path,body) } catch { world.message=error.localizedDescription } }
     }

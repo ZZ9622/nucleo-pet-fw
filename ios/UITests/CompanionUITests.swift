@@ -112,6 +112,7 @@ final class ConnectionUITests: XCTestCase {
         app.buttons["connection.preview"].tap()
         XCTAssertTrue(app.buttons["tab.0"].waitForExistence(timeout: 10))
         app.buttons["tab.2"].tap()
+        tap("pomi.settings.device")
         app.swipeUp()
         let settings = app.buttons["hardware.settings"]
         if !settings.isHittable { app.swipeUp() }
@@ -154,6 +155,7 @@ final class PetNameUITests: XCTestCase {
         if !preview.isHittable { app.swipeUp() }
         preview.tap()
         app.buttons["tab.2"].tap()
+        tap("pomi.settings.device")
         let name = app.textFields["pet.name"]
         for _ in 0..<4 { if name.isHittable { break }; app.swipeUp() }
         XCTAssertTrue(name.exists)

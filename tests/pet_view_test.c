@@ -72,6 +72,26 @@ int main(int argc, char **argv)
         assert(guarded.before[i] == 0xA5 && guarded.after[i] == 0xA5);
     }
     pet.feedback = PET_EVENT_NONE;
+    /* Every adventure stage has a distinct caption and scene. */
+    uint8_t adventure[6][1024];
+    for (uint8_t stage = 1U; stage <= 6U; ++stage) {
+        pet.adventure_stage = stage;
+        pet_view_draw(adventure[stage - 1U], &pet, 1000U);
+        for (unsigned other = 0; other + 1U < stage; ++other) {
+            assert(memcmp(adventure[other] + 3U * 128U, adventure[stage - 1U] + 3U * 128U, 128U) != 0);
+            assert(memcmp(adventure[other] + 5U * 128U, adventure[stage - 1U] + 5U * 128U, 3U * 128U) != 0);
+        }
+        pet.adventure_riding = true;
+        pet_view_draw(guarded.image, &pet, 1000U);
+        assert(memcmp(guarded.image, adventure[stage - 1U], 1024U) != 0);
+        pet.adventure_riding = false;
+    }
+    pet.adventure_paused = true;
+    pet_view_draw(guarded.image, &pet, 1000U);
+    pet_view_draw(previous, &pet, 1800U);
+    assert(memcmp(guarded.image, previous, sizeof previous) == 0);
+    pet.adventure_stage = 0U;
+    pet.adventure_paused = false;
     if (argc == 2) {
         FILE *out = fopen(argv[1], "w");
         assert(out != NULL);
