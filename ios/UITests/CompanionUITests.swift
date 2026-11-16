@@ -18,9 +18,10 @@ final class CompanionUITests: XCTestCase {
     func tap(_ id: String) {
         let control = element(id)
         XCTAssertTrue(control.waitForExistence(timeout: 10), "Missing \(id)\n\(app.debugDescription)")
-        for _ in 0..<4 {
+        for _ in 0..<8 {
             if control.isHittable { break }
-            app.swipeUp()
+            if control.frame.midY < app.frame.midY { app.swipeDown() }
+            else { app.swipeUp() }
         }
         XCTAssertTrue(control.isHittable, "Offscreen \(id)")
         control.tap()
@@ -43,6 +44,32 @@ final class CompanionUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testCatTowerWelcomeAssignAndExpand() {
+        XCTAssertFalse(element("tower.open").exists, "The original home screen must not contain the tower entry")
+        tap("tab.1")
+        tap("tower.open")
+        attachScreen("Pomi-pixel-tower-ground")
+        tap("tower.welcome")
+        XCTAssertTrue(element("tower.welcomeMessage").exists)
+        XCTAssertTrue(element("tower.lobby.count").label.contains("1"))
+        app.swipeDown()
+        app.swipeDown()
+        tap("tower.expand")
+        tap("tower.build.garden")
+        tap("tower.floor.2")
+        tap("tower.assign.芝麻")
+        XCTAssertTrue(element("tower.lift.busy").waitForExistence(timeout: 5))
+        attachScreen("Pomi-vine-lift")
+        XCTAssertTrue(element("tower.lift.busy").waitForNonExistence(timeout: 15))
+        XCTAssertTrue(element("tower.lift.idle").label.contains("芝麻已到达第2层"))
+        tap("tower.close")
+        tap("tower.open")
+        app.swipeDown()
+        app.swipeDown()
+        XCTAssertTrue(element("tower.floor.2").label.contains("1位居民"))
+        attachScreen("Pomi-cat-tower")
     }
 
     func testRoundTripHasNoPhoneCareAndPreservesState() {
@@ -112,7 +139,7 @@ final class ConnectionUITests: XCTestCase {
         app.buttons["connection.preview"].tap()
         XCTAssertTrue(app.buttons["tab.0"].waitForExistence(timeout: 10))
         app.buttons["tab.2"].tap()
-        tap("pomi.settings.device")
+        app.buttons["pomi.settings.device"].tap()
         app.swipeUp()
         let settings = app.buttons["hardware.settings"]
         if !settings.isHittable { app.swipeUp() }
@@ -155,7 +182,7 @@ final class PetNameUITests: XCTestCase {
         if !preview.isHittable { app.swipeUp() }
         preview.tap()
         app.buttons["tab.2"].tap()
-        tap("pomi.settings.device")
+        app.buttons["pomi.settings.device"].tap()
         let name = app.textFields["pet.name"]
         for _ in 0..<4 { if name.isHittable { break }; app.swipeUp() }
         XCTAssertTrue(name.exists)
