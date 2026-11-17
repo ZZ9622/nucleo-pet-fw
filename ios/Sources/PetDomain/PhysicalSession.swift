@@ -16,6 +16,7 @@ public struct BoardRecord: Codable, Equatable {
     public var itemStatus: UInt32? = nil
     public var itemKind: UInt32? = nil
     public var itemLevel: UInt32? = nil
+    public var smallSnacks: Bool? = nil
 
     public func validate() throws {
         try state.validate()

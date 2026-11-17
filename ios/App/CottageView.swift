@@ -11,7 +11,11 @@ struct JourneySection: View {
                 HStack(alignment:.top,spacing:12) {
                     Image(systemName:entry.symbol).frame(width:24)
                     VStack(alignment:.leading,spacing:4) {
-                        Text(entry.title).font(.subheadline)
+                        if entry.title.hasPrefix("遇见") {
+                            Text("遇见\(String(entry.title.dropFirst(2)))").font(.subheadline)
+                        } else {
+                            Text(LocalizedStringKey(entry.title)).font(.subheadline)
+                        }
                         Text(entry.date,format:.dateTime.month().day().hour().minute()).font(.caption2).foregroundStyle(Palette.muted)
                     }
                 }
@@ -27,29 +31,39 @@ private struct WorldMoments: View {
             HStack(alignment:.top,spacing:12) {
                 Image(systemName:"sparkles").frame(width:24)
                 VStack(alignment:.leading,spacing:4) {
-                    Text(moment.text).font(.subheadline)
+                    momentLabel(moment.text).font(.subheadline)
                     Text(Date(timeIntervalSince1970:moment.date),format:.dateTime.month().day().hour().minute()).font(.caption2).foregroundStyle(Palette.muted)
                 }
             }
         }
     }
+    private func momentLabel(_ message: String) -> Text {
+        // Older servers store activity history as rendered strings.
+        if let match = message.wholeMatch(of: #/(短周期测试：)?活动获得 ([0-9]+) 个盒子（([^）]+)）/#),
+           let count = Int(match.2) {
+            if match.3 == "含离线累计" {
+                return Text("活动获得 \(count) 个盒子（含离线累计）")
+            }
+            let day = String(match.3)
+            return match.1 == nil
+                ? Text("活动获得 \(count) 个盒子（\(day)）")
+                : Text("短周期测试：活动获得 \(count) 个盒子（\(day)）")
+        }
+        return Text(LocalizedStringKey(message))
+    }
 }
 struct CottageView: View {
+    @Environment(\.locale) private var locale
     @EnvironmentObject private var store: CompanionStore
     @EnvironmentObject private var world: PomiWorldStore
-    @State private var section=0
     @State private var selected: PomiItem?
-    @State private var releasing: PomiItem?
+    @State private var openedReward: PomiItem?
     @State private var showService=false
-    @State private var listingItemID: String?
-    @State private var wantedKinds: [String] = []
-    @State private var listingError = ""
     private let columns=[GridItem(.adaptive(minimum:86),spacing:10)]
     var body: some View {
         ScrollView {
             VStack(alignment:.leading,spacing:20) {
                 PageHeader(eyebrow:"Pomi / LITTLE COLLECTIONS",title:"把日子装进小屋",subtitle:"出门遇见惊喜，回家留下一点风景。")
-                if world.preview { Text("独立预览 · 模拟物品与放生海").font(.caption.bold()).padding(10).background(Palette.blush) }
                 if store.physicalMode { ActivityRewardPanel() }
                 room
                 if !world.inventory.room.isEmpty {
@@ -60,11 +74,8 @@ struct CottageView: View {
                             .font(.caption).foregroundStyle(Palette.muted)
                     }
                 }
-                Picker("小屋内容",selection:$section) {
-                    Text("仓库").tag(0);Text("放生海").tag(1)
-                }.pickerStyle(.segmented).accessibilityIdentifier("cottage.section")
-                if section==0 { warehouse } else { sea }
-                if !world.message.isEmpty && !(showService && !world.preview && world.accountID == nil) { Text(world.message).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
+                warehouse
+                if !world.message.isEmpty && !(showService && !world.preview && world.accountID == nil) { Text(LocalizedStringKey(world.message)).font(.footnote).foregroundStyle(Palette.muted).accessibilityIdentifier("world.message") }
                 if !world.preview {
                     Button(world.accountID == nil ? "同步真实仓库" : "同步账号仓库") { Task { await world.connect() } }.buttonStyle(QuietButtonStyle()).disabled(world.busy)
                     if world.accountID == nil {
@@ -82,7 +93,7 @@ struct CottageView: View {
                                     .font(.footnote)
                             }
                             if !world.message.isEmpty {
-                                Text(world.message)
+                                Text(LocalizedStringKey(world.message))
                                     .font(.footnote)
                                     .foregroundStyle(Palette.muted)
                             }
@@ -97,7 +108,7 @@ struct CottageView: View {
                 #endif
             }.padding(24).foregroundStyle(Palette.ink)
         }
-        .sheet(item:$selected, onDismiss: resetListing) { item in
+        .sheet(item:$selected) { item in
             itemSheet(item)
                 .interactiveDismissDisabled(world.busy)
         }
@@ -112,10 +123,12 @@ struct CottageView: View {
         return VStack(spacing:7) {
             if let item { ItemGlyph(item:item,entry:world.inventory.entry(item)).frame(width:60,height:44) }
             else { Image(systemName:"plus").font(.title2).foregroundStyle(Palette.line).frame(width:60,height:44) }
-            Text(item.map{world.inventory.entry($0).name} ?? title).font(.caption2)
+            Text(LocalizedStringKey(item.map{world.inventory.entry($0).name} ?? title)).font(.caption2)
         }.frame(width:105).contextMenu {
             if item != nil { Button("收回仓库") { act("/decorate",["slot":key]) } }
-        }.accessibilityLabel(item.map{"\(title)：\(world.inventory.entry($0).name)"} ?? "\(title)，空位")
+        }.accessibilityLabel(item.map {
+            Text("\(pomiLocalized(title, locale: locale))：\(pomiLocalized(world.inventory.entry($0).name, locale: locale))")
+        } ?? Text("\(pomiLocalized(title, locale: locale))，空位"))
     }
     private var warehouse: some View {
         VStack(alignment:.leading,spacing:16) {
@@ -131,45 +144,40 @@ struct CottageView: View {
                 }.padding(14).background(Palette.blush,in:PixelFrame())
             }
             Text("待开盒子 \(world.inventory.boxes.count)").font(.subheadline.bold())
-            Text("宠物在挂件上、精力 ≥ 10 时可开盒，每次消耗 10 精力。").font(.caption).foregroundStyle(Palette.muted)
+            Text("同步到仓库后，断开挂件也能开盒。").font(.caption).foregroundStyle(Palette.muted)
+            if let reward = openedReward {
+                HStack(spacing: 10) {
+                    ItemGlyph(item: reward, entry: world.inventory.entry(reward))
+                        .frame(width: 32, height: 32)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("刚刚开到").font(.caption)
+                        Text(LocalizedStringKey(world.inventory.entry(reward).name)).font(.subheadline.bold())
+                    }
+                    Spacer()
+                }
+                .padding(8)
+                .background(Palette.sage, in: PixelFrame())
+                .accessibilityIdentifier("world.openedReward")
+            }
             LazyVGrid(columns:columns,spacing:10) {
                 ForEach(world.inventory.boxes,id:\.self) { box in
-                    Button { Task { await store.startItem(kind:"open",id:box) } } label: {
+                    Button { openBox(box) } label: {
                         VStack(spacing:8) { Image(systemName:"shippingbox.fill").font(.largeTitle);Text("打开盒子").font(.caption2) }.frame(maxWidth:.infinity).frame(height:94).background(Palette.sage,in:PixelFrame())
-                    }.buttonStyle(.plain).disabled(world.busy || store.hardwareBusy || world.inventory.pending != nil || store.session.residence != .device)
+                    }.buttonStyle(.plain).disabled(world.busy || world.inventory.pending?.boxID == box)
                         .accessibilityIdentifier("world.box")
                 }
                 ForEach(world.inventory.items) { item in
                     Button { selected=item } label: {
                         VStack(spacing:6) {
                             ItemGlyph(item:item,entry:world.inventory.entry(item)).frame(height:38)
-                            Text(world.inventory.entry(item).name).font(.system(size:10))
-                            Text("Lv\(item.level)\(world.inventory.room.values.contains(item.id) ? " · 已摆放":"")").font(.system(size:9)).foregroundStyle(Palette.muted)
+                            Text(LocalizedStringKey(world.inventory.entry(item).name)).font(.system(size:10))
+                            (world.inventory.room.values.contains(item.id) ? Text("Lv\(item.level) · 已摆放") : Text("Lv\(item.level)")).font(.system(size:9)).foregroundStyle(Palette.muted)
                         }.frame(maxWidth:.infinity).frame(height:94).background(.white,in:PixelFrame()).overlay(PixelFrame().stroke(Palette.line,lineWidth:1))
                     }.buttonStyle(.plain).accessibilityIdentifier("world.item.\(item.kind)")
                 }
             }
             if world.inventory.items.isEmpty && world.inventory.boxes.isEmpty { Text("仓库还空着。带着挂件去走走，等待下一份惊喜。").font(.footnote).padding(.vertical) }
-        }
-    }
-    private var sea: some View {
-        VStack(alignment:.leading,spacing:18) {
-            ZStack {
-                Rectangle().fill(Palette.room)
-                VStack(spacing:15) {
-                    Text("～  ～  ～  ～  ～").font(.title).foregroundStyle(Palette.muted)
-                    PixelBottle().frame(width:58,height:70)
-                    Text("放生海").font(.title2.bold())
-                    Text("让不再需要的收藏，成为别人的惊喜。").font(.caption)
-                }
-            }.frame(height:210).overlay(PixelFrame().stroke(Palette.ink,lineWidth:2))
-            Text("捞取机会 \(world.inventory.chances) / 3").font(.headline)
-            Text("每 3 小时恢复一次，最多保留 3 次。不消耗宠物精力。").font(.caption).foregroundStyle(Palette.muted)
-            if world.inventory.chances<3 && world.inventory.nextChanceAt>0 {
-                Text("下次恢复：\(Date(timeIntervalSince1970:world.inventory.nextChanceAt).formatted(date:.omitted,time:.shortened))").font(.caption)
-            }
-            Button("捞一个漂流瓶") { act("/fish") }.buttonStyle(FilledButtonStyle()).disabled(world.busy).accessibilityIdentifier("world.fish")
-            Text("仓库中选择闲置物品即可放生。真实海域需要连接小屋服务；不会捞到自己放生的物品。").font(.caption).foregroundStyle(Palette.muted)
         }
     }
     private func itemSheet(_ item:PomiItem) -> some View {
@@ -178,7 +186,7 @@ struct CottageView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 ItemGlyph(item:item,entry:entry).frame(height:70).frame(maxWidth:.infinity)
-                Text("\(entry.name) · Lv\(item.level)").font(.title2.bold())
+                Text("\(pomiLocalized(entry.name, locale: locale)) · Lv\(item.level)").font(.title2.bold())
                 if let slot=entry.slot {
                     Button(placed ? "收回仓库":"摆进小屋") { act("/decorate",placed ? ["slot":slot]:["slot":slot,"itemID":item.id]);selected=nil }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.decorate")
                 }
@@ -186,58 +194,9 @@ struct CottageView: View {
                     Button("送到挂件，按键确认使用") { selected=nil;Task { await store.startItem(kind:"food",id:item.id) } }.buttonStyle(FilledButtonStyle()).accessibilityIdentifier("world.food").disabled(store.session.residence != .device || world.inventory.pending != nil)
                     Text("手机选择后不立即消耗；请在挂件上按 B1 确认。").font(.caption)
                 }
-                if item.level==1 { Button("三个相同 Lv1 合成 Lv2") { act("/merge",["itemID":item.id]);selected=nil }.buttonStyle(QuietButtonStyle()).disabled(placed) }
-                if world.accountID != nil && !placed && world.inventory.pending?.itemID != item.id {
-                    if listingItemID == item.id {
-                        Text("想换的 Lv1 物品 · \(wantedKinds.count)/3")
-                            .font(.subheadline.bold())
-                        Text("好友给出其中一种即可交换。")
-                            .font(.caption)
-                            .foregroundStyle(Palette.muted)
-                        ForEach(world.inventory.catalog) { entry in
-                            let chosen = wantedKinds.contains(entry.id)
-                            Button {
-                                if chosen {
-                                    wantedKinds.removeAll { $0 == entry.id }
-                                } else {
-                                    wantedKinds.append(entry.id)
-                                }
-                            } label: {
-                                HStack {
-                                    Text(entry.name)
-                                    Spacer()
-                                    Image(systemName: chosen ? "checkmark.circle.fill" : "circle")
-                                }
-                                .padding(.vertical, 9)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(!chosen && wantedKinds.count >= 3)
-                            .accessibilityAddTraits(chosen ? .isSelected : [])
-                        }
-                        Button("确认上架") { listItem(item) }
-                            .buttonStyle(FilledButtonStyle())
-                            .disabled(wantedKinds.isEmpty || world.busy)
-                        Button("取消上架", action: resetListing)
-                            .buttonStyle(.plain)
-                            .disabled(world.busy)
-                        if !listingError.isEmpty {
-                            Text(listingError).font(.footnote).foregroundStyle(Palette.muted)
-                        }
-                    } else {
-                        Button("上架到小卖部") { listingItemID = item.id }
-                            .buttonStyle(QuietButtonStyle())
-                            .disabled(world.busy)
-                    }
-                }
-                if releasing?.id==item.id {
-                    Text("放生后无法撤回，它会成为别人的惊喜。").font(.caption)
-                    HStack {
-                        Button("确认放生") { act("/release",["itemID":item.id]);releasing=nil;selected=nil }.buttonStyle(FilledButtonStyle())
-                        Button("取消") { releasing=nil }.buttonStyle(QuietButtonStyle())
-                    }
-                } else {
-                    Button("放入漂流瓶") { releasing=item }.buttonStyle(QuietButtonStyle()).accessibilityIdentifier("world.release").disabled(placed || world.inventory.pending?.itemID==item.id)
+                if item.level==1 && ["decor", "souvenir"].contains(entry.category) { Button(item.kind == "shell" ? "三个贝壳合成台灯" : "三个相同 Lv1 合成 Lv2") { act("/merge",["itemID":item.id]);selected=nil }.buttonStyle(QuietButtonStyle()).disabled(placed) }
+                if entry.category == "building" {
+                    Text("在猫塔选择对应设施时使用。").font(.caption)
                 }
                 Button("返回") { selected=nil }.buttonStyle(.plain).disabled(world.busy)
             }
@@ -249,22 +208,13 @@ struct CottageView: View {
         .disabled(world.busy)
 
     }
-    private func resetListing() {
-        listingItemID = nil
-        wantedKinds = []
-        listingError = ""
-    }
-
-    private func listItem(_ item: PomiItem) {
-        let kinds = wantedKinds
-        listingError = ""
+    private func openBox(_ box: String) {
         Task {
             do {
-                try await world.perform("/shop/list", ["itemID": item.id, "wantedKinds": kinds])
-                world.message = "已上架，可在「串门」查看。"
-                selected = nil
+                let result = try await world.perform("/tower/open", ["boxID": box])
+                openedReward = result.openedReward
             } catch {
-                listingError = error.localizedDescription
+                world.message = error.localizedDescription
             }
         }
     }
@@ -275,6 +225,7 @@ struct CottageView: View {
 }
 /// Small code-native pixel objects, crisp at every scale.
 struct ItemGlyph: View {
+    @Environment(\.locale) private var locale
     let item:PomiItem
     let entry:PomiCatalogEntry
     private var rows:[String] {
@@ -282,6 +233,13 @@ struct ItemGlyph: View {
         case "plant": return ["0001000","0011100","0101010","0001000","0111110","0011100","0011100"]
         case "cushion": return ["0000000","0011100","0111110","1111111","1111111","0111110","0000000"]
         case "picture": return ["1111111","1000001","1010101","1001001","1011101","1111111","0000000"]
+        case "honey": return ["0011100","0111110","1101011","1111111","1011101","0111110","0011100"]
+        case "wheatSeed", "cottonSeed": return ["0011100","0011100","0111110","1101011","1110111","1111111","0111110"]
+        case "oreSample": return ["0001100","0011110","0111011","1111111","1110110","0111100","0011000"]
+        case "shellLamp": return ["0011100","0111110","1111111","0001000","0001000","0011100","0111110"]
+        case "recordPlayer": return ["0011110","0111110","0110110","1111111","1010101","1111111","1000001"]
+        case "starWindow": return ["1111111","1001001","1011101","1111111","1011101","1001001","1111111"]
+        case "nebulaCushion": return ["0001000","0011100","0111110","1110111","1101011","0111110","0000000"]
         case "shell": return ["0011100","0111110","1111111","1010101","0101010","0011100","0001000"]
         default: return ["0001000","0011100","0111110","1111111","1101011","0111110","0011100"]
         }
@@ -293,21 +251,7 @@ struct ItemGlyph: View {
                 for (y,row) in rows.enumerated() { for (x,c) in row.enumerated() where c=="1" { p.addRect(CGRect(x:Double(x)*unit,y:Double(y)*unit,width:unit,height:unit)) } }
             }.fill(item.level==2 ? Color(red:0.1,green:0.55,blue:0.9):Palette.ink)
                 .frame(width:unit*7,height:unit*7).frame(maxWidth:.infinity,maxHeight:.infinity)
-        }.accessibilityLabel("\(entry.name)，等级\(item.level)")
-    }
-}
-
-private struct PixelBottle: View {
-    private let rows=["000111000","000111000","000101000","001101100","011000110","010000010","010111010","010101010","010111010","010000010","011111110"]
-    var body: some View {
-        GeometryReader { g in
-            let u=floor(min(g.size.width/9,g.size.height/11))
-            Path { path in
-                for (y,row) in rows.enumerated() { for (x,c) in row.enumerated() where c=="1" {
-                    path.addRect(CGRect(x:Double(x)*u,y:Double(y)*u,width:u,height:u))
-                } }
-            }.fill(Palette.ink).frame(width:u*9,height:u*11).frame(maxWidth:.infinity,maxHeight:.infinity)
-        }.accessibilityHidden(true)
+        }.accessibilityLabel("\(pomiLocalized(entry.name, locale: locale))，等级\(item.level)")
     }
 }
 
@@ -320,7 +264,7 @@ private enum TowerColors {
     static let green = Palette.coral
 }
 
-private final class TowerLocalStore: ObservableObject {
+final class TowerLocalStore: ObservableObject {
     @Published var tower: CatTower
     @Published var loadFailed = false
     private let key: String
@@ -331,6 +275,13 @@ private final class TowerLocalStore: ObservableObject {
             else { tower = CatTower(); loadFailed = true }
         } else { tower = CatTower() }
     }
+    static func recordReturn(_ session: CompanionSession) {
+        guard session.residence == .phone else { return }
+        TowerLocalStore(key: session.petID.uuidString).change {
+            $0.updatePomi(residence: .phone, revision: session.revision)
+        }
+    }
+
     func change(_ update: (inout CatTower) -> Void) {
         guard !loadFailed else { return }
         var next = tower
@@ -361,7 +312,7 @@ struct CatTowerEntrance: View {
             HStack(spacing: 0) {
                 Button { open = true } label: {
                     ZStack(alignment: .bottomLeading) {
-                        TowerRoomArt(home: true, cats: [], master: session)
+                        TowerRoomArt(home: true, cats: [], master: session.residence == .phone && local.tower.pomiLocation == -1 ? session : nil)
                         Text("进屋看看 ↑")
                             .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .padding(8).background(TowerColors.cream.opacity(0.95)).padding(10)
@@ -394,7 +345,44 @@ struct CatTowerEntrance: View {
         #else
         .sheet(isPresented: $open) { CatTowerGame(session: session, local: local).frame(minWidth: 390, minHeight: 750) }
         #endif
-        .onAppear { local.change { $0.refresh() } }
+        .onAppear { updateTower() }
+        .onChange(of: session.revision) { _, _ in updateTower() }
+        .onChange(of: session.residence) { _, _ in updateTower() }
+    }
+
+    private func updateTower() {
+        local.change {
+            $0.refresh()
+            $0.updatePomi(residence: session.residence, revision: session.revision)
+        }
+    }
+}
+
+private struct TowerPomiApproach: View {
+    let session: CompanionSession
+    let reaction: LocalizedStringKey?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var arrived = false
+
+    var body: some View {
+        VStack(spacing: 3) {
+            if let reaction, arrived {
+                Text(reaction).font(.caption2).padding(4)
+                    .background(Palette.paper, in: PixelFrame())
+            }
+            PixelPet(session: session).frame(width: 54, height: 38)
+                .accessibilityIdentifier("tower.pomi")
+                .offset(x: reduceMotion ? 0 : (arrived ? (reaction == nil ? -22 : 0) : 22))
+        }
+        .task {
+            guard !reduceMotion else { arrived = true; return }
+            await Task.yield()
+            let animation: Animation = reaction == nil
+                ? .easeInOut(duration: 3).repeatForever(autoreverses: true)
+                : .easeInOut(duration: 1.2)
+            withAnimation(animation) { arrived = true }
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -427,6 +415,11 @@ private struct CatTowerGame: View {
     let session: CompanionSession
     private var name: String { session.name }
     @ObservedObject var local: TowerLocalStore
+    @EnvironmentObject private var world: PomiWorldStore
+    @State private var inventoryActionRunning = false
+    @State private var inventoryActionMessage = ""
+    @State private var towerTime = Date()
+    @State private var openedMerchant: CatTower.Merchant?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedFloor: Int?
@@ -451,6 +444,13 @@ private struct CatTowerGame: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            if !inventoryActionMessage.isEmpty {
+                Text(LocalizedStringKey(inventoryActionMessage)).font(.caption).padding(8)
+            }
+            if local.tower.pendingInventoryAction != nil {
+                Button("重试待确认的仓库操作") { Task { await resumeInventoryAction() } }
+                    .font(.caption.bold()).padding(8).disabled(inventoryActionRunning)
+            }
             if local.loadFailed {
                 Text("小屋记录暂时无法读取，原记录已保留。请先返回，稍后再试。")
                     .font(.callout).padding().background(TowerColors.cream)
@@ -508,7 +508,7 @@ private struct CatTowerGame: View {
                         .font(.system(size: 11)).accessibilityIdentifier("tower.lift.busy")
                         .accessibilityAddTraits(.updatesFrequently)
                 } else {
-                    Text(liftStatus.isEmpty ? "猫猫上岗后自动生产 · 原料全塔共享" : liftStatus)
+                    Text(LocalizedStringKey(liftStatus.isEmpty ? pomiHint : liftStatus))
                         .font(.system(size: 11)).accessibilityIdentifier("tower.lift.idle")
                 }
                 Spacer()
@@ -532,12 +532,74 @@ private struct CatTowerGame: View {
                 ? "送别需要 \(CatTower.releaseCost) 喵币，当前余额 \(local.tower.coins)，余额不足。"
                 : "将花费 \(CatTower.releaseCost) 喵币为它准备路费。离开后无法找回这只猫；如有工作岗位，岗位将空出。")
         }
-        .onReceive(timer) { _ in if scenePhase == .active { local.change { $0.refresh() } } }
+        .task { refreshTower(); await resumeInventoryAction() }
+        .onReceive(timer) { _ in if scenePhase == .active { refreshTower() } }
+        .onChange(of: session.revision) { _, _ in refreshTower() }
+        .onChange(of: session.residence) { _, _ in refreshTower() }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { local.change { $0.refresh() } }
+            if phase == .active { refreshTower() }
             else { finishInterruptedRide() }
         }
         .onDisappear { finishInterruptedRide() }
+    }
+
+    private func refreshTower() {
+        towerTime = Date()
+        local.change {
+            $0.refresh()
+            $0.updatePomi(residence: session.residence, revision: session.revision)
+        }
+    }
+
+    private var pomiHint: String {
+        guard session.residence == .phone, let location = local.tower.pomiLocation else {
+            return "猫猫上岗后自动生产 · 原料全塔共享"
+        }
+        if location == -1 { return "Pomi 好像回塔主之家了。" }
+        if location == 0 { return "大厅里好像有 Pomi 的脚印。" }
+        return location <= 3 ? "Pomi 好像在下面几层。" : "Pomi 好像往楼上去了。"
+    }
+
+    private var idleItems: [PomiItem] {
+        world.inventory.items.filter { !world.inventory.room.values.contains($0.id) && world.inventory.pending?.itemID != $0.id }
+    }
+
+    private func startInventoryAction(_ kind: CatTower.InventoryAction.Kind, items: [PomiItem] = [],
+                                      product: String? = nil, facility: CatTower.Facility? = nil,
+                                      merchant: CatTower.Merchant? = nil, arrival: Int? = nil, coins: Int = 0) {
+        guard let owner = world.towerInventoryOwner else {
+            inventoryActionMessage = "请先同步小屋服务"
+            return
+        }
+        let action = CatTower.InventoryAction(owner: owner, kind: kind, itemIDs: items.map(\.id),
+                                              product: product, facility: facility, merchant: merchant, arrival: arrival, coins: coins)
+        local.change { _ = $0.prepareInventoryAction(action) }
+        if local.tower.pendingInventoryAction == action { Task { await resumeInventoryAction() } }
+    }
+
+    private func resumeInventoryAction() async {
+        guard !inventoryActionRunning, let action = local.tower.pendingInventoryAction else { return }
+        guard world.towerInventoryOwner == action.owner else {
+            inventoryActionMessage = "请使用发起操作时的账号重新同步仓库。"
+            return
+        }
+        inventoryActionRunning = true
+        defer { inventoryActionRunning = false }
+        var body: [String: Any] = ["action": action.kind.rawValue, "itemIDs": action.itemIDs]
+        body["product"] = action.product
+        body["merchant"] = action.merchant?.rawValue
+        body["arrival"] = action.arrival
+        do {
+            try await world.perform("/tower/inventory", body, requestID: action.requestID)
+            local.change { $0.completeInventoryAction(action.requestID) }
+            inventoryActionMessage = ""
+            if action.kind == .build { showConstruction = false }
+        } catch let error as PomiWorldRejected {
+            local.change { $0.rejectInventoryAction(action.requestID) }
+            inventoryActionMessage = error.message
+        } catch {
+            inventoryActionMessage = error.localizedDescription
+        }
     }
 
     private func closePopup() {
@@ -697,6 +759,8 @@ private struct CatTowerGame: View {
                     }.padding(10)
                 }.frame(height: 125)
             }
+            decoratedRoom(location: 0, slots: ["corner", "table"])
+                .frame(height: 86)
         }.background(Palette.paper)
             .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
             .background(TowerStopMarker(stop: 0, fraction: 0.64))
@@ -725,11 +789,11 @@ private struct CatTowerGame: View {
             Button {
                 showConstruction = true
             } label: {
-                Label(local.tower.floors >= CatTower.maximumFloors ? "已经长到云朵旁啦" : "扩建 · \(local.tower.expansionCost) 喵币起", systemImage: "plus")
+                Label(local.tower.unfinishedFloor != nil ? "完成待建楼层" : local.tower.floors >= CatTower.maximumFloors ? "已经长到云朵旁啦" : "扩建 · \(local.tower.expansionCost) 喵币", systemImage: "plus")
                     .font(.system(size: 14, weight: .bold)).padding(.horizontal, 20).padding(.vertical, 12)
                     .background(TowerColors.cream, in: PixelFrame())
                     .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
-            }.buttonStyle(.plain).disabled(liftBusy || local.loadFailed || local.tower.floors >= CatTower.maximumFloors)
+            }.buttonStyle(.plain).disabled(liftBusy || local.loadFailed || (local.tower.floors >= CatTower.maximumFloors && local.tower.unfinishedFloor == nil))
                 .accessibilityIdentifier("tower.expand")
             Text("选择产业，连接原料与店铺").font(.system(size: 10)).foregroundStyle(Palette.muted)
         }.padding(.bottom, 26)
@@ -747,7 +811,11 @@ private struct CatTowerGame: View {
                     }.padding(10).background(TowerColors.wood).foregroundStyle(TowerColors.cream)
                     ZStack(alignment: .bottom) {
                         TowerFacilityArt(facility: local.tower.facilities[floor], cats: cats.map(\.coat), active: local.tower.status(at: floor).hasPrefix("正在"))
-                        Text(local.tower.status(at: floor))
+                        if session.residence == .phone && local.tower.pomiLocation == floor {
+                            TowerPomiApproach(session: session, reaction: nil)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                        Text(LocalizedStringKey(local.tower.status(at: floor)))
                             .font(.system(size: 10, weight: .medium)).padding(5)
                             .background(TowerColors.cream.opacity(0.94)).padding(.bottom, 8)
                     }.frame(height: 184)
@@ -764,9 +832,37 @@ private struct CatTowerGame: View {
         VStack(spacing: 0) {
             Text("塔主之家 · \(name)").font(.system(size: 14, weight: .bold)).padding(10)
                 .frame(maxWidth: .infinity).background(TowerColors.wood).foregroundStyle(TowerColors.cream)
-            TowerRoomArt(home: true, cats: [], master: session).frame(height: 210)
+            TowerRoomArt(home: true, cats: [], master: nil)
+                .overlay { decoratedRoom(location: -1, slots: ["wall", "floor"]) }
+                .frame(height: 210)
         }.overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
     }
+    private func decoratedRoom(location: Int, slots: [String]) -> some View {
+        let decorations = slots.compactMap { slot in world.inventory.items.first { $0.id == world.inventory.room[slot] } }
+        let present = session.residence == .phone && local.tower.pomiLocation == location
+        return HStack(alignment: .bottom, spacing: 8) {
+            ForEach(decorations) { item in
+                ItemGlyph(item: item, entry: world.inventory.entry(item)).frame(width: 35, height: 32)
+            }
+            if present {
+                TowerPomiApproach(session: session, reaction: decorations.first.map(decorationReaction))
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, 15)
+        .allowsHitTesting(false)
+    }
+
+    private func decorationReaction(_ item: PomiItem) -> LocalizedStringKey {
+        switch item.kind {
+        case "plant": item.level == 2 ? "闻花花，开心！" : "凑近闻一闻"
+        case "cushion", "nebulaCushion": item.level == 2 || item.kind == "nebulaCushion" ? "睡出小星星" : "坐一小会儿"
+        case "picture", "starWindow": item.level == 2 || item.kind == "starWindow" ? "眼睛闪闪的" : "抬头看看"
+        case "recordPlayer": "跟着哼两声"
+        default: "好奇地凑过去"
+        }
+    }
+
     private var doorstep: some View {
         VStack(spacing: 14) {
             HStack(alignment: .center, spacing: 16) {
@@ -792,35 +888,129 @@ private struct CatTowerGame: View {
                     .accessibilityIdentifier("tower.welcome")
             }
             if !arrivalMessage.isEmpty { Text(arrivalMessage).font(.caption).accessibilityIdentifier("tower.welcomeMessage") }
+            merchantStall(.regular)
+            merchantStall(.mint)
         }.padding(20).background(TowerColors.cream).padding(.top, 7)
     }
+    @ViewBuilder private func merchantStall(_ merchant: CatTower.Merchant) -> some View {
+        let arrival = merchant.lastArrival(at: towerTime)
+        let departure = Date(timeIntervalSince1970: TimeInterval(arrival + merchant.duration))
+        if towerTime < departure {
+            DisclosureGroup(isExpanded: Binding(get: { openedMerchant == merchant }, set: { expanded in
+                if expanded {
+                    openedMerchant = merchant
+                    local.change { $0.seeMerchant(merchant, arrival: arrival) }
+                } else if openedMerchant == merchant {
+                    openedMerchant = nil
+                }
+            })) {
+                Text("剩余 \(departure, style: .timer)").font(.caption)
+                Text("离开时间 \(departure, format: .dateTime.hour().minute())").font(.caption)
+                ForEach(merchant.stock, id: \.kind) { stock in
+                    let name = PomiCatalogEntry.initial.first { $0.id == stock.kind }?.name ?? stock.kind
+                    Button {
+                        startInventoryAction(.buy, product: stock.kind, merchant: merchant, arrival: arrival, coins: stock.price)
+                    } label: {
+                        HStack { Text(LocalizedStringKey(name)); Spacer(); Text("\(stock.price) 喵币") }
+                    }
+                    .disabled(local.tower.coins < stock.price || local.tower.purchasedStock[stock.kind] == arrival || local.tower.pendingInventoryAction != nil)
+                }
+                if !idleItems.isEmpty {
+                    Menu("卖出闲置物品") {
+                        ForEach(idleItems) { item in
+                            let price = 5 * max(1, min(2, item.level))
+                            Button {
+                                startInventoryAction(.sell, items: [item], merchant: merchant, arrival: arrival, coins: price)
+                            } label: {
+                                HStack { Text(LocalizedStringKey(world.inventory.entry(item).name)); Text("\(price) 喵币") }
+                            }
+                        }
+                    }
+                    .disabled(local.tower.pendingInventoryAction != nil)
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    TowerCat(coat: merchant == .regular ? 1 : 2)
+                        .frame(width: 36, height: 34)
+                        .accessibilityHidden(true)
+                    Label(LocalizedStringKey(merchant.title), systemImage: merchant == .regular ? "basket" : "sparkles")
+                }
+            }
+        } else if departure >= local.tower.merchantTrackingSince,
+                  local.tower.merchantTrades[merchant] != arrival {
+            VStack(alignment: .leading, spacing: 4) {
+                Label(LocalizedStringKey(merchant.title), systemImage: "envelope").font(.caption.bold())
+                Text(local.tower.merchantSeen[merchant] == arrival ? "今天没找到喜欢的？下次我带点别的来。"
+                     : merchant == .regular ? "这次来没碰见你，下次记得给我开门！"
+                     : "留一颗薄荷星给你。下次再来！").font(.caption)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(8)
+            .background(Palette.sage, in: PixelFrame())
+        }
+    }
+
     private var constructionPanel: some View {
         NavigationStack {
             List {
-                Section("余额 \(local.tower.coins) 喵币 · 扩建费 \(local.tower.expansionCost)") {
-                    Text("每增加一层，下一层扩建费约增长 35%。设施费另计。第一层餐厅固定保留。")
-                        .font(.caption)
+                Section("余额 \(local.tower.coins) 喵币") {
+                    if let floor = local.tower.unfinishedFloor {
+                        Text("请先完成第 \(floor) 层。")
+                    } else {
+                        Button("解锁空楼层 · \(local.tower.expansionCost) 喵币") {
+                            local.change { _ = $0.unlockFloor() }
+                        }
+                        .disabled(local.tower.coins < local.tower.expansionCost || local.tower.pendingInventoryAction != nil)
+                        .accessibilityIdentifier("tower.unlock")
+                    }
                 }
                 ForEach(CatTower.Industry.allCases, id: \.self) { industry in
                     Section(industry.title + "产业") {
                         ForEach(CatTower.Facility.allCases.filter { $0.industry == industry }, id: \.self) { facility in
+                            let floor = local.tower.unfinishedFloor ?? local.tower.floors + 1
+                            let kind = local.tower.requiredItem(for: facility, floor: floor)
+                            let material = idleItems.first { $0.kind == kind }
+                            let materialName = PomiCatalogEntry.initial.first { $0.id == kind }?.name
                             Button {
-                                var built = false
-                                local.change { built = $0.expand(facility: facility) }
-                                if built { showConstruction = false }
+                                if let material {
+                                    startInventoryAction(.build, items: [material], product: kind, facility: facility)
+                                } else {
+                                    var built = false
+                                    local.change { built = $0.finishFloor(facility) }
+                                    if built { showConstruction = false }
+                                }
                             } label: {
                                 VStack(alignment: .leading, spacing: 5) {
-                                    Text("\(facility.title) · \(local.tower.expansionCost + facility.fee) 喵币").font(.headline)
-                                    Text(facility.recipe).font(.caption)
+                                    Text(LocalizedStringKey(facility.title)).font(.headline)
+                                    Text(LocalizedStringKey(facility.recipe)).font(.caption)
+                                    if let materialName {
+                                        HStack { Text(LocalizedStringKey(materialName)); Text(material == nil ? "缺少" : "已有") }
+                                            .font(.caption)
+                                    }
+                                    if facility.fee > 0 { Text("设施费 \(facility.fee) 喵币").font(.caption) }
                                     if let prerequisite = facility.prerequisite {
                                         Text("前置：\(prerequisite.title)").font(.caption2)
                                     }
                                 }
-                            }.accessibilityIdentifier("tower.build.\(facility.rawValue)")
-                            .disabled(!local.tower.canBuild(facility) || local.tower.coins < local.tower.expansionCost + facility.fee || local.tower.floors >= CatTower.maximumFloors)
+                            }
+                            .accessibilityIdentifier("tower.build.\(facility.rawValue)")
+                            .disabled(local.tower.unfinishedFloor == nil || !local.tower.canBuild(facility)
+                                      || (kind != nil && material == nil) || local.tower.coins < facility.fee
+                                      || local.tower.pendingInventoryAction != nil)
                         }
                     }
                 }
+                Section("三换一建楼材料") {
+                    ForEach(PomiCatalogEntry.buildKinds, id: \.self) { target in
+                        let inputs = idleItems.filter { PomiCatalogEntry.buildKinds.contains($0.kind) && $0.kind != target }
+                        let label = PomiCatalogEntry.initial.first { $0.id == target }?.name ?? target
+                        Button {
+                            startInventoryAction(.swap, items: Array(inputs.prefix(3)), product: target)
+                        } label: { Text(LocalizedStringKey(label)) }
+                        .disabled(inputs.count < 3 || local.tower.pendingInventoryAction != nil)
+                    }
+                }
+                if !inventoryActionMessage.isEmpty { Text(LocalizedStringKey(inventoryActionMessage)).font(.caption) }
             }.navigationTitle("建造新楼层")
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showConstruction = false } } }
         }
@@ -894,7 +1084,9 @@ private struct CatTowerGame: View {
                                     var changed = false
                                     local.change { changed = $0.remodel(floor, facility: facility) }
                                     arrivalMessage = changed ? "改装完成" : "无法改装：请检查余额和产业前置关系"
-                                }.disabled(!local.tower.canBuild(facility) || local.tower.coins < 40 + facility.fee)
+                                }.disabled(!local.tower.canBuild(facility) || local.tower.coins < 40 + facility.fee
+                                           || local.tower.facilities[floor] == nil || local.tower.requiredItem(for: facility, floor: floor) != nil
+                                           || local.tower.pendingInventoryAction != nil)
                             }
                         }
                         if !arrivalMessage.isEmpty { Text(arrivalMessage).font(.caption) }

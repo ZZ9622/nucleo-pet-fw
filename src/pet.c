@@ -243,6 +243,7 @@ void pet_make_snapshot(const PetState *pet, PetSnapshot *snapshot)
     snapshot->adventure_paused=false;
     snapshot->adventure_preview=false;
     snapshot->adventure_waking=false;
+    snapshot->merchant_visit=0;
     snapshot->item_food_pending=false;
     snapshot->item_box_animation=false;
     snapshot->is_away = false;

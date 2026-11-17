@@ -69,13 +69,48 @@ class WorldTests(unittest.TestCase):
         self.runop(self.a,'/decorate',slot='corner')
         self.runop(self.a,'/release',itemID=item['id'])
     def test_merge_and_food_confirmation(self):
-        for _ in range(3):s=self.opened(self.a)
-        s=self.runop(self.a,'/merge',itemID=s['items'][0]['id']);self.assertEqual(len(s['items']),1);self.assertEqual(s['items'][0]['level'],2)
+        for _ in range(3): s = self.opened(self.a, 'plant')
+        s = self.runop(self.a, '/merge', itemID=s['items'][0]['id'])
+        self.assertEqual(len(s['items']), 1)
+        self.assertEqual(s['items'][0]['level'], 2)
+        s = self.opened(self.b, 'honey')
         item=s['items'][0];pet=str(uuid.uuid4())
-        s=self.runop(self.a,'/prepare',kind='food',itemID=item['id'],petID=pet);self.assertEqual(len(s['items']),1)
-        with self.assertRaises(RuleError):self.runop(self.a,'/release',itemID=item['id'])
-        p=s['pending'];s=self.runop(self.a,'/settle',operationID=p['id'],receiptID=p['id'],petID=pet)
-        self.assertFalse(s['items']);self.assertEqual(s['preferences']['berry'],1)
+        s=self.runop(self.b,'/tower/snack',itemID=item['id'],petID=pet)
+        self.assertEqual(s['pending']['level'], 4)
+        with self.assertRaises(RuleError): self.runop(self.b,'/release',itemID=item['id'])
+        p=s['pending'];s=self.runop(self.b,'/settle',operationID=p['id'],receiptID=p['id'],petID=pet)
+        self.assertFalse(s['items']);self.assertEqual(s['preferences']['honey'],1)
+
+    def test_tower_open_material_sale_and_purchase_are_retry_safe(self):
+        box = self.grant(self.a)['boxes'][0]
+        body = dict(requestID='tower-box-1', boxID=box)
+        initial = self.w.run(self.a, '/tower/open', body)
+        self.assertFalse(initial['boxes'])
+        self.assertEqual(self.w.run(self.a, '/tower/open', body)['items'], initial['items'])
+
+        state = self.opened(self.a, 'cottonSeed')
+        seed = next(item for item in state['items'] if item['kind'] == 'cottonSeed')
+        build = dict(requestID='build-1', action='build', itemIDs=[seed['id']], product='cottonSeed')
+        state = self.w.run(self.a, '/tower/inventory', build)
+        self.assertNotIn(seed, state['items'])
+        self.assertEqual(self.w.run(self.a, '/tower/inventory', build)['items'], state['items'])
+
+        self.now = 1763193600
+        buy = dict(requestID='buy-1', action='buy', itemIDs=[], merchant='regular',
+                   arrival=self.now, product='recordPlayer')
+        state = self.w.run(self.a, '/tower/inventory', buy)
+        self.assertEqual(sum(item['kind'] == 'recordPlayer' for item in state['items']), 1)
+        with self.assertRaises(RuleError):
+            self.w.run(self.a, '/tower/inventory', dict(buy, requestID='buy-2'))
+        sell = dict(requestID='sell-1', action='sell', itemIDs=[state['items'][0]['id']],
+                    arrival=self.now, merchant='regular')
+        sold = self.w.run(self.a, '/tower/inventory', sell)
+        self.assertEqual(len(sold['items']), len(state['items']) - 1)
+        self.now += 43200
+        self.assertEqual(self.w.run(self.a, '/tower/inventory', buy)['items'], sold['items'])
+        with self.assertRaises(RuleError):
+            self.w.run(self.a, '/tower/inventory', dict(sell, requestID='sell-2', itemIDs=[sold['items'][0]['id']]))
+
     def test_invalid_identity_and_id_reuse(self):
         with self.assertRaises(RuleError):self.w.run('wrong','/state',{})
         self.runop(self.a,'/activity',eventID='one',requestID='same')

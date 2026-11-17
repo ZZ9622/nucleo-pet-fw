@@ -101,7 +101,7 @@ struct ConnectionFields: View {
                 .disabled(store.hardwareBusy || store.bridgeHost.isEmpty || store.bridgeToken.isEmpty || store.needsRecovery)
                 .opacity(store.bridgeToken.isEmpty ? 0.55 : 1)
                 .accessibilityIdentifier("hardware.connect")
-            Text(store.hardwareMessage).font(.system(size: 12)).foregroundStyle(Palette.muted)
+            Text(LocalizedStringKey(store.hardwareMessage)).font(.system(size: 12)).foregroundStyle(Palette.muted)
                 .lineSpacing(3).accessibilityIdentifier("hardware.status")
         }.font(.system(size: 14, design: .monospaced))
             .padding(20).background(.white, in: PixelFrame())
@@ -160,7 +160,7 @@ struct BluetoothConnectionFields: View {
                 .accessibilityIdentifier("bluetooth.disconnect")
             }
             if radio.scanning { ProgressView().tint(Palette.ink) }
-            Text(radio.message).font(.system(size: 12)).foregroundStyle(Palette.muted)
+            Text(LocalizedStringKey(radio.message)).font(.system(size: 12)).foregroundStyle(Palette.muted)
                 .accessibilityIdentifier("bluetooth.status")
             ForEach(radio.devices) { device in
                 Button { Task { await store.connectBluetooth(device.id) } } label: {
@@ -177,7 +177,7 @@ struct BluetoothConnectionFields: View {
                     .accessibilityIdentifier("bluetooth.device.\(device.id.uuidString)")
             }
             if store.hardwareBusy { HStack { ProgressView(); Text("连接并确认宠物记录…").font(.caption) } }
-            Text(store.hardwareMessage).font(.system(size: 12)).foregroundStyle(Palette.muted)
+            Text(LocalizedStringKey(store.hardwareMessage)).font(.system(size: 12)).foregroundStyle(Palette.muted)
                 .accessibilityIdentifier("hardware.status")
         }.padding(20).background(.white, in: PixelFrame())
             .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 2))
@@ -185,11 +185,11 @@ struct BluetoothConnectionFields: View {
 }
 
 struct BluetoothStatusBanner: View {
-    @EnvironmentObject private var store: CompanionStore
+    @State private var showConnection = false
     @ObservedObject var radio: BluetoothTransport
-    var body: some View {
+    @ViewBuilder private var banner: some View {
         if !radio.ready {
-            Button { store.showConnectionSettings() } label: {
+            Button { showConnection = true } label: {
                 HStack {
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
                     Text("蓝牙已断开 · 点此重新连接")
@@ -198,5 +198,15 @@ struct BluetoothStatusBanner: View {
                 }.font(.system(size: 12)).padding(12).background(Palette.sage)
             }.buttonStyle(.plain).accessibilityIdentifier("bluetooth.reconnect")
         }
+    }
+
+    var body: some View {
+        banner
+            .sheet(isPresented: $showConnection) {
+                PendantConnectionSheet(radio: radio)
+            }
+            .onChange(of: radio.ready) { _, ready in
+                if ready { showConnection = false }
+            }
     }
 }

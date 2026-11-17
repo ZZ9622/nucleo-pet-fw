@@ -19,6 +19,29 @@ CATALOG = [
     dict(id='shell', name='散步贝壳', category='souvenir', symbol='sparkles', slot='table'),
 ]
 
+BOX_CATALOG = CATALOG.copy()
+BUILD_KINDS = {'wheatSeed', 'cottonSeed', 'oreSample'}
+BOX_CATALOG += [
+    dict(id='honey', name='蜂蜜饼干', category='food', symbol='birthday.cake', slot=None),
+    dict(id='wheatSeed', name='麦穗种子包', category='building', symbol='leaf', slot=None),
+    dict(id='cottonSeed', name='棉花种子包', category='building', symbol='leaf', slot=None),
+    dict(id='oreSample', name='矿脉样本', category='building', symbol='diamond', slot=None),
+]
+MERCHANT_STOCK = {'regular': {'recordPlayer', 'shellLamp'}, 'mint': {'starWindow', 'nebulaCushion'}}
+CATALOG = BOX_CATALOG + [
+    dict(id='shellLamp', name='贝壳台灯', category='decor', symbol='lamp.table', slot='table'),
+    dict(id='recordPlayer', name='贝壳唱片机', category='decor', symbol='record.circle', slot='table'),
+    dict(id='starWindow', name='星光窗', category='decor', symbol='sparkles', slot='wall'),
+    dict(id='nebulaCushion', name='薄荷星云坐垫', category='decor', symbol='cloud.fill', slot='floor'),
+]
+
+def merchant_active(tier, arrival, now):
+    if tier not in MERCHANT_STOCK or type(arrival) is not int:
+        return False
+    anchor = 1763193600 + (4 * 86400 + 8 * 3600 if tier == 'mint' else 0)
+    period, duration = (1209600, 1800) if tier == 'mint' else (604800, 43200)
+    return (arrival - anchor) % period == 0 and arrival <= now < arrival + duration
+
 class RuleError(Exception):
     pass
 
@@ -97,10 +120,11 @@ class World:
                     # Return current state, not an old inventory snapshot.
                     self.refill(s)
                     db.execute('UPDATE users SET data=? WHERE id=?',(json.dumps(s),user))
-                    return self.view(s)
+                    return {**self.view(s), **json.loads(old['result'])}
+            operation_result = {}
             self.refill(s)
-            def find_item():
-                item = next((i for i in s['items'] if i['id']==b.get('itemID')),None)
+            def find_item(item_id=b.get('itemID')):
+                item = next((i for i in s['items'] if i['id']==item_id),None)
                 if not item: raise RuleError('物品不存在')
                 if item['id'] in s['room'].values(): raise RuleError('请先将物品从小屋收回')
                 if s['pending'] and s['pending'].get('itemID')==item['id']: raise RuleError('物品正在等待挂件确认')
@@ -124,9 +148,52 @@ class World:
                     s['boxes'].append(str(uuid.uuid4()));s['daily']+=1
                     s['activities']=(s['activities']+[event])[-1000:]
                     self.note(s,'散步带回了一个盒子')
-            elif path == '/prepare':
+            elif path == '/tower/open':
+                box = b.get('boxID')
+                if box not in s['boxes'] or (s['pending'] and s['pending'].get('boxID') == box):
+                    raise RuleError('盒子不可用')
+                s['boxes'].remove(box)
+                reward = self.item(secrets.choice(BOX_CATALOG)['id'])
+                s['items'].append(reward)
+                operation_result['openedReward'] = reward
+                self.note(s, '打开盒子，发现了新物品')
+            elif path == '/tower/inventory':
+                action = b.get('action')
+                ids = b.get('itemIDs', [])
+                product = b.get('product')
+                if (not isinstance(ids, list) or len(ids) > 3
+                        or not all(isinstance(i, str) for i in ids) or len(ids) != len(set(ids))):
+                    raise RuleError('物品编号无效')
+                items = [find_item(i) for i in ids]
+                if action == 'build':
+                    if len(items) != 1 or product not in BUILD_KINDS or items[0]['kind'] != product:
+                        raise RuleError('缺少对应的建楼材料')
+                elif action == 'swap':
+                    if len(items) != 3 or product not in BUILD_KINDS or any(i['kind'] not in BUILD_KINDS or i['kind'] == product for i in items):
+                        raise RuleError('请选择三份其他建楼材料')
+                    s['items'].append(self.item(product))
+                elif action in ('buy', 'sell'):
+                    tier, arrival = b.get('merchant'), b.get('arrival')
+                    if not isinstance(tier, str) or not merchant_active(tier, arrival, self.clock()):
+                        raise RuleError('商人已经离开')
+                    if action == 'sell':
+                        if len(items) != 1:
+                            raise RuleError('请选择一件闲置物品')
+                    else:
+                        if items or not isinstance(product, str) or product not in MERCHANT_STOCK[tier]:
+                            raise RuleError('商品不可用')
+                        purchases = s.setdefault('merchantPurchases', {})
+                        if purchases.get(product) == arrival:
+                            raise RuleError('这件商品已经售出')
+                        purchases[product] = arrival
+                        s['items'].append(self.item(product))
+                else:
+                    raise RuleError('未知操作')
+                if ids:
+                    s['items'] = [i for i in s['items'] if i['id'] not in ids]
+            elif path in ('/prepare', '/tower/snack'):
                 if s['pending']: raise RuleError('请先完成上一次挂件操作')
-                kind = b.get('kind')
+                kind = 'food' if path == '/tower/snack' else b.get('kind')
                 pet = str(b.get('petID',''))
                 try: uuid.UUID(pet)
                 except ValueError: raise RuleError('缺少挂件身份')
@@ -134,18 +201,21 @@ class World:
                     box = b.get('boxID')
                     if box not in s['boxes']: raise RuleError('盒子不存在')
                     # Familiar items become more likely gradually, capped at +4 weight.
-                    weights=[3+min(4,s['preferences'].get(c['id'],0)//3) for c in CATALOG]
-                    roll=secrets.randbelow(sum(weights)); chosen=CATALOG[0]
-                    for c,w in zip(CATALOG,weights):
+                    weights=[3+min(4,s['preferences'].get(c['id'],0)//3) for c in BOX_CATALOG]
+                    roll=secrets.randbelow(sum(weights)); chosen=BOX_CATALOG[0]
+                    for c,w in zip(BOX_CATALOG,weights):
                         if roll<w: chosen=c;break
                         roll-=w
                     s['pending']=dict(id=str(uuid.uuid4()),kind=kind,boxID=box,itemID=None,petID=pet,
                                       reward=self.item(chosen['id']), level=1)
                 elif kind == 'food':
                     item=find_item()
-                    if item['kind']!='berry': raise RuleError('这不是食物')
+                    snack = path == '/tower/snack'
+                    if item['kind'] not in (('berry', 'honey') if snack else ('berry',)):
+                        raise RuleError('这不是食物')
+                    level = (3 if item['kind'] == 'berry' else 4) if snack else item['level']
                     s['pending']=dict(id=str(uuid.uuid4()),kind=kind,boxID=None,itemID=item['id'],petID=pet,
-                                      reward=None,level=item['level'])
+                                      reward=None,level=level)
                 else: raise RuleError('操作类型无效')
             elif path == '/settle':
                 p=s['pending']
@@ -155,8 +225,9 @@ class World:
                 if p['kind']=='open':
                     s['boxes'].remove(p['boxID']);s['items'].append(p['reward']);self.note(s,'打开盒子，发现了新物品')
                 else:
+                    kind = next((i['kind'] for i in s['items'] if i['id'] == p['itemID']), 'berry')
                     s['items']=[i for i in s['items'] if i['id']!=p['itemID']]
-                    s['preferences']['berry']=s['preferences'].get('berry',0)+1
+                    s['preferences'][kind]=s['preferences'].get(kind,0)+1
                     self.note(s,'在挂件上确认使用了点心')
                 s['completed']=(s['completed']+[p['id']])[-100:];s['pending']=None
             elif path == '/decorate':
@@ -170,12 +241,14 @@ class World:
                 self.note(s,'为小屋换了一点风景')
             elif path == '/merge':
                 item=find_item()
+                if next(c for c in CATALOG if c['id']==item['kind'])['category'] not in ('decor', 'souvenir'):
+                    raise RuleError('只有装饰和纪念品可以合成')
                 if item['level']>=2: raise RuleError('首版最高为 Lv2')
                 eligible=[i for i in s['items'] if i['kind']==item['kind'] and i['level']==item['level']
                           and i['id'] not in s['room'].values() and (not s['pending'] or i['id']!=s['pending'].get('itemID'))]
                 if len(eligible)<3: raise RuleError('需要三个相同的闲置 Lv1 物品')
                 ids={i['id'] for i in eligible[:3]};s['items']=[i for i in s['items'] if i['id'] not in ids]
-                s['items'].append(self.item(item['kind'],2));self.note(s,'三个小收藏合成了 Lv2')
+                s['items'].append(self.item('shellLamp' if item['kind'] == 'shell' else item['kind'],2));self.note(s,'三个小收藏合成了 Lv2')
             elif path == '/release':
                 item=find_item();s['items'].remove(item)
                 db.execute('INSERT INTO bottles VALUES(?,?,?)',(str(uuid.uuid4()),user,json.dumps(item)))
@@ -189,13 +262,14 @@ class World:
                 self.note(s,'从放生海捞到了一份惊喜')
             else: raise RuleError('未知操作')
             db.execute('UPDATE users SET data=? WHERE id=?',(json.dumps(s),user))
-            result=self.view(s)
-            if path!='/state': db.execute('INSERT INTO requests VALUES(?,?,?,?,?)',(user,rid,path,canonical,'{}'))
+            result = {**self.view(s), **operation_result}
+            if path != '/state':
+                db.execute('INSERT INTO requests VALUES(?,?,?,?,?)', (user, rid, path, canonical, json.dumps(operation_result)))
             return result
     def seed(self,count):
         with self.db() as db:
             for _ in range(count):
-                db.execute('INSERT INTO bottles VALUES(?,?,?)',(str(uuid.uuid4()),'official',json.dumps(self.item(secrets.choice(CATALOG)['id']))))
+                db.execute('INSERT INTO bottles VALUES(?,?,?)',(str(uuid.uuid4()),'official',json.dumps(self.item(secrets.choice(BOX_CATALOG)['id']))))
 
 ACCOUNT_TEST_SUBNETS = tuple(map(ipaddress.ip_network, ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")))
 

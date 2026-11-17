@@ -4,12 +4,13 @@ import Combine
 @main
 struct NucleoPetApp: App {
     @StateObject private var store = CompanionStore()
+    @AppStorage(PomiLanguage.preferenceKey) private var language = PomiLanguage.system
 
     var body: some Scene {
         WindowGroup {
             entryView
                 .environmentObject(store)
-                .environment(\.locale, Locale(identifier: "zh_CN"))
+                .environment(\.locale, language.locale)
                 .preferredColorScheme(.light)
                 #if os(macOS)
                 .frame(minWidth: 390, idealWidth: 430, maxWidth: 520, minHeight: 780)
@@ -36,7 +37,8 @@ struct NucleoPetApp: App {
 struct RootView: View {
     var accountPage: AnyView? = nil
     var selectedPomi: String? = nil
-    var socialPage: AnyView? = nil
+    var signedIn = false
+    var startsInTower = false
     @EnvironmentObject private var store: CompanionStore
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = 0
@@ -56,7 +58,6 @@ struct RootView: View {
                     switch tab {
                     case 1: CottageView().environmentObject(store.world)
                     case 2: PomiSettingsView(accountPage: accountPage)
-                    case 4: socialPage
                     default:
                         VStack(spacing: 0) {
                             if let selectedPomi {
@@ -65,17 +66,14 @@ struct RootView: View {
                                     .foregroundStyle(Palette.muted)
                                     .padding(.top, 8)
                             }
-                            HomeView(requiresPendant: socialPage != nil, radio: store.bluetooth)
+                            HomeView(requiresPendant: signedIn, radio: store.bluetooth)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 HStack(spacing: 0) {
                     tabButton("主页", symbol: "house", index: 0)
-                    tabButton("poyage", symbol: "house.fill", index: 1)
-                    if socialPage != nil {
-                        tabButton("串门", symbol: "storefront", index: 4)
-                    }
+                    tabButton("Poyage", symbol: "house.fill", index: 1)
                     tabButton("Pomi", symbol: "lanyardcard", index: 2, icon: "PomiTabIcon")
                 }
                 .padding(.top, 14).padding(.bottom, 10)
@@ -86,6 +84,7 @@ struct RootView: View {
         }
         .fontDesign(.monospaced)
         .tint(Palette.ink)
+        .onAppear { if startsInTower { tab = 1 } }
         .onChange(of: store.hasEnteredHome) { _, entered in if entered { tab = 0 } }
         .onReceive(timer) { _ in if scenePhase == .active && !AppRuntime.isUITesting { store.refresh() } }
         .onChange(of: scenePhase) { _, phase in
@@ -110,7 +109,7 @@ struct RootView: View {
         }
     }
 
-    private func tabButton(_ title: String, symbol: String, index: Int, icon: String? = nil) -> some View {
+    private func tabButton(_ title: LocalizedStringKey, symbol: String, index: Int, icon: String? = nil) -> some View {
         Button { tab = index } label: {
             VStack(spacing: 5) {
                 Group {

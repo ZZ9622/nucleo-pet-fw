@@ -1,78 +1,207 @@
 import SwiftUI
 import PetDomain
 
+func pomiLocalized(_ key: String, locale: Locale) -> String {
+    guard let language = locale.language.languageCode?.identifier,
+          let path = Bundle.main.path(forResource: language, ofType: "lproj"),
+          let bundle = Bundle(path: path) else { return key }
+    return bundle.localizedString(forKey: key, value: key, table: nil)
+}
+
+enum PomiLanguage: String, CaseIterable {
+    static let preferenceKey = "pomi.appLanguage"
+    case system, chinese, english
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .system: "跟随系统"
+        case .chinese: "简体中文"
+        case .english: "English"
+        }
+    }
+
+    var locale: Locale {
+        switch self {
+        case .chinese: Locale(identifier: "zh-Hans")
+        case .english: Locale(identifier: "en")
+        case .system: Locale(identifier: Locale.preferredLanguages.first {
+            let code = Locale(identifier: $0).language.languageCode?.identifier
+            return code == "zh" || code == "en"
+        } ?? "zh-Hans")
+        }
+    }
+}
+
+struct PomiLanguagePicker: View {
+    @AppStorage(PomiLanguage.preferenceKey) private var language = PomiLanguage.system
+
+    var body: some View {
+        VStack(spacing: 12) {
+            ForEach(PomiLanguage.allCases, id: \.self) { option in
+                Button { language = option } label: {
+                    HStack {
+                        Text(option.title)
+                        Spacer()
+                        if language == option { Image(systemName: "checkmark") }
+                    }
+                    .font(.headline)
+                    .padding(16)
+                    .background(.white, in: PixelFrame())
+                    .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 1.5))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(language == option ? .isSelected : [])
+                .accessibilityIdentifier("pomi.language.\(option.rawValue)")
+            }
+        }
+    }
+}
+
 struct PomiSettingsView: View {
     let accountPage: AnyView?
     @EnvironmentObject private var store: CompanionStore
+    @AppStorage(PomiLanguage.preferenceKey) private var language = PomiLanguage.system
     @State private var page: Page?
 
     private enum Page {
-        case device
-        case account
+        case device, account, language, help
 
-        var title: String { self == .device ? "挂件" : "账户" }
+        var title: LocalizedStringKey {
+            switch self {
+            case .device: "我的 Pomi"
+            case .account: "账户"
+            case .language: "语言 / Language"
+            case .help: "帮助与关于"
+            }
+        }
     }
 
     var body: some View {
-        if let page {
-            VStack(spacing: 0) {
-                HStack {
-                    Button {
-                        self.page = nil
-                    } label: {
-                        Label("返回设置", systemImage: "chevron.left")
+        Group {
+            if let page {
+                VStack(spacing: 0) {
+                    HStack {
+                        Button { self.page = nil } label: {
+                            Label("返回设置", systemImage: "chevron.left")
+                        }
+                        .accessibilityIdentifier("pomi.settings.back")
+                        Spacer()
                     }
-                    .accessibilityIdentifier("pomi.settings.back")
-                    Spacer()
-                    Text(page.title).font(.headline)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    switch page {
+                    case .device: DeviceView()
+                    case .account: accountPage
+                    case .language:
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text(page.title).font(.title.bold())
+                                PomiLanguagePicker()
+                            }.padding(24)
+                        }
+                    case .help: helpPage
+                    }
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(Palette.paper)
-
-                switch page {
-                case .device: DeviceView()
-                case .account: accountPage
-                }
-            }
-            .foregroundStyle(Palette.ink)
-        } else {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("设置").font(.largeTitle.bold())
-                    row("挂件", detail: store.physicalMode ? "活动进度与连接设置" : "体验挂件与连接设置",
-                        symbol: "lanyardcard", destination: .device)
-                        .accessibilityIdentifier("pomi.settings.device")
-                    if accountPage != nil {
-                        row("账户", detail: "账号与好友码", symbol: "person.crop.circle", destination: .account)
+            } else {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        VStack(spacing: 12) {
+                            Text("Pomi").font(.system(.title, design: .monospaced).weight(.heavy))
+                                .accessibilityAddTraits(.isHeader)
+                            Image("PomiSettingsWindow")
+                                .resizable()
+                                .interpolation(.none)
+                                .scaledToFit()
+                                .frame(maxWidth: 218)
+                                .accessibilityHidden(true)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 8)
+                        deviceRow
+                        if accountPage != nil {
+                            row(.account, symbol: "person") { EmptyView() }
                             .accessibilityIdentifier("pomi.settings.account")
+                        }
+                        row(.language, symbol: "globe") {
+                            Text(language.title).font(.caption).foregroundStyle(Palette.muted)
+                        }
+                        row(.help, symbol: "questionmark.bubble") { EmptyView() }
                     }
+                    .frame(maxWidth: 420)
+                    .padding(.horizontal, 22)
+                    .padding(.vertical, 18)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(24)
             }
-            .foregroundStyle(Palette.ink)
+        }
+        .foregroundStyle(Palette.ink)
+    }
+
+    private var deviceRow: some View {
+        PendantSettingsRow(radio: store.bluetooth) { connected in
+            row(.device, symbol: "cat") {
+                Text(connected ? "已连接" : "未连接")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 6).padding(.vertical, 4)
+                    .background(connected ? Color(red: 0.74, green: 0.92, blue: 0.84) : Palette.paper, in: Capsule())
+            }
+            .accessibilityIdentifier("pomi.settings.device")
         }
     }
 
-    private func row(_ title: String, detail: String, symbol: String, destination: Page) -> some View {
-        Button {
-            page = destination
-        } label: {
-            HStack(spacing: 14) {
-                Image(systemName: symbol).font(.title3)
-                    .frame(width: 30)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.headline)
-                    Text(detail).font(.caption).foregroundStyle(Palette.muted)
-                }
-                Spacer()
-                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Palette.muted)
+    private func row(_ destination: Page, symbol: String, @ViewBuilder detail: () -> some View) -> some View {
+        Button { page = destination } label: {
+            HStack(spacing: 10) {
+                Image(systemName: symbol).font(.title3).frame(width: 25)
+                Text(destination.title).font(.headline)
+                Spacer(minLength: 4)
+                detail()
+                Image(systemName: "chevron.right").font(.caption)
             }
-            .padding(16)
-            .background(Palette.room, in: PixelFrame())
-            .contentShape(Rectangle())
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .frame(minHeight: 52)
+            .background(Palette.sage, in: RoundedRectangle(cornerRadius: 14))
+            .contentShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+    }
+
+    private var helpPage: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("帮助与关于").font(.title.bold())
+                DisclosureGroup("如何连接挂件？") {
+                    Text("给挂件通电，在「我的 Pomi」打开连接设置，然后搜索并选择附近的挂件。")
+                        .padding(.vertical, 8)
+                }
+                DisclosureGroup("找不到挂件怎么办？") {
+                    Text("确认 iPhone 已打开蓝牙并允许 Pomi 使用蓝牙。把挂件靠近手机，并在其他手机上断开此挂件后重试。")
+                        .padding(.vertical, 8)
+                }
+                DisclosureGroup("仓库同步失败怎么办？") {
+                    Text("检查账号服务地址与网络连接。如果服务运行在 Mac 上，请让 iPhone 和 Mac 连接同一个 Wi-Fi。")
+                        .padding(.vertical, 8)
+                }
+                if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+                    Text("版本 \(version)").font(.caption).foregroundStyle(Palette.muted)
+                }
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+private struct PendantSettingsRow<Content: View>: View {
+    @EnvironmentObject private var store: CompanionStore
+    @ObservedObject var radio: BluetoothTransport
+    @ViewBuilder var content: (Bool) -> Content
+
+    var body: some View {
+        content(store.physicalMode && !store.physicalBlocked && store.lastHardwareRead != nil
+                && (store.connectionKind == .usb || radio.ready))
     }
 }
 
@@ -181,7 +310,7 @@ private struct PetNameEditor: View {
                 .buttonStyle(QuietButtonStyle())
                 .disabled(store.hardwareBusy || store.needsRecovery)
                 .accessibilityIdentifier("pet.name.save")
-            if !message.isEmpty { Text(message).font(.caption).accessibilityIdentifier("pet.name.status") }
+            if !message.isEmpty { Text(LocalizedStringKey(message)).font(.caption).accessibilityIdentifier("pet.name.status") }
             Text("最多 24 个字符。名字保存在这台手机，板子仍使用同一只宠物的身份。")
                 .font(.caption).foregroundStyle(Palette.muted)
         }.padding(18).background(Palette.sage, in: PixelFrame())
@@ -213,7 +342,7 @@ private struct LiveMotionPanel: View {
                     } else if !motion.isFresh {
                         Text("未收到传感器新数据，请检查四根连接线")
                     } else {
-                        Text(motion.title).font(.title2.bold())
+                        Text(LocalizedStringKey(motion.title)).font(.title2.bold())
                             .accessibilityIdentifier("motion.live.status")
                         Text("X \(motion.xMg) · Y \(motion.yMg) · Z \(motion.zMg) mg")
                             .font(.system(size: 12, design: .monospaced))

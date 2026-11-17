@@ -17,7 +17,17 @@ public struct PomiCatalogEntry: Codable, Identifiable, Equatable {
         .init(id:"cushion",name:"云朵坐垫",category:"decor",symbol:"square.fill",slot:"floor"),
         .init(id:"plant",name:"窗边小草",category:"decor",symbol:"leaf.fill",slot:"corner"),
         .init(id:"picture",name:"海边挂画",category:"decor",symbol:"photo",slot:"wall"),
-        .init(id:"shell",name:"散步贝壳",category:"souvenir",symbol:"sparkles",slot:"table")]
+        .init(id:"shell",name:"散步贝壳",category:"souvenir",symbol:"sparkles",slot:"table"),
+        .init(id:"honey",name:"蜂蜜饼干",category:"food",symbol:"birthday.cake",slot:nil),
+        .init(id:"wheatSeed",name:"麦穗种子包",category:"building",symbol:"leaf",slot:nil),
+        .init(id:"cottonSeed",name:"棉花种子包",category:"building",symbol:"leaf",slot:nil),
+        .init(id:"oreSample",name:"矿脉样本",category:"building",symbol:"diamond",slot:nil),
+        .init(id:"shellLamp",name:"贝壳台灯",category:"decor",symbol:"lamp.table",slot:"table"),
+        .init(id:"recordPlayer",name:"贝壳唱片机",category:"decor",symbol:"record.circle",slot:"table"),
+        .init(id:"starWindow",name:"星光窗",category:"decor",symbol:"sparkles",slot:"wall"),
+        .init(id:"nebulaCushion",name:"薄荷星云坐垫",category:"decor",symbol:"cloud.fill",slot:"floor")]
+    public static let buildKinds = ["wheatSeed", "cottonSeed", "oreSample"]
+    public static let boxDrops = initial.filter { !["shellLamp", "recordPlayer", "starWindow", "nebulaCushion"].contains($0.id) }
 }
 public struct PomiMoment: Codable, Identifiable, Equatable {
     public var id: String
@@ -37,6 +47,8 @@ public struct PomiOperation: Codable, Equatable {
     }
 }
 public struct PomiInventory: Codable, Equatable {
+    public var openedReward: PomiItem?
+    public var towerRequestIDs: Set<String>?
     public var activitySync: ActivitySyncInfo? = nil
     public var catalog = PomiCatalogEntry.initial
     public var boxes: [String] = []
@@ -54,10 +66,11 @@ public struct PomiInventory: Codable, Equatable {
         log=Array(log.prefix(100))
     }
     public mutating func merge(_ id: String) throws {
-        guard let item=items.first(where:{$0.id==id}),item.level==1 else { throw PhysicalError.message("首版最高为 Lv2") }
+        guard let item=items.first(where:{$0.id==id}),item.level==1,["decor", "souvenir"].contains(entry(item).category),
+              !room.values.contains(id),pending?.itemID != id else { throw PhysicalError.message("首版最高为 Lv2") }
         let matches=items.filter { $0.kind==item.kind && $0.level==1 && !room.values.contains($0.id) && pending?.itemID != $0.id }
         guard matches.count>=3 else { throw PhysicalError.message("需要三个相同的闲置 Lv1 物品") }
-        let ids=Set(matches.prefix(3).map(\.id));items.removeAll { ids.contains($0.id) };items.append(.init(kind:item.kind,level:2))
+        let ids=Set(matches.prefix(3).map(\.id));items.removeAll { ids.contains($0.id) };items.append(.init(kind:item.kind == "shell" ? "shellLamp" : item.kind,level:2))
         note("三个小收藏合成了 Lv2")
     }
     public mutating func decorate(_ id: String?, slot: String) throws {

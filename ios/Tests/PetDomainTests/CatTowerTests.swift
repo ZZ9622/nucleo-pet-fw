@@ -3,6 +3,49 @@ import XCTest
 
 final class CatTowerTests: XCTestCase {
     let start = Date(timeIntervalSince1970: 1_000)
+    func testOneUnfinishedFloorAndMaterialsMustSettleOnce() throws {
+        var tower = CatTower(now: start)
+        XCTAssertTrue(tower.unlockFloor(now: start))
+        XCTAssertEqual(tower.unfinishedFloor, 2)
+        tower.refresh(now: start.addingTimeInterval(3600))
+        XCTAssertFalse(tower.unlockFloor(now: start.addingTimeInterval(3600)))
+        XCTAssertTrue(tower.finishFloor(.garden))
+        XCTAssertTrue(tower.unlockFloor(now: start.addingTimeInterval(3600)))
+        XCTAssertFalse(tower.finishFloor(.cottonGarden))
+        let action = CatTower.InventoryAction(owner: "test", kind: .build,
+                                              itemIDs: ["cotton"], product: "cottonSeed", facility: .cottonGarden)
+        XCTAssertTrue(tower.prepareInventoryAction(action))
+        tower = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(tower))
+        XCTAssertEqual(tower.pendingInventoryAction, action)
+        tower.completeInventoryAction("wrong-receipt")
+        XCTAssertNil(tower.facilities[3])
+        tower.completeInventoryAction(action.requestID)
+        tower.completeInventoryAction(action.requestID)
+        XCTAssertEqual(tower.facilities[3], .cottonGarden)
+        XCTAssertNil(tower.unfinishedFloor)
+    }
+
+    func testMerchantEscrowRefundAndPomiLocationRoundTrip() throws {
+        var tower = CatTower(now: start)
+        let purchase = CatTower.InventoryAction(owner: "test", kind: .buy,
+                                                product: "shellLamp", merchant: .regular, arrival: 1, coins: 80)
+        XCTAssertTrue(tower.prepareInventoryAction(purchase))
+        XCTAssertEqual(tower.coins, 20)
+        tower.rejectInventoryAction(purchase.requestID)
+        tower.rejectInventoryAction(purchase.requestID)
+        XCTAssertEqual(tower.coins, 100)
+        XCTAssertTrue(tower.unlockFloor(now: start))
+        tower.updatePomi(residence: .phone, revision: 1, now: start)
+        let first = try XCTUnwrap(tower.pomiLocation)
+        XCTAssertTrue([-1, 0, 1].contains(first))
+        var saved = try JSONDecoder().decode(CatTower.self, from: JSONEncoder().encode(tower))
+        saved.updatePomi(residence: .phone, revision: 1, now: start.addingTimeInterval(10))
+        XCTAssertEqual(saved.pomiLocation, first)
+        saved.updatePomi(residence: .phone, revision: 1, now: start.addingTimeInterval(76))
+        XCTAssertNotEqual(saved.pomiLocation, first)
+        XCTAssertNotEqual(saved.pomiLocation, 2)
+    }
+
     func testStarterRestaurantAndPaidExpansion() throws {
         var tower = CatTower(now: start)
         XCTAssertEqual(tower.facilities[1], .restaurant)

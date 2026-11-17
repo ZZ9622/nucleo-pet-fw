@@ -67,15 +67,15 @@ struct QuietButtonStyle: ButtonStyle {
 struct Eyebrow: View {
     let text: String
     var body: some View {
-        Text(text).font(.system(size: 10, weight: .semibold, design: .monospaced))
+        Text(LocalizedStringKey(text)).font(.system(size: 10, weight: .semibold, design: .monospaced))
             .tracking(2).foregroundStyle(Palette.muted)
     }
 }
 
 struct PageHeader: View {
     let eyebrow: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Eyebrow(text: eyebrow)

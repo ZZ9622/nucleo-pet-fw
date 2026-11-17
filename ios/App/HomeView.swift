@@ -137,7 +137,7 @@ struct HomeView: View {
                             TinyDevice(session: store.session).scaleEffect(0.72).frame(height: 145)
                         }
                         Spacer(minLength: 0)
-                        Text(petCaption)
+                        Text(LocalizedStringKey(petCaption))
                             .font(.system(size: 12)).foregroundStyle(Palette.muted).padding(.bottom, 20)
                     }.frame(maxWidth: .infinity)
                     #if DEBUG && targetEnvironment(simulator)
@@ -164,7 +164,7 @@ struct HomeView: View {
                             Spacer()
                             Image(systemName: "sparkle").foregroundStyle(Palette.coral)
                         }
-                        Text(store.response ?? (isHere ? "在这里陪它看看小屋；照顾互动请在挂件上进行。" : "接它来手机小屋，带着同一份心情和精力。"))
+                        Text(LocalizedStringKey(store.response ?? (isHere ? "在这里陪它看看小屋；照顾互动请在挂件上进行。" : "接它来手机小屋，带着同一份心情和精力。")))
                             .font(.system(size: 13)).foregroundStyle(Palette.muted)
                             .frame(minHeight: 19, alignment: .leading)
                             .accessibilityAddTraits(.updatesFrequently)
@@ -177,7 +177,7 @@ struct HomeView: View {
                     }.padding(18).background(.white.opacity(0.65), in: PixelFrame(cornerRadius: 22))
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(store.physicalMode ? (store.bluetooth.ready ? store.liveMessage : "蓝牙未连接 · 显示上次记录") : "独立预览数据").font(.caption)
+                        Text(LocalizedStringKey(store.physicalMode ? (store.bluetooth.ready ? store.liveMessage : "蓝牙未连接 · 显示上次记录") : "独立预览数据")).font(.caption)
                         if let date=store.lastHardwareRead,store.physicalMode { Text("上次更新 \(date.formatted(date: .omitted,time: .standard))").font(.caption2) }
                         Text("喂食、摸摸、玩耍和睡眠请在挂件上操作").font(.caption).foregroundStyle(Palette.muted)
                     }
@@ -244,7 +244,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: symbol).foregroundStyle(tint).font(.system(size: 12))
-                Text(title).font(.system(size: 12, weight: .medium))
+                Text(LocalizedStringKey(title)).font(.system(size: 12, weight: .medium))
                 Spacer(minLength: 4)
                 Text("\(value)").font(.system(size: 18, weight: .semibold, design: .monospaced)).monospacedDigit()
             }
@@ -264,12 +264,34 @@ struct HomeView: View {
 
 private struct MissingPomiNotice: View {
     let connect: () -> Void
+    @Environment(\.locale) private var locale
 
     var body: some View {
         VStack(spacing: 14) {
             Image("MintWantedHome")
                 .resizable()
                 .scaledToFit()
+                .overlay {
+                    GeometryReader { geometry in
+                        let scale = geometry.size.width / 670
+                        Image("PomiTabIcon")
+                            .resizable()
+                            .interpolation(.none)
+                            .frame(width: 304 * scale, height: 299 * scale)
+                            .position(x: 335 * scale, y: 495 * scale)
+
+                        if locale.language.languageCode?.identifier == "en" {
+                            Text("Find Pomi")
+                                .font(.system(size: 42 * scale, weight: .bold, design: .monospaced))
+                                .foregroundStyle(Color(red: 0.05, green: 0.26, blue: 0.68))
+                                .frame(width: 300 * scale, height: 58 * scale)
+                                .background(Color(red: 0.97, green: 0.96, blue: 0.92))
+                                .position(x: 335 * scale, y: 280 * scale)
+                        }
+                    }
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
+                }
                 .frame(maxWidth: 220, maxHeight: .infinity)
                 .accessibilityLabel("WANTED，寻 Pomi 启事")
 
@@ -289,7 +311,7 @@ private struct MissingPomiNotice: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func unknownStat(_ title: String, identifier: String) -> some View {
+    private func unknownStat(_ title: LocalizedStringKey, identifier: String) -> some View {
         VStack(spacing: 4) {
             Text(title).font(.subheadline)
             Text("未知").font(.headline)
@@ -299,7 +321,7 @@ private struct MissingPomiNotice: View {
         .background(Palette.paper, in: PixelFrame())
         .overlay(PixelFrame().stroke(Palette.ink, lineWidth: 1))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(title)未知")
+        .accessibilityLabel(Text(title) + Text(" · ") + Text("未知"))
         .accessibilityIdentifier(identifier)
     }
 }

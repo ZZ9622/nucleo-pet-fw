@@ -37,6 +37,50 @@ public struct CatTower: Codable, Equatable {
             return "\(input.map { "1 " + $0.title } ?? "自动采集") → \(output.map { "2 " + $0.title } ?? "24 喵币")"
         }
     }
+    public enum Merchant: String, Codable {
+        case regular, mint
+
+        // Saturday 08:00 UTC every week; mint merchant every second Wednesday at 16:00 UTC.
+        public var startOffset: Int { self == .regular ? 0 : 4 * 86400 + 8 * 3600 }
+        public var duration: Int { self == .regular ? 43200 : 1800 }
+        public var period: Int { self == .regular ? 604800 : 1209600 }
+        public var title: String { self == .regular ? "流浪商人" : "喵星薄荷商人" }
+        public var stock: [(kind: String, price: Int)] {
+            self == .regular ? [("recordPlayer", 480), ("shellLamp", 360)] : [("starWindow", 1400), ("nebulaCushion", 1800)]
+        }
+        public func lastArrival(at date: Date) -> Int {
+            let anchor = 1763193600 + startOffset
+            let epoch = Int(date.timeIntervalSince1970)
+            return anchor + Int(floor(Double(epoch - anchor) / Double(period))) * period
+        }
+    }
+
+    public struct InventoryAction: Codable, Equatable {
+        public enum Kind: String, Codable { case build, sell, buy, swap }
+        public let requestID: String
+        public let owner: String
+        public let kind: Kind
+        public let itemIDs: [String]
+        public let product: String?
+        public let facility: Facility?
+        public let merchant: Merchant?
+        public let arrival: Int?
+        public let coins: Int
+
+        public init(owner: String, kind: Kind, itemIDs: [String] = [], product: String? = nil,
+                    facility: Facility? = nil, merchant: Merchant? = nil, arrival: Int? = nil, coins: Int = 0) {
+            requestID = UUID().uuidString
+            self.owner = owner
+            self.kind = kind
+            self.itemIDs = itemIDs
+            self.product = product
+            self.facility = facility
+            self.merchant = merchant
+            self.arrival = arrival
+            self.coins = coins
+        }
+    }
+
     public enum Personality: String, Codable, CaseIterable {
         case diligent, careful, social
         public var title: String { switch self { case .diligent: return "勤快"; case .careful: return "细心"; case .social: return "合群" } }
@@ -77,6 +121,102 @@ public struct CatTower: Codable, Equatable {
     private var constructionCosts: [Int: Int] = [:]
     private var lastProduction: Date
     private var arrivals = 0
+    public private(set) var pendingInventoryAction: InventoryAction?
+    public private(set) var pomiLocation: Int?
+    private var lastPomiReturn: UInt64?
+    private var nextPomiWalk: Date?
+    public private(set) var merchantTrackingSince = Date()
+    public private(set) var merchantSeen: [Merchant: Int] = [:]
+    public private(set) var merchantTrades: [Merchant: Int] = [:]
+    public private(set) var purchasedStock: [String: Int] = [:]
+
+    public var unfinishedFloor: Int? { (2...max(2, floors)).first { $0 <= floors && facilities[$0] == nil } }
+    public mutating func seeMerchant(_ merchant: Merchant, arrival: Int) {
+        merchantSeen[merchant] = arrival
+    }
+
+    public var unlockedPomiLocations: [Int] { [-1, 0] + facilities.keys.sorted() }
+
+    public func requiredItem(for facility: Facility, floor: Int) -> String? {
+        switch facility {
+        case .garden: floor == 2 ? nil : "wheatSeed"
+        case .cottonGarden: "cottonSeed"
+        case .mine: "oreSample"
+        default: nil
+        }
+    }
+
+    @discardableResult public mutating func unlockFloor(now: Date = Date()) -> Bool {
+        refresh(now: now)
+        let cost = expansionCost
+        guard pendingInventoryAction == nil, unfinishedFloor == nil,
+              floors < Self.maximumFloors, coins >= cost else { return false }
+        coins -= cost
+        floors += 1
+        constructionCosts[floors] = cost
+        return true
+    }
+
+    @discardableResult public mutating func finishFloor(_ facility: Facility) -> Bool {
+        guard let floor = unfinishedFloor, requiredItem(for: facility, floor: floor) == nil,
+              pendingInventoryAction == nil else { return false }
+        return finishFloor(facility, at: floor)
+    }
+
+    private mutating func finishFloor(_ facility: Facility, at floor: Int) -> Bool {
+        guard canBuild(facility), coins >= facility.fee else { return false }
+        coins -= facility.fee
+        constructionCosts[floor, default: 0] += facility.fee
+        facilities[floor] = facility
+        return true
+    }
+
+    @discardableResult public mutating func prepareInventoryAction(_ action: InventoryAction) -> Bool {
+        guard pendingInventoryAction == nil else { return false }
+        if action.kind == .build {
+            guard let floor = unfinishedFloor, let facility = action.facility,
+                  action.itemIDs.count == 1, requiredItem(for: facility, floor: floor) != nil,
+                  canBuild(facility), coins >= facility.fee else { return false }
+        }
+        if action.kind == .buy {
+            guard action.coins > 0, coins >= action.coins else { return false }
+            coins -= action.coins
+        }
+        pendingInventoryAction = action
+        return true
+    }
+
+    public mutating func rejectInventoryAction(_ id: String) {
+        guard let action = pendingInventoryAction, action.requestID == id else { return }
+        if action.kind == .buy { coins += action.coins }
+        pendingInventoryAction = nil
+    }
+
+    public mutating func completeInventoryAction(_ id: String) {
+        guard let action = pendingInventoryAction, action.requestID == id else { return }
+        if action.kind == .build, let facility = action.facility, let floor = unfinishedFloor {
+            guard finishFloor(facility, at: floor) else { return }
+        }
+        if action.kind == .sell { coins += action.coins }
+        if let merchant = action.merchant, let arrival = action.arrival {
+            merchantTrades[merchant] = arrival
+            if action.kind == .buy, let product = action.product { purchasedStock[product] = arrival }
+        }
+        pendingInventoryAction = nil
+    }
+
+    public mutating func updatePomi(residence: Residence, revision: UInt64, now: Date = Date()) {
+        guard residence == .phone else { return }
+        if lastPomiReturn != revision || !unlockedPomiLocations.contains(pomiLocation ?? Int.min) {
+            lastPomiReturn = revision
+            pomiLocation = unlockedPomiLocations.randomElement()
+            nextPomiWalk = now.addingTimeInterval(75)
+        } else if now >= nextPomiWalk ?? .distantPast {
+            pomiLocation = unlockedPomiLocations.filter { $0 != pomiLocation }.randomElement()
+            nextPomiWalk = now.addingTimeInterval(75)
+        }
+    }
+
     public var lobbyResidents: [Resident] { residents.filter { $0.floor == nil } }
     public static let visitInterval: TimeInterval = 10 * 60
     /// A uniform integer in 0..<100 yields exactly 70/25/5 initial skill weights.
@@ -91,7 +231,7 @@ public struct CatTower: Codable, Equatable {
     public init(now: Date = Date()) {
         residents = [Resident(name: "麦麦", coat: 0, floor: 1)]
         visitor = Resident(name: "芝麻", coat: 1, experience: Self.initialExperience(skillRoll: Int.random(in: 0..<100)))
-        nextVisit = now; lastProduction = now
+        nextVisit = now; lastProduction = now; merchantTrackingSince = now
     }
     public func canBuild(_ facility: Facility) -> Bool {
         facility.prerequisite.map { facilities.values.contains($0) } ?? true
@@ -170,13 +310,13 @@ public struct CatTower: Codable, Equatable {
     @discardableResult public mutating func expand(facility: Facility = .garden, now: Date = Date()) -> Bool {
         refresh(now: now)
         let cost = expansionCost + facility.fee
-        guard floors < Self.maximumFloors, canBuild(facility), coins >= cost else { return false }
+        guard pendingInventoryAction == nil, unfinishedFloor == nil, floors < Self.maximumFloors, canBuild(facility), coins >= cost else { return false }
         coins -= cost; floors += 1; facilities[floors] = facility; constructionCosts[floors] = cost
         return true
     }
     @discardableResult public mutating func remodel(_ floor: Int, facility: Facility, now: Date = Date()) -> Bool {
         refresh(now: now)
-        guard floor > 1, floor <= floors, facilities[floor] != facility, canBuild(facility), coins >= 40 + facility.fee else { return false }
+        guard pendingInventoryAction == nil, floor > 1, floor <= floors, facilities[floor] != facility, canBuild(facility), coins >= 40 + facility.fee else { return false }
         // A prerequisite may not be removed while a dependent building still uses it.
         if let old = facilities[floor], facilities.values.contains(where: { $0.prerequisite == old }), facilities.values.filter({ $0 == old }).count == 1 { return false }
         coins -= 40 + facility.fee; facilities[floor] = facility
@@ -196,6 +336,7 @@ public struct CatTower: Codable, Equatable {
     }
     public var demolitionRefund: Int { constructionCosts[floors, default: 0] / 2 }
     public func demolitionBlockReason(_ floor: Int) -> String? {
+        guard pendingInventoryAction == nil else { return "请先确认待处理的仓库交易" }
         guard floor > 1 else { return "第一层赠送餐厅不能拆除" }
         guard floor == floors else { return "只能从最高层开始拆除" }
         if let old = facilities[floor],
@@ -219,7 +360,7 @@ public struct CatTower: Codable, Equatable {
         floors -= 1
         return true
     }
-    private enum CodingKeys: String, CodingKey { case floors, residents, visitor, nextVisit, arrivals, coins, facilities, inventory, progress, lastProduction, constructionCosts, workerProgress }
+    private enum CodingKeys: String, CodingKey { case floors, residents, visitor, nextVisit, arrivals, coins, facilities, inventory, progress, lastProduction, constructionCosts, workerProgress, pendingInventoryAction, pomiLocation, lastPomiReturn, nextPomiWalk, merchantTrackingSince, merchantSeen, merchantTrades, purchasedStock }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         floors = try c.decode(Int.self, forKey: .floors)
@@ -233,6 +374,14 @@ public struct CatTower: Codable, Equatable {
         progress = try c.decodeIfPresent([Int: Double].self, forKey: .progress) ?? [:]
         lastProduction = try c.decodeIfPresent(Date.self, forKey: .lastProduction) ?? Date()
         constructionCosts = try c.decodeIfPresent([Int: Int].self, forKey: .constructionCosts) ?? [:]
+        pendingInventoryAction = try c.decodeIfPresent(InventoryAction.self, forKey: .pendingInventoryAction)
+        pomiLocation = try c.decodeIfPresent(Int.self, forKey: .pomiLocation)
+        lastPomiReturn = try c.decodeIfPresent(UInt64.self, forKey: .lastPomiReturn)
+        nextPomiWalk = try c.decodeIfPresent(Date.self, forKey: .nextPomiWalk)
+        merchantTrackingSince = try c.decodeIfPresent(Date.self, forKey: .merchantTrackingSince) ?? Date()
+        merchantSeen = try c.decodeIfPresent([Merchant: Int].self, forKey: .merchantSeen) ?? [:]
+        merchantTrades = try c.decodeIfPresent([Merchant: Int].self, forKey: .merchantTrades) ?? [:]
+        purchasedStock = try c.decodeIfPresent([String: Int].self, forKey: .purchasedStock) ?? [:]
         // Preserve old cats and floors, moving excess occupants into the lobby.
         var occupied: [Int: Int] = [:]
         for i in residents.indices {

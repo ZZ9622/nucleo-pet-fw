@@ -8,6 +8,16 @@ static ActivityClockPlan clock_plan;
 void pet_activity_reset_runtime(void) { remainder_ms=0;clock_ready=false;clock_fraction=0; }
 bool pet_activity_clock_ready(void) { return clock_ready; }
 uint32_t pet_activity_clock_next(void) { return clock_ready?clock_next:0; }
+uint8_t pet_activity_merchant(void)
+{
+    /* Same UTC windows as CatTower.Merchant and the account server. */
+    const uint32_t regular_anchor = 1763193600U;
+    const uint32_t mint_anchor = regular_anchor + 4U * 86400U + 8U * 3600U;
+    if (!clock_ready) { return 0U; }
+    if (clock_epoch >= mint_anchor && (clock_epoch - mint_anchor) % 1209600U < 1800U) { return 2U; }
+    if (clock_epoch >= regular_anchor && (clock_epoch - regular_anchor) % 604800U < 43200U) { return 1U; }
+    return 0U;
+}
 uint32_t pet_activity_limit(uint32_t profile) { return profile==3U?6U:3U; }
 uint32_t pet_activity_target(uint32_t profile,uint32_t earned)
 {

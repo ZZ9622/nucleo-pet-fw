@@ -16,6 +16,7 @@ public enum BoardWire {
     public static func request(path: String, requestID: UUID, intent: PhysicalIntent? = nil, petID: UUID? = nil) throws -> Data {
         let commands = ["/device":"STATUS", "/handoff/take/prepare":"TAKE_PREPARE", "/handoff/take/commit":"TAKE_COMMIT",
                         "/items/open":"ITEM_OPEN", "/items/food1":"ITEM_FOOD1", "/items/food2":"ITEM_FOOD2",
+                        "/items/food3":"ITEM_SNACK_H", "/items/food4":"ITEM_SNACK_E",
                         "/handoff/return/stage":"RETURN_STAGE", "/handoff/return/commit":"RETURN_COMMIT"]
         let components=path.split(separator:"/")
         var activityValues: [UInt32]?
@@ -62,6 +63,7 @@ public enum BoardWire {
             let v: Int; let requestID: String; let ok: Bool; let error: String
             let petID: String; let phase: UInt32; let revision: UInt32; let transferID: String
             let payloadHash: UInt32; let state: [UInt32]
+            let smallSnacks: Bool?
             let motion: MotionTelemetry?
             let activity: ActivityReward?
             let itemOperationID: String?; let itemStatus: UInt32?; let itemKind: UInt32?; let itemLevel: UInt32?
@@ -71,6 +73,7 @@ public enum BoardWire {
         let state = try state(raw.state)
         var value = BoardRecord(v: raw.v, ok: raw.ok, error: raw.error, petID: try uuid(raw.petID),
             phase: raw.phase, revision: raw.revision, transferID: try uuid(raw.transferID), payloadHash: raw.payloadHash, state: state)
+        value.smallSnacks = raw.smallSnacks
         value.motion = raw.motion
         value.activity = raw.activity
         if let op=raw.itemOperationID { value.itemOperationID=try uuid(op) }

@@ -19,7 +19,7 @@ static bool record_read(uint32_t address, PetHandoff *h,uint32_t *sequence)
     *h=(PetHandoff){.phase=w[3],.revision=w[4],.payload_hash=w[9],.pet=p};
     for(unsigned i=0;i<4;++i) { h->transaction[i]=w[5+i]; }
     if(w[1]>=3) {
-        if(w[28]>2 || w[29]>2 || w[30]>2) { return false; }
+        if(w[28]>2 || w[29]>2 || w[30]>4) { return false; }
         for(unsigned i=0;i<4;++i) { h->item_id[i]=w[24+i]; }
         h->item_status=w[28];h->item_kind=w[29];h->item_level=w[30];
     }

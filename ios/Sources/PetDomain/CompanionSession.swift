@@ -180,12 +180,18 @@ public struct CompanionSession: Codable, Equatable {
 #if DEBUG
 extension CompanionSession {
     /// Only the separate development pet uses this; real state comes from board receipts.
-    public mutating func simulateBoardItem(open:Bool,level:Int) throws {
+    public mutating func simulateBoardItem(open:Bool,level:Int, gain: UInt8 = UInt8.random(in: 1...2)) throws {
         guard residence == .device,pendingTransfer==nil else { throw CompanionError.wrongResidence }
         if open {
             guard state.energy>=10 else { throw PhysicalError.message("精力不足 10") }
             state.energy-=10
-        } else { state.energy=UInt8(min(100,Int(state.energy)+(level==2 ? 50:30))) }
+        } else if level == 3 {
+            state.happiness = min(100, state.happiness + min(2, gain))
+        } else if level == 4 {
+            state.energy = min(100, state.energy + min(2, gain))
+        } else {
+            state.energy=UInt8(min(100,Int(state.energy)+(level==2 ? 50:30)))
+        }
     }
 }
 #endif

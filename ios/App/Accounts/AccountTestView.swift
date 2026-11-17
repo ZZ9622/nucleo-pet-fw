@@ -6,6 +6,7 @@ import UIKit
 struct AccountTestView: View {
     var onAuthenticated: ((String, URL) -> Void)?
     var onLogout: (() -> Void)?
+    var onOpenLocalTower: (() -> Void)?
     var onContinueWithoutAccount: (() -> Void)?
     var sessionURL: URL?
     @AppStorage("pomi.accountServiceURL") private var serviceAddress = AccountAPI.defaultAddress
@@ -14,8 +15,8 @@ struct AccountTestView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showingRegistration = false
+    @State private var showingLanguage = false
     @State private var pomiID = ""
-    @State private var copiedFriendCode: String?
     @State private var profile: AccountProfile?
     @State private var busy = false
     @State private var message = ""
@@ -51,32 +52,7 @@ struct AccountTestView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Eyebrow(text: "我的账号")
                         Text(profile.email).font(.subheadline).textSelection(.enabled)
-                        HStack {
-                            Text("好友码")
-                                .font(.caption)
-                                .foregroundStyle(Palette.muted)
-                            Spacer()
-                            Button {
-                                UIPasteboard.general.string = profile.friendCode
-                                copiedFriendCode = profile.friendCode
-                            } label: {
-                                Label(copiedFriendCode == profile.friendCode ? "已复制" : "复制",
-                                      systemImage: copiedFriendCode == profile.friendCode ? "checkmark" : "doc.on.doc")
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 8)
-                                    .frame(minHeight: 44)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(copiedFriendCode == profile.friendCode ? "已复制好友码" : "复制好友码")
-                        }
-                        Text(profile.friendCode)
-                            .font(.system(.title3, design: .monospaced).weight(.semibold))
-                            .tracking(1)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                            .textSelection(.enabled)
-                            .accessibilityLabel("好友码 \(profile.friendCode)")
+
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -150,7 +126,7 @@ struct AccountTestView: View {
                     ProgressView("正在读取账号…")
                 }
                 if !message.isEmpty {
-                    Text(message).font(.footnote).foregroundStyle(Palette.muted)
+                    Text(LocalizedStringKey(message)).font(.footnote).foregroundStyle(Palette.muted)
                 }
                 Eyebrow(text: "账号测试")
                     .frame(maxWidth: .infinity)
@@ -184,7 +160,29 @@ struct AccountTestView: View {
             PixelGrid().ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    Eyebrow(text: "POMI / LITTLE COMPANION")
+                    HStack {
+                        Eyebrow(text: "POMI / LITTLE COMPANION")
+                        Spacer()
+                        Button { showingLanguage = true } label: {
+                            Label("语言 / Language", systemImage: "globe").font(.caption.bold())
+                        }
+                        .accessibilityIdentifier("login.language")
+                    }
+                    .sheet(isPresented: $showingLanguage) {
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack {
+                                Text("语言 / Language").font(.title2.bold())
+                                Spacer()
+                                Button("关闭") { showingLanguage = false }
+                            }
+                            PomiLanguagePicker()
+                            Spacer()
+                        }
+                        .padding(24)
+                        .background(Palette.paper)
+                        .foregroundStyle(Palette.ink)
+                        .presentationDetents([.medium, .large])
+                    }
                     TinyDevice(session: CompanionSession())
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
@@ -231,13 +229,18 @@ struct AccountTestView: View {
                                 .buttonStyle(QuietButtonStyle())
                         }
                         if !message.isEmpty {
-                            Text(message).font(.footnote).foregroundStyle(Palette.muted)
+                            Text(LocalizedStringKey(message)).font(.footnote).foregroundStyle(Palette.muted)
                         }
                     }
                     .padding(16)
                     .background(.white, in: PixelFrame())
                     .overlay(PixelFrame().stroke(Palette.line, lineWidth: 1))
                     .disabled(busy)
+                    if !showingRegistration, let onOpenLocalTower {
+                        Button("直接进入猫塔", action: onOpenLocalTower)
+                            .buttonStyle(QuietButtonStyle())
+                            .disabled(busy)
+                    }
                     if !showingRegistration, let onContinueWithoutAccount {
                         Button("不登录，连接挂件", action: onContinueWithoutAccount)
                             .buttonStyle(QuietButtonStyle())

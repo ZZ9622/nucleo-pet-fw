@@ -190,6 +190,12 @@ void pet_view_draw(uint8_t *frame, const PetSnapshot *pet, uint32_t time_ms)
     stat(frame, 10, "ENERGY", pet->energy);
     rect(frame, 0, 18, 128, 1, true);
 
+    if (pet->merchant_visit && !pet->is_transferring && !pet->item_food_pending && !pet->item_box_animation) {
+        text(frame, 19, 30, pet->merchant_visit == 2U ? "MINT MERCHANT" : "A VISITOR");
+        text(frame, 19, 45, "OPEN POMI APP");
+        return;
+    }
+
     if ((pet->adventure_stage && pet->adventure_stage <= 6U) || pet->adventure_waking) {
         if (pet->adventure_preview || (!pet->is_away && !pet->is_transferring &&
             !pet->item_food_pending && !pet->item_box_animation && !pet->is_collapsed)) {
