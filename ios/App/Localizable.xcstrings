@@ -15,6 +15,26 @@
         }
       }
     },
+    "%@ · %@ · %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld 喵币" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld 喵币"
+          }
+        }
+      }
+    },
     "%@ · Lv%lld" : {
       "localizations" : {
         "zh-Hans" : {
@@ -91,6 +111,16 @@
         }
       }
     },
+    "%@专长 · %@ · %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@专长 · %2$@ · %3$@"
+          }
+        }
+      }
+    },
     "%@去手机小屋玩了" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -113,6 +143,9 @@
         }
       }
     },
+    "%@在门口等候" : {
+
+    },
     "%@的体验挂件" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -123,6 +156,9 @@
           }
         }
       }
+    },
+    "%@的家" : {
+
     },
     "%@的小屋" : {
       "extractionState" : "manual",
@@ -135,6 +171,9 @@
         }
       }
     },
+    "%@的猫塔" : {
+
+    },
     "%@的真实挂件" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -146,8 +185,42 @@
         }
       }
     },
+    "%lld / %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
     "%lld dBm" : {
 
+    },
+    "%lld 位等候" : {
+
+    },
+    "%lld 喵币" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Meow Coins"
+          }
+        }
+      }
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
     },
     "%u" : {
 
@@ -163,7 +236,7 @@
         }
       }
     },
-    "～  ～  ～  ～  ～" : {
+    "◈ %lld 喵币 · 仓库" : {
 
     },
     "01 / CONNECT" : {
@@ -264,6 +337,39 @@
     "Pomi / 01" : {
 
     },
+    "Pomi 好像回塔主之家了。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi may have gone back to the owner’s room."
+          }
+        }
+      }
+    },
+    "Pomi 好像在下面几层。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi seems to be on one of the lower floors."
+          }
+        }
+      }
+    },
+    "Pomi 好像往楼上去了。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomi seems to have gone upstairs."
+          }
+        }
+      }
+    },
     "Pomi 正在等你喵。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -316,6 +422,9 @@
         }
       }
     },
+    "一盏灯，等每个小伙伴回家" : {
+
+    },
     "一起玩了一会儿" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -360,6 +469,28 @@
         }
       }
     },
+    "三个贝壳合成台灯" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Craft a Lamp from Three Shells"
+          }
+        }
+      }
+    },
+    "三换一建楼材料" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trade Three Building Materials for One"
+          }
+        }
+      }
+    },
     "上一次联网操作待确认，请点连接并同步仓库恢复" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -392,6 +523,12 @@
           }
         }
       }
+    },
+    "下一层，会住进怎样的故事？" : {
+
+    },
+    "下一段旅程" : {
+
     },
     "下架并收回" : {
       "extractionState" : "manual",
@@ -580,6 +717,17 @@
         }
       }
     },
+    "今天没找到喜欢的？下次我带点别的来。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn’t find anything you liked? I’ll bring something different next time."
+          }
+        }
+      }
+    },
     "今日已获得 %lld / %lld" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -613,6 +761,9 @@
         }
       }
     },
+    "从大厅安排到这里" : {
+
+    },
     "从小卖部收回了一件物品" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -645,6 +796,9 @@
           }
         }
       }
+    },
+    "从第%lld层调入" : {
+
     },
     "仓库" : {
       "extractionState" : "manual",
@@ -767,6 +921,20 @@
         }
       }
     },
+    "余额 %lld 喵币" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balance: %lld Meow Coins"
+          }
+        }
+      }
+    },
+    "余额：%lld" : {
+
+    },
     "你收到 · %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -811,6 +979,9 @@
         }
       }
     },
+    "保留楼层" : {
+
+    },
     "停止搜索" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -833,6 +1004,9 @@
         }
       }
     },
+    "先到门口收留一位小伙伴，再为它安排楼层。" : {
+
+    },
     "先同步小屋服务以确认日期，再开始累计活动" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -843,6 +1017,12 @@
           }
         }
       }
+    },
+    "先扩建，再多留一个位置" : {
+
+    },
+    "全塔共享仓库" : {
+
     },
     "六盒版等待启用：请连接匹配的小屋服务" : {
       "extractionState" : "manual",
@@ -866,6 +1046,9 @@
         }
       }
     },
+    "关闭弹窗" : {
+
+    },
     "关闭旅程" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -884,6 +1067,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Up to 24 characters. The name is saved on this phone and the device keeps the same pet identity."
+          }
+        }
+      }
+    },
+    "凑近闻一闻" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A little sniff"
           }
         }
       }
@@ -917,6 +1111,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Find surprises outside and bring a little of the world home."
+          }
+        }
+      }
+    },
+    "刚刚开到" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Just Unboxed"
           }
         }
       }
@@ -965,6 +1170,20 @@
         }
       }
     },
+    "前置：%@" : {
+
+    },
+    "剩余 %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time Left: %@"
+          }
+        }
+      }
+    },
     "动作调试台" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -983,6 +1202,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Motion Debugger →"
+          }
+        }
+      }
+    },
+    "卖出闲置物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sell Unused Items"
           }
         }
       }
@@ -1086,6 +1316,17 @@
         }
       }
     },
+    "只有装饰和纪念品可以合成" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only decorations and souvenirs can be combined."
+          }
+        }
+      }
+    },
     "吃了一口小点心" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1130,6 +1371,17 @@
         }
       }
     },
+    "同步到仓库后，断开挂件也能开盒。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once a box is synced to your inventory, you can open it without the device."
+          }
+        }
+      }
+    },
     "同步真实仓库" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1163,6 +1415,34 @@
         }
       }
     },
+    "向上长一点，多一个家" : {
+
+    },
+    "和%@告别？" : {
+
+    },
+    "商人已经离开" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The merchant has left."
+          }
+        }
+      }
+    },
+    "商品不可用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This product is unavailable."
+          }
+        }
+      }
+    },
     "喂食、摸摸、玩耍和睡眠请在挂件上操作" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1170,6 +1450,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use your device to feed, pet, play with, or put Pomi to sleep."
+          }
+        }
+      }
+    },
+    "喵币" : {
+
+    },
+    "喵币与仓库" : {
+
+    },
+    "喵币商店尚未开放" : {
+
+    },
+    "喵星薄荷商人" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mint Star Merchant"
           }
         }
       }
@@ -1195,6 +1495,12 @@
           }
         }
       }
+    },
+    "回家" : {
+
+    },
+    "回家吧" : {
+
     },
     "在好友的小卖部换到了一件物品" : {
       "extractionState" : "manual",
@@ -1229,6 +1535,20 @@
         }
       }
     },
+    "在猫塔选择对应设施时使用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use this to build its matching facility in Cat Tower."
+          }
+        }
+      }
+    },
+    "在第%lld层工作" : {
+
+    },
     "在这里陪它看看小屋；照顾互动请在挂件上进行。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1250,6 +1570,23 @@
           }
         }
       }
+    },
+    "坐一小会儿" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taking a seat"
+          }
+        }
+      }
+    },
+    "塔主之家" : {
+
+    },
+    "塔主之家 · %@" : {
+
     },
     "填写 Mac 桥接口令" : {
       "extractionState" : "manual",
@@ -1302,6 +1639,20 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copy Friend Code"
+          }
+        }
+      }
+    },
+    "大厅待岗" : {
+
+    },
+    "大厅里好像有 Pomi 的脚印。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks like Pomi left pawprints in the lobby."
           }
         }
       }
@@ -1383,6 +1734,17 @@
         }
       }
     },
+    "好奇地凑过去" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taking a closer look"
+          }
+        }
+      }
+    },
     "如何连接挂件？" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1405,6 +1767,12 @@
         }
       }
     },
+    "安排" : {
+
+    },
+    "安排居民" : {
+
+    },
     "安静待一会儿" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1423,6 +1791,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Done"
+          }
+        }
+      }
+    },
+    "完成待建楼层" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish the Unbuilt Floor"
           }
         }
       }
@@ -1515,6 +1894,12 @@
         }
       }
     },
+    "将花费 %lld 喵币为它准备路费。离开后无法找回这只猫；如有工作岗位，岗位将空出。" : {
+
+    },
+    "将返还 %lld 喵币。楼层无法恢复，需要重新建造；工作人员回到大厅，共享库存保留。" : {
+
+    },
     "小屋内容" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1533,6 +1918,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The cottage and device are transferring Pomi’s record."
+          }
+        }
+      }
+    },
+    "小屋服务拒绝了这次操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The cottage server rejected this action."
           }
         }
       }
@@ -1570,6 +1966,9 @@
         }
       }
     },
+    "小屋记录暂时无法读取，原记录已保留。请先返回，稍后再试。" : {
+
+    },
     "小旅程，暂停了一下" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1580,6 +1979,9 @@
           }
         }
       }
+    },
+    "居民 %lld" : {
+
     },
     "属性已同步" : {
       "extractionState" : "manual",
@@ -1636,6 +2038,9 @@
         }
       }
     },
+    "已在本层 · 点击回大厅" : {
+
+    },
     "已复制" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1654,6 +2059,20 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Friend Code Copied"
+          }
+        }
+      }
+    },
+    "已摆放的收藏" : {
+
+    },
+    "已有" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Inventory"
           }
         }
       }
@@ -1679,6 +2098,9 @@
           }
         }
       }
+    },
+    "已经长到云朵旁啦" : {
+
     },
     "已连接" : {
       "extractionState" : "manual",
@@ -1734,6 +2156,12 @@
           }
         }
       }
+    },
+    "底层大厅" : {
+
+    },
+    "建造新楼层" : {
+
     },
     "开发板通过 USB 连到 Mac，手机与 Mac 连接同一 Wi-Fi。连接成功后自动进入小屋。" : {
       "extractionState" : "manual",
@@ -2010,6 +2438,17 @@
         }
       }
     },
+    "扩建 · %lld 喵币" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expand · %lld Meow Coins"
+          }
+        }
+      }
+    },
     "找不到挂件怎么办？" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2042,6 +2481,26 @@
           }
         }
       }
+    },
+    "抬头看看" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking up"
+          }
+        }
+      }
+    },
+    "拆除楼层" : {
+
+    },
+    "拆除第%lld层？" : {
+
+    },
+    "拆除顶层 · 返还 %lld 喵币" : {
+
     },
     "挂件" : {
       "extractionState" : "manual",
@@ -2186,6 +2645,12 @@
         }
       }
     },
+    "探\n险" : {
+
+    },
+    "探险入口，尚未开放" : {
+
+    },
     "探险档位" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2317,6 +2782,12 @@
           }
         }
       }
+    },
+    "收留的小伙伴会先在大厅休息" : {
+
+    },
+    "改装设施 · 40 喵币起" : {
+
     },
     "放入漂流瓶" : {
       "extractionState" : "manual",
@@ -2538,6 +3009,20 @@
         }
       }
     },
+    "星光窗" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starlight Window"
+          }
+        }
+      }
+    },
+    "暂时回到大厅" : {
+
+    },
     "暂时留在原来的家" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2736,6 +3221,17 @@
         }
       }
     },
+    "棉花种子包" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cotton Seed Packet"
+          }
+        }
+      }
+    },
     "模块仍是只读版本，需要升级 Pomi 双向蓝牙固件。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2878,6 +3374,9 @@
           }
         }
       }
+    },
+    "欢迎住进来" : {
+
     },
     "欢迎回到小屋" : {
       "extractionState" : "manual",
@@ -3099,6 +3598,9 @@
         }
       }
     },
+    "每 10 分钟来访一只，来客会在门口等你。" : {
+
+    },
     "每一只都有自己的小故事。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3121,6 +3623,9 @@
         }
       }
     },
+    "每分钟结算生产；原料自动供应。离线最多结算 8 小时，无猫不生产。熟练度来自完成的生产轮次。" : {
+
+    },
     "每天 08:00 刷新 · 最多 6 盒" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3131,6 +3636,9 @@
           }
         }
       }
+    },
+    "每层最多 3 只猫共同工作，各自按专长和熟练度生产；共享原料，没有猫或原料时暂停。" : {
+
     },
     "每盒再累计 1、3、5、8、12、15 分钟" : {
       "extractionState" : "manual",
@@ -3244,6 +3752,17 @@
     },
     "活动获得 %u 个盒子，已放入仓库" : {
 
+    },
+    "流浪商人" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traveling Merchant"
+          }
+        }
+      }
     },
     "测试 Pomi 编号" : {
       "extractionState" : "manual",
@@ -3366,6 +3885,17 @@
         }
       }
     },
+    "物品编号无效" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid item ID."
+          }
+        }
+      }
+    },
     "状态已保留，点这里接着走。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3421,6 +3951,9 @@
         }
       }
     },
+    "猫塔居民" : {
+
+    },
     "生成测试编号" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3443,6 +3976,20 @@
         }
       }
     },
+    "留一颗薄荷星给你。下次再来！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A little mint star for you. See you next time!"
+          }
+        }
+      }
+    },
+    "留下它" : {
+
+    },
     "登录小屋" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3450,6 +3997,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sign In"
+          }
+        }
+      }
+    },
+    "盒子不可用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This box is unavailable."
           }
         }
       }
@@ -3487,6 +4045,9 @@
         }
       }
     },
+    "目前可通过经营赚取喵币。充值将在 App Store 商品配置完成后开放。" : {
+
+    },
     "目前是离线体验" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3494,6 +4055,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offline preview"
+          }
+        }
+      }
+    },
+    "直接进入猫塔" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter Cat Tower"
           }
         }
       }
@@ -3531,6 +4103,28 @@
         }
       }
     },
+    "眼睛闪闪的" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eyes all aglow"
+          }
+        }
+      }
+    },
+    "睡出小星星" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreaming in stars"
+          }
+        }
+      }
+    },
     "知道了" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3560,6 +4154,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Short test: Earned %1$lld activity boxes (%2$@)"
+          }
+        }
+      }
+    },
+    "矿脉样本" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ore Sample"
           }
         }
       }
@@ -3608,6 +4213,9 @@
         }
       }
     },
+    "确认拆除" : {
+
+    },
     "确认放生" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3615,6 +4223,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send Bottle"
+          }
+        }
+      }
+    },
+    "离开时间 %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaves at %@"
           }
         }
       }
@@ -3652,6 +4271,26 @@
         }
       }
     },
+    "第%lld层 · %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "第%1$lld层 · %2$@"
+          }
+        }
+      }
+    },
+    "第%lld层，%lld位居民，点击安排" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "第%1$lld层，%2$lld位居民，点击安排"
+          }
+        }
+      }
+    },
     "第一次来？注册账号" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3663,6 +4302,9 @@
         }
       }
     },
+    "等你为它安排一个合适的楼层" : {
+
+    },
     "等待传感器数据；请确认已安装支持 LIS3DH 的固件。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3673,6 +4315,9 @@
           }
         }
       }
+    },
+    "等待分配" : {
+
     },
     "等待挂件同步" : {
       "extractionState" : "manual",
@@ -3795,6 +4440,28 @@
         }
       }
     },
+    "缺少" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing"
+          }
+        }
+      }
+    },
+    "缺少对应的建楼材料" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The required building material is missing."
+          }
+        }
+      }
+    },
     "翻小山！" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3816,6 +4483,9 @@
           }
         }
       }
+    },
+    "花 %lld 喵币请它离开" : {
+
     },
     "蓝牙不可用，交接记录已保留。" : {
       "extractionState" : "manual",
@@ -3938,6 +4608,31 @@
         }
       }
     },
+    "薄荷星云坐垫" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mint Nebula Cushion"
+          }
+        }
+      }
+    },
+    "藤蔓的另一边，会通向哪里呢？探险模式还在准备中。" : {
+
+    },
+    "蜂蜜饼干" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Honey Biscuit"
+          }
+        }
+      }
+    },
     "被温柔地摸摸" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3956,6 +4651,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Corner"
+          }
+        }
+      }
+    },
+    "解锁空楼层 · %lld 喵币" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Empty Floor · %lld Meow Coins"
           }
         }
       }
@@ -4026,6 +4732,17 @@
         }
       }
     },
+    "设施费 %lld 喵币" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Facility Fee: %lld Meow Coins"
+          }
+        }
+      }
+    },
     "访问口令" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4055,6 +4772,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Language / 语言"
+          }
+        }
+      }
+    },
+    "请使用发起操作时的账号重新同步仓库。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with the account that started this action and sync your inventory."
           }
         }
       }
@@ -4114,6 +4842,17 @@
         }
       }
     },
+    "请先完成第 %lld 层。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish floor %lld first."
+          }
+        }
+      }
+    },
     "请先将物品从小屋收回" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4121,6 +4860,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Return the item from the cottage first."
+          }
+        }
+      }
+    },
+    "请先确认待处理的仓库交易" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm the pending inventory trade first."
           }
         }
       }
@@ -4180,6 +4930,9 @@
         }
       }
     },
+    "请它离开 · %lld 喵币" : {
+
+    },
     "请打开蓝牙后重新搜索" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4187,6 +4940,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Turn on Bluetooth and search again"
+          }
+        }
+      }
+    },
+    "请更新挂件固件后再使用点心。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update the device firmware to use treats."
           }
         }
       }
@@ -4223,6 +4987,9 @@
           }
         }
       }
+    },
+    "请走 · %lld 喵币" : {
+
     },
     "请输入完整服务地址，如 https://pomi.example.com" : {
       "extractionState" : "manual",
@@ -4268,6 +5035,28 @@
         }
       }
     },
+    "请选择一件闲置物品" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose an unused item."
+          }
+        }
+      }
+    },
+    "请选择三份其他建楼材料" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose three other building materials."
+          }
+        }
+      }
+    },
     "请重新搜索挂件。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4279,6 +5068,28 @@
         }
       }
     },
+    "贝壳台灯" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shell Lamp"
+          }
+        }
+      }
+    },
+    "贝壳唱片机" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shell Record Player"
+          }
+        }
+      }
+    },
     "账号与好友码" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4286,6 +5097,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account and friend code"
+          }
+        }
+      }
+    },
+    "账号信息" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account Details"
           }
         }
       }
@@ -4341,6 +5163,20 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your shelves are empty. Choose an item from your inventory to list it."
+          }
+        }
+      }
+    },
+    "购买喵币 · 尚未开放" : {
+
+    },
+    "跟着哼两声" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Humming along"
           }
         }
       }
@@ -4422,6 +5258,9 @@
         }
       }
     },
+    "返回小屋窗口" : {
+
+    },
     "返回登录" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4444,6 +5283,9 @@
         }
       }
     },
+    "返还该层实际建造费用的 50%，向下取整。改装费不返还；旧存档未记录建造费用的楼层返还 0 喵币。" : {
+
+    },
     "还没有小伙伴，先绑定一只 Pomi 吧。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4454,6 +5296,9 @@
           }
         }
       }
+    },
+    "还没有居民。先去门口认识第一只小猫吧。" : {
+
     },
     "这不是食物" : {
       "extractionState" : "manual",
@@ -4476,6 +5321,34 @@
           }
         }
       }
+    },
+    "这件商品已经售出" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This product has already been sold."
+          }
+        }
+      }
+    },
+    "这次来没碰见你，下次记得给我开门！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I missed you this time. Open the door when I come by again!"
+          }
+        }
+      }
+    },
+    "进入%@的猫塔" : {
+
+    },
+    "进屋看看 ↑" : {
+
     },
     "连接下方真实挂件后，小屋将使用板上的宠物。连接前仍可体验离线演示。" : {
       "extractionState" : "manual",
@@ -4598,6 +5471,16 @@
         }
       }
     },
+    "送别需要 %lld 喵币，当前余额 %lld，余额不足。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "送别需要 %1$lld 喵币，当前余额 %2$lld，余额不足。"
+          }
+        }
+      }
+    },
     "送到挂件，按键确认使用" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4619,6 +5502,9 @@
           }
         }
       }
+    },
+    "选择产业，连接原料与店铺" : {
+
     },
     "选择蓝牙连接，在 App 搜索并连接附近的 Pomi 挂件。开发调试时也可以使用 USB 经 Mac 桥接。" : {
       "extractionState" : "manual",
@@ -4697,6 +5583,17 @@
         }
       }
     },
+    "重试待确认的仓库操作" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry Pending Inventory Action"
+          }
+        }
+      }
+    },
     "长按摆放位置，可以将装饰收回仓库。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4704,6 +5601,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Touch and hold a spot to return its decoration to the inventory."
+          }
+        }
+      }
+    },
+    "长按物品可收回仓库。猫塔家具布置将在后续接入。" : {
+
+    },
+    "门前的小路，静悄悄的" : {
+
+    },
+    "门口有一只小猫，正在等你" : {
+
+    },
+    "闻花花，开心！" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sniffing flowers makes me happy!"
           }
         }
       }
@@ -4847,6 +5764,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lv2 is the maximum level."
+          }
+        }
+      }
+    },
+    "麦穗种子包" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wheat Seed Packet"
           }
         }
       }

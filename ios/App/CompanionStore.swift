@@ -27,6 +27,7 @@ final class CompanionStore: ObservableObject {
     let bluetooth = BluetoothTransport()
     let world = PomiWorldStore()
     @Published private(set) var activityReward: ActivityReward?
+    private var supportsSmallSnacks = false
     @Published private(set) var activityMessage: LocalizedStringKey = "连接小屋服务后启用活动奖励"
     private var lastActivitySync = Date.distantPast
     private var lastActivityReceipt: ActivityReward?
@@ -175,6 +176,7 @@ final class CompanionStore: ObservableObject {
         do {
             var record=try await transport.request("/device",intent:nil,petID:nil)
             guard var next=physical else { return }
+            supportsSmallSnacks = record.smallSnacks == true
             try next.observe(record);try savePhysical(next)
             activityReward=record.activity;liveMotion=record.motion;motionReceivedAt=Date()
             lastHardwareRead=Date();liveMessage="属性已同步";physicalBlocked=false
@@ -242,11 +244,15 @@ final class CompanionStore: ObservableObject {
     func startItem(kind: String, id: String) async {
         guard !hardwareBusy,session.residence == .device,session.pendingTransfer == nil else { world.message="宠物回到挂件后才能操作";return }
         if physicalMode && (connectionKind != .bluetooth || !bluetooth.ready) { world.message="请先连接蓝牙挂件";return }
+        if kind == "food", physicalMode, !supportsSmallSnacks {
+            world.message = "请更新挂件固件后再使用点心。"
+            return
+        }
         if kind=="open" && session.state.energy<10 { world.message="精力不足 10，请让宠物在挂件上休息";return }
         do {
             var body: [String:Any] = ["kind":kind,"petID":session.petID.uuidString]
             body[kind=="open" ? "boxID":"itemID"]=id
-            _ = try await world.perform("/prepare",body)
+            _ = try await world.perform(kind == "food" ? "/tower/snack" : "/prepare",body)
             await continueItem()
         } catch { world.message=error.localizedDescription }
     }
@@ -258,7 +264,7 @@ final class CompanionStore: ObservableObject {
         hardwareBusy=true;defer{hardwareBusy=false}
         do {
             let intent=PhysicalIntent(id:id,destination:.device,baseRevision:UInt32(session.revision),snapshot:nil,released:false)
-            let record=try await bluetooth.request(p.kind=="open" ? "/items/open" : (p.level==2 ? "/items/food2":"/items/food1"),intent:intent,petID:session.petID)
+            let record=try await bluetooth.request(p.kind=="open" ? "/items/open" : "/items/food\(p.level)",intent:intent,petID:session.petID)
             if var next=physical { try next.observe(record);try savePhysical(next) }
             lastHardwareRead=Date()
             try await settleItemReceipt(record)
@@ -276,7 +282,9 @@ final class CompanionStore: ObservableObject {
     func confirmPreviewItem() async {
         guard !physicalMode,let p=world.inventory.pending else { return }
         do {
-            try session.simulateBoardItem(open:p.kind=="open",level:p.level)
+            let prefix = p.id.replacingOccurrences(of: "-", with: "").prefix(8)
+            let gain = UInt8(1 + ((UInt32(prefix, radix: 16) ?? 0) & 1))
+            try session.simulateBoardItem(open:p.kind=="open",level:p.level,gain:gain)
             _ = try await world.perform("/settle",["operationID":p.id]);flush()
         } catch { world.message=error.localizedDescription }
     }
@@ -291,6 +299,7 @@ final class CompanionStore: ObservableObject {
     func finishTransfer(id: UUID) throws {
         guard !physicalMode else { throw CompanionError.transferInProgress }
         try transaction { try $0.completeTransfer(id: id) }
+        TowerLocalStore.recordReturn(session)
         responseAt = Date()
         response = session.residence == .phone ? "我来啦，这里好暖和。" : nil
     }
@@ -323,11 +332,39 @@ final class CompanionStore: ObservableObject {
     }
     #endif
 
+    #if os(iOS)
+    func enterLocalTower() {
+        guard !hardwareBusy else { return }
+        if physicalMode {
+            hasEnteredHome = true
+            return
+        }
+        do {
+            if let saved = try physicalRepository.load() {
+                physical = saved
+                session = saved.companion
+                physicalMode = true
+                physicalBlocked = false
+                hasEnteredHome = true
+                world.configure(preview: false)
+            } else {
+                enterDevelopmentPreview()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    #endif
+
     private func savePhysical(_ value: PhysicalSession) throws {
         try physicalRepository.save(value)
+        let previous = physical?.companion
         physical = value
         physicalMode = true
         session = value.companion
+        if previous?.petID != session.petID || previous?.revision != session.revision {
+            TowerLocalStore.recordReturn(session)
+        }
         lastSavedAt = Date()
     }
 
@@ -341,6 +378,7 @@ final class CompanionStore: ObservableObject {
         try next.observe(record)
         try savePhysical(next)
         physicalBlocked = false
+        supportsSmallSnacks = record.smallSnacks == true
         hasEnteredHome = true
         activityReward=record.activity
         lastActivitySync = .distantPast

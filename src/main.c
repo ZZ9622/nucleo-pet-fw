@@ -92,6 +92,8 @@ int main(void)
     bool has_feedback = false;
     uint32_t item_animation_ms=started_ms;
     bool item_animation=false;
+    uint8_t previous_merchant=0;
+    uint32_t merchant_notice_ms=0;
     Led led;
     PetHandoff handoff;
     PetState *pet = &handoff.pet;
@@ -268,6 +270,15 @@ int main(void)
 #else
         snapshot.adventure_waking=pet_adventure_waking;
 #endif
+        const uint8_t merchant = pet_activity_merchant();
+        if (merchant != previous_merchant) {
+            previous_merchant = merchant;
+            if (merchant) { merchant_notice_ms=now_ms;screen_idle_init(&screen,now_ms); }
+        }
+        /* Alternate a brief notice with the usual pet view during the visit. */
+        if (merchant && elapsed_ms(now_ms,merchant_notice_ms) % 20000U < 3000U) {
+            snapshot.merchant_visit=merchant;
+        }
         snapshot.item_food_pending=handoff.item_status==1 && handoff.item_kind==2;
         snapshot.item_box_animation=item_animation;
         snapshot.feedback_elapsed_ms=elapsed_ms(now_ms,item_animation_ms);

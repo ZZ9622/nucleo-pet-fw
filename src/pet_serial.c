@@ -84,6 +84,7 @@ static void response(PetHandoff *h,const char *request,const char *error) {
     append("\",\"phase\":");number(h->fault?PET_LOCKED:h->phase);append(",\"revision\":");number(h->revision);
     append(",\"transferID\":\"");id(h->transaction);append("\",\"payloadHash\":");number(h->payload_hash);
     append(",\"itemOperationID\":\"");id(h->item_id);append("\",\"itemStatus\":");number(h->item_status);
+    append(",\"smallSnacks\":true");
     append(",\"itemKind\":");number(h->item_kind);append(",\"itemLevel\":");number(h->item_level);
     append(",\"state\":[");uint32_t w[PET_STATE_WORDS];pet_state_encode(&h->pet,w);
     for(unsigned i=0;i<PET_STATE_WORDS;++i){if(i){append(",");}number(w[i]);}append("]");
@@ -183,7 +184,8 @@ static void process(PetHandoff *h) {
             response(h,fields[0]+1,error);return;
         } else if(*fields[5]) {error="invalid_request";}
         if(!error){
-            if(equal(fields[1],"ITEM_OPEN") || equal(fields[1],"ITEM_FOOD1") || equal(fields[1],"ITEM_FOOD2")) {
+            if(equal(fields[1],"ITEM_OPEN") || equal(fields[1],"ITEM_FOOD1") || equal(fields[1],"ITEM_FOOD2") ||
+               equal(fields[1],"ITEM_SNACK_H") || equal(fields[1],"ITEM_SNACK_E")) {
                 error=pet_item_command(h,fields[1],transaction,revision);
             } else { error=pet_handoff_command(h,fields[1],transaction,revision,candidate); }
         }

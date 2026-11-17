@@ -27,6 +27,7 @@ typedef struct {
 void pet_activity_clock_tick(PetHandoff *h, uint32_t now_ms);
 bool pet_activity_clock_ready(void);
 uint32_t pet_activity_clock_next(void);
+uint8_t pet_activity_merchant(void);
 const char *pet_activity_set_clock(PetHandoff *h,const ActivityClockPlan *plan,uint32_t now_ms);
 void pet_activity_reset_runtime(void);
 extern uint8_t pet_adventure_stage;

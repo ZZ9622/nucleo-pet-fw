@@ -115,7 +115,8 @@ const char *pet_item_command(PetHandoff *h,const char *command,const uint32_t id
     if(!pet_handoff_active(h)) { return "conflict"; }
     if(!(id[0]|id[1]|id[2]|id[3])) { return "invalid_request"; }
     const uint32_t kind=command_is(command,"ITEM_OPEN")?1U:2U;
-    const uint32_t level=command_is(command,"ITEM_FOOD2")?2U:1U;
+    const uint32_t level = command_is(command, "ITEM_SNACK_H") ? 3U :
+        command_is(command, "ITEM_SNACK_E") ? 4U : command_is(command, "ITEM_FOOD2") ? 2U : 1U;
     if(h->item_status && equal_id(h->item_id,id)) {
         return h->item_kind==kind && h->item_level==level ? 0 : "conflict";
     }
@@ -132,10 +133,21 @@ const char *pet_item_command(PetHandoff *h,const char *command,const uint32_t id
 bool pet_item_confirm(PetHandoff *h)
 {
     if(!pet_handoff_active(h) || h->item_status!=1 || h->item_kind!=2 || (h->pet.is_sleeping && h->pet.seconds_since_feed<PET_FEED_DEADLINE_S)) { return false; }
-    PetHandoff next=*h;PetTransition transition;
-    const PetCommand feed={.type=PET_CMD_FEED};
-    pet_apply(&next.pet,&PET_RULES_DEFAULT,&feed,&transition);
-    if(h->item_level==2) { unsigned e=next.pet.energy+20U;next.pet.energy=(uint8_t)(e>100U?100U:e); }
+    PetHandoff next=*h;
+    if (h->item_level >= 3U) {
+        /* The operation ID provides a stable roll on retries and after reboot. */
+        const unsigned gain = 1U + (h->item_id[0] & 1U);
+        uint8_t *attribute = h->item_level == 3U ? &next.pet.happiness : &next.pet.energy;
+        const unsigned value = *attribute + gain;
+        *attribute = (uint8_t)(value > 100U ? 100U : value);
+        next.pet.feedback = PET_EVENT_FED;
+    } else {
+        /* Finish food requests already staged by older apps. */
+        PetTransition transition;
+        const PetCommand feed={.type=PET_CMD_FEED};
+        pet_apply(&next.pet,&PET_RULES_DEFAULT,&feed,&transition);
+        if(h->item_level==2) { unsigned e=next.pet.energy+20U;next.pet.energy=(uint8_t)(e>100U?100U:e); }
+    }
     next.item_status=2;
     if(!pet_storage_save(&next)) { h->fault=true;return false; }
     *h=next;return true;

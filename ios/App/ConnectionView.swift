@@ -185,11 +185,11 @@ struct BluetoothConnectionFields: View {
 }
 
 struct BluetoothStatusBanner: View {
-    @EnvironmentObject private var store: CompanionStore
+    @State private var showConnection = false
     @ObservedObject var radio: BluetoothTransport
-    var body: some View {
+    @ViewBuilder private var banner: some View {
         if !radio.ready {
-            Button { store.showConnectionSettings() } label: {
+            Button { showConnection = true } label: {
                 HStack {
                     Image(systemName: "antenna.radiowaves.left.and.right.slash")
                     Text("蓝牙已断开 · 点此重新连接")
@@ -198,5 +198,15 @@ struct BluetoothStatusBanner: View {
                 }.font(.system(size: 12)).padding(12).background(Palette.sage)
             }.buttonStyle(.plain).accessibilityIdentifier("bluetooth.reconnect")
         }
+    }
+
+    var body: some View {
+        banner
+            .sheet(isPresented: $showConnection) {
+                PendantConnectionSheet(radio: radio)
+            }
+            .onChange(of: radio.ready) { _, ready in
+                if ready { showConnection = false }
+            }
     }
 }

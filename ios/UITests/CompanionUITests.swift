@@ -63,8 +63,12 @@ final class CompanionUITests: XCTestCase {
         XCTAssertEqual(popup.frame.midX, app.frame.midX, accuracy: 3)
         XCTAssertEqual(popup.frame.midY, app.frame.midY, accuracy: 45)
         attachScreen("Pomi-square-construction-panel")
+        tap("tower.unlock")
         tap("tower.build.garden")
         tap("tower.floor.2")
+        if !element("tower.assign.芝麻").exists {
+            popup.swipeUp()
+        }
         tap("tower.assign.芝麻")
         XCTAssertTrue(element("tower.lift.busy").waitForExistence(timeout: 5))
         attachScreen("Pomi-vine-lift")
@@ -89,35 +93,30 @@ final class CompanionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["一起走过的足迹"].exists)
         attachScreen("Pomi-home-and-journal")
     }
-    func testWarehouseOpenBoxAndSeaPreview() {
+    func testWarehouseOpensSyncedBoxWithoutDeviceConfirmation() {
         tap("tab.1")
         XCTAssertTrue(app.staticTexts["把日子装进小屋"].waitForExistence(timeout:5))
         tap("world.box")
-        tap("world.confirm")
-        app.swipeDown()
+        XCTAssertTrue(app.staticTexts["待开盒子 1"].waitForExistence(timeout:5))
+        XCTAssertTrue(element("world.openedReward").exists)
+        XCTAssertFalse(element("world.confirm").exists)
+        XCTAssertFalse(app.segmentedControls.buttons["放生海"].exists)
         attachScreen("Pomi-cottage-inventory")
-        app.segmentedControls.buttons["放生海"].tap()
-        tap("world.fish")
-        XCTAssertTrue(app.staticTexts["捞取机会 2 / 3"].exists)
-        attachScreen("Pomi-sea")
         tap("tab.0")
-        checkStat("energy",value:70)
+        checkStat("energy",value:80)
     }
 
-    func testFoodConfirmationAndDecorationRelease() {
+    func testSnackConfirmationAndDecorationReturn() {
         tap("tab.1")
         tap("world.item.berry");tap("world.food")
         tap("world.confirm")
-        XCTAssertFalse(element("world.item.berry").exists)
+        XCTAssertTrue(element("world.item.berry").waitForNonExistence(timeout:5))
         tap("world.item.plant");tap("world.decorate")
         app.swipeDown()
         XCTAssertTrue(app.staticTexts["窗边小草"].firstMatch.exists)
-        // The placed item remains in inventory; retrieve before releasing.
         tap("world.item.plant");tap("world.decorate")
-        tap("world.item.plant");tap("world.release")
-        app.buttons["确认放生"].tap()
-        XCTAssertTrue(element("world.item.plant").waitForNonExistence(timeout:5),app.debugDescription)
-        tap("tab.0");checkStat("energy",value:100)
+        XCTAssertTrue(element("world.item.plant").exists)
+        tap("tab.0");checkStat("energy",value:80)
     }
 
 }

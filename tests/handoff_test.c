@@ -209,6 +209,14 @@ int main(void) {
         if(h.item_status==1) { assert(h.pet.energy==80);assert(pet_item_confirm(&h)); }
         assert(h.item_status==2 && h.pet.energy==100 && !pet_item_confirm(&h));
     }
+    memset(flash,255,sizeof flash);reboot(&h);
+    const uint32_t berry[4]={1,0,0,0}, honey[4]={2,0,0,0};
+    assert(!pet_item_command(&h,"ITEM_SNACK_H",berry,0));reboot(&h);
+    assert(h.item_level==3 && pet_item_confirm(&h));
+    assert(h.pet.happiness==77 && h.pet.energy==80);
+    assert(!pet_item_confirm(&h));
+    assert(!pet_item_command(&h,"ITEM_SNACK_E",honey,0));assert(pet_item_confirm(&h));
+    reboot(&h);assert(h.pet.happiness==77 && h.pet.energy==81 && !pet_item_confirm(&h));
     puts("item operations: durable charge, duplicate receipt, button confirmation, low energy and torn writes passed");
     memset(flash,255,sizeof flash);flash[0]=0;pet_handoff_init(&h);
     assert(h.fault && h.phase==PET_LOCKED && !pet_handoff_active(&h));

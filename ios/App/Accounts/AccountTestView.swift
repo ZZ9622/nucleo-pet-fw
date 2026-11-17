@@ -6,6 +6,7 @@ import UIKit
 struct AccountTestView: View {
     var onAuthenticated: ((String, URL) -> Void)?
     var onLogout: (() -> Void)?
+    var onOpenLocalTower: (() -> Void)?
     var onContinueWithoutAccount: (() -> Void)?
     var sessionURL: URL?
     @AppStorage("pomi.accountServiceURL") private var serviceAddress = AccountAPI.defaultAddress
@@ -16,7 +17,6 @@ struct AccountTestView: View {
     @State private var showingRegistration = false
     @State private var showingLanguage = false
     @State private var pomiID = ""
-    @State private var copiedFriendCode: String?
     @State private var profile: AccountProfile?
     @State private var busy = false
     @State private var message = ""
@@ -52,32 +52,7 @@ struct AccountTestView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Eyebrow(text: "我的账号")
                         Text(profile.email).font(.subheadline).textSelection(.enabled)
-                        HStack {
-                            Text("好友码")
-                                .font(.caption)
-                                .foregroundStyle(Palette.muted)
-                            Spacer()
-                            Button {
-                                UIPasteboard.general.string = profile.friendCode
-                                copiedFriendCode = profile.friendCode
-                            } label: {
-                                Label(copiedFriendCode == profile.friendCode ? "已复制" : "复制",
-                                      systemImage: copiedFriendCode == profile.friendCode ? "checkmark" : "doc.on.doc")
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 8)
-                                    .frame(minHeight: 44)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(copiedFriendCode == profile.friendCode ? "已复制好友码" : "复制好友码")
-                        }
-                        Text(profile.friendCode)
-                            .font(.system(.title3, design: .monospaced).weight(.semibold))
-                            .tracking(1)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                            .textSelection(.enabled)
-                            .accessibilityLabel("好友码 \(profile.friendCode)")
+
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -261,6 +236,11 @@ struct AccountTestView: View {
                     .background(.white, in: PixelFrame())
                     .overlay(PixelFrame().stroke(Palette.line, lineWidth: 1))
                     .disabled(busy)
+                    if !showingRegistration, let onOpenLocalTower {
+                        Button("直接进入猫塔", action: onOpenLocalTower)
+                            .buttonStyle(QuietButtonStyle())
+                            .disabled(busy)
+                    }
                     if !showingRegistration, let onContinueWithoutAccount {
                         Button("不登录，连接挂件", action: onContinueWithoutAccount)
                             .buttonStyle(QuietButtonStyle())

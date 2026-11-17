@@ -272,9 +272,15 @@ private struct MissingPomiNotice: View {
                 .resizable()
                 .scaledToFit()
                 .overlay {
-                    if locale.language.languageCode?.identifier == "en" {
-                        GeometryReader { geometry in
-                            let scale = geometry.size.width / 670
+                    GeometryReader { geometry in
+                        let scale = geometry.size.width / 670
+                        Image("PomiTabIcon")
+                            .resizable()
+                            .interpolation(.none)
+                            .frame(width: 304 * scale, height: 299 * scale)
+                            .position(x: 335 * scale, y: 495 * scale)
+
+                        if locale.language.languageCode?.identifier == "en" {
                             Text("Find Pomi")
                                 .font(.system(size: 42 * scale, weight: .bold, design: .monospaced))
                                 .foregroundStyle(Color(red: 0.05, green: 0.26, blue: 0.68))
@@ -282,8 +288,9 @@ private struct MissingPomiNotice: View {
                                 .background(Color(red: 0.97, green: 0.96, blue: 0.92))
                                 .position(x: 335 * scale, y: 280 * scale)
                         }
-                        .accessibilityHidden(true)
                     }
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
                 }
                 .frame(maxWidth: 220, maxHeight: .infinity)
                 .accessibilityLabel("WANTED，寻 Pomi 启事")
